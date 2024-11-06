@@ -17,6 +17,8 @@ function App() {
         <Route path='/home' element={<HomePage/>}/>
       </Routes>
      </Router>
+
+     
     </>
   )
 }
