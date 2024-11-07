@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import axios from  '../../services/api/axios'
 import { useNavigate } from 'react-router-dom'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+
 export default function UserReg() {
   const [formData, setFormData] = useState({
     name: '',
@@ -42,8 +46,9 @@ export default function UserReg() {
       const responce = await axios.post('/user/register',formData)
       if(responce.status ===201){
         navigate('/login')
+        toast("Wow so easy!");
       }else{
-        alert('errrrrrr')
+        toast("User already exist!");
       }
    } catch (error) {
     console.log(error);
@@ -187,6 +192,7 @@ export default function UserReg() {
           </button>
         </div>
       </form>
+      <ToastContainer />
     </div>
   )
 }
