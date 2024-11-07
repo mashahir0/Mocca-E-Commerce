@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -102,7 +103,8 @@ export default function LoginForm() {
             type="button"
             className="text-black hover:underline font-semibold"
           >
-            Sign Up
+            <Link to="/register">Sign Up</Link>
+            
           </button>
         </div>
       </form>

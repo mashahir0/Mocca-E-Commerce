@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react'
-
+import { Link } from 'react-router-dom'
+import axios from  '../../services/api/axios'
+import { useNavigate } from 'react-router-dom'
 export default function UserReg() {
   const [formData, setFormData] = useState({
-    Name: '',
+    name: '',
     phone: '',
     email: '',
     otp: '',
     password: '',
     confirmPassword: ''
   })
+  
+  const navigate = useNavigate()
   
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -32,10 +36,19 @@ export default function UserReg() {
     console.log('Sending OTP to:', formData.email)
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault()
-    // Add your form submission logic here
-    console.log('Form submitted:', formData)
+   try {
+      const responce = await axios.post('/user/register',formData)
+      if(responce.status ===201){
+        navigate('/login')
+      }else{
+        alert('errrrrrr')
+      }
+   } catch (error) {
+    console.log(error);
+    
+   }
   }
 
   useEffect(() => {
@@ -60,9 +73,9 @@ export default function UserReg() {
         {/* <div className="grid grid-cols-2 gap-4"> */}
           <input
             type="text"
-            name="Name"
+            name="name"
             placeholder="Name"
-            value={formData.Name}
+            value={formData.name}
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300"
             required
@@ -170,7 +183,7 @@ export default function UserReg() {
             type="button"
             className="text-black hover:underline font-semibold"
           >
-            Sign in
+             <Link to="/login">Sign Up</Link>
           </button>
         </div>
       </form>
