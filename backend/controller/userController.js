@@ -21,4 +21,25 @@ const registerUser = async (req,res)=>{
     }
 }
 
-export {registerUser}
+const userLogin = async (req, res) => {
+    try {
+        const { email, password } = req.body
+        const user = await User.findOne({ email })
+        if (user && (await user.matchPassword(password))) {
+            return res.status(200).json({
+                message: 'user logged',
+                user // Optional: include user data if needed
+            })
+        } else {
+            return res.status(401).json({  // 401 indicates unauthorized
+                message: 'Invalid email or password'
+            })
+        }
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: 'Server error' })
+    }
+}
+
+
+export {registerUser,userLogin}

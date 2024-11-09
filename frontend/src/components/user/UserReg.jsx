@@ -1,72 +1,114 @@
-import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import axios from  '../../services/api/axios'
-import { useNavigate } from 'react-router-dom'
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
+
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import axios from "../../services/api/axios";
+import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function UserReg() {
   const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    otp: '',
-    password: '',
-    confirmPassword: ''
-  })
-  
-  const navigate = useNavigate()
-  
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [otpSent, setOtpSent] = useState(false)
-  const [timer, setTimer] = useState(15)
-  const [isTimerRunning, setIsTimerRunning] = useState(false)
+    name: "",
+    phone: "",
+    email: "",
+    otp: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [timer, setTimer] = useState(0); // Initial timer value
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prevState => ({
+    const { name, value } = e.target;
+    setFormData((prevState) => ({
       ...prevState,
-      [name]: value
-    }))
-  }
+      [name]: value,
+    }));
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: "", // clear error on change
+    }));
+  };
 
-  const handleSendOTP = () => {
-    setOtpSent(true)
-    setIsTimerRunning(true)
-    setTimer(15)
-    // Add your OTP sending logic here
-    console.log('Sending OTP to:', formData.email)
-  }
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.name.trim()) newErrors.name = "Name is required";
 
-  const handleSubmit = async(e) => {
-    e.preventDefault()
-   try {
-      const responce = await axios.post('/user/register',formData)
-      if(responce.status ===201){
-        navigate('/login')
-        toast("Wow so easy!");
-      }else{
-        toast("User already exist!");
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!formData.phone.match(phoneRegex))
+      newErrors.phone = "Phone number must be 10 digits";
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email.match(emailRegex))
+      newErrors.email = "Invalid email format";
+
+    if (otpSent && !formData.otp) newErrors.otp = "OTP is required";
+
+    if (formData.password.length < 6)
+      newErrors.password = "Password must be at least 6 characters";
+
+    if (formData.password !== formData.confirmPassword)
+      newErrors.confirmPassword = "Passwords do not match";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSendOTP = async () => {
+    try {
+      const response = await axios.post('/user/send-otp', { email: formData.email });
+      if (response.status === 201) {
+        setOtpSent(true);
+        setTimer(15); // Start countdown at 15 seconds
+        toast.success("OTP sent to your email!");
       }
-   } catch (error) {
-    console.log(error);
-    
-   }
-  }
-
-  useEffect(() => {
-    let interval
-    if (isTimerRunning && timer > 0) {
-      interval = setInterval(() => {
-        setTimer((prevTimer) => prevTimer - 1)
-      }, 1000)
-    } else if (timer === 0) {
-      setIsTimerRunning(false)
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      toast.error("Failed to send OTP. Please try again.");
     }
-    return () => clearInterval(interval)
-  }, [isTimerRunning, timer])
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) {
+      toast.error("Please correct the errors before submitting.");
+      return;
+    }
+    try {
+      const otpResponse = await axios.post('/user/verify-otp', { email: formData.email, otp: formData.otp });
+      if (otpResponse.status === 200) {
+          const response = await axios.post("/user/register", formData);
+          if (response.status === 201) {
+              navigate("/login");
+              toast.success("Registration successful!");
+          } else {
+              toast.error("User already exists!");
+          }
+      } else {
+          toast.error("Invalid OTP. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      toast.error("OTP verification failed.");
+    }
+  };
+
+  // Timer countdown effect
+  useEffect(() => {
+    let interval;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prevTimer) => prevTimer - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval); // Cleanup interval on unmount
+  }, [timer]);
 
   return (
     <div className="w-full max-w-md mx-auto p-6">
@@ -75,27 +117,28 @@ export default function UserReg() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* <div className="grid grid-cols-2 gap-4"> */}
-          <input
-            type="text"
-            name="name"
-            placeholder="Name"
-            value={formData.name}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300"
-            required
-          />
-        {/* </div> */}
-          <input
-            type="text"
-            name="phone"
-            placeholder="Phone No"
-            value={formData.phone}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300"
-            required
-          />
+        <input
+          type="text"
+          name="name"
+          placeholder="Name"
+          value={formData.name}
+          onChange={handleChange}
+          className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300"
+          
+        />
+        {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
 
+        <input
+          type="text"
+          name="phone"
+          placeholder="Phone No"
+          value={formData.phone}
+          onChange={handleChange}
+          className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300"
+          
+        />
+        {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
+        
         <input
           type="email"
           name="email"
@@ -103,8 +146,9 @@ export default function UserReg() {
           value={formData.email}
           onChange={handleChange}
           className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300"
-          required
+          
         />
+        {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
 
         <div className="relative">
           <input
@@ -118,12 +162,13 @@ export default function UserReg() {
           <button
             type="button"
             onClick={handleSendOTP}
-            disabled={isTimerRunning}
+            disabled={timer > 0} // Disable when timer is active
             className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-blue-600 hover:text-blue-800"
           >
-            {otpSent ? `Resend OTP ${timer > 0 ? `(${timer}s)` : ''}` : 'Send OTP'}
+            {otpSent ? `Resend OTP ${timer > 0 ? `(${timer}s)` : ""}` : "Send OTP"}
           </button>
         </div>
+        {errors.otp && <p className="text-red-500 text-sm">{errors.otp}</p>}
 
         <div className="relative">
           <input
@@ -133,7 +178,7 @@ export default function UserReg() {
             value={formData.password}
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300"
-            required
+            
           />
           <button
             type="button"
@@ -143,6 +188,7 @@ export default function UserReg() {
             {showPassword ? "👁️" : "👁️‍🗨️"}
           </button>
         </div>
+        {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
 
         <div className="relative">
           <input
@@ -152,7 +198,7 @@ export default function UserReg() {
             value={formData.confirmPassword}
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300"
-            required
+            
           />
           <button
             type="button"
@@ -162,6 +208,7 @@ export default function UserReg() {
             {showConfirmPassword ? "👁️" : "👁️‍🗨️"}
           </button>
         </div>
+        {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
 
         <button
           type="submit"
@@ -179,20 +226,17 @@ export default function UserReg() {
             alt="Google logo"
             className="w-5 h-5"
           />
-          Register with google
+          Register with Google
         </button>
 
         <div className="text-center mt-6">
           <span className="text-gray-600">Have an account? </span>
-          <button
-            type="button"
-            className="text-black hover:underline font-semibold"
-          >
-             <Link to="/login">Sign Up</Link>
-          </button>
+          <Link to="/login" className="text-black hover:underline font-semibold">
+            Sign In
+          </Link>
         </div>
       </form>
       <ToastContainer />
     </div>
-  )
+  );
 }
