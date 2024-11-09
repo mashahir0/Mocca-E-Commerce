@@ -5,56 +5,64 @@
 // import 'react-toastify/dist/ReactToastify.css'
 // import axios from '../../services/api/axios'
 
-
 // export default function LoginForm() {
 //   const [showPassword, setShowPassword] = useState(false)
 //   const [formData, setFormData] = useState({
 //     email: '',
 //     password: ''
 //   })
+//   const [errors, setErrors] = useState({ email: '', password: '' })  // Error state for each field
 //   const navigate = useNavigate()
+
 //   const validateForm = () => {
 //     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    
+//     let isValid = true
+//     let newErrors = { email: '', password: '' }
+
 //     // Check if email is valid
 //     if (!emailRegex.test(formData.email)) {
-//       toast.error('Please enter a valid email address.')
-//       return false
+//       newErrors.email = 'Please enter a valid email address.'
+//       isValid = false
 //     }
-    
+
 //     // Check if password is entered
 //     if (formData.password.trim() === '') {
-//       toast.error('Password is required.')
-//       return false
+//       newErrors.password = 'Password is required.'
+//       isValid = false
 //     }
-    
-//     return true
+
+//     setErrors(newErrors)  // Update error state with messages
+//     return isValid
 //   }
 
 //   const handleSubmit = async (e) => {
 //     e.preventDefault()
 
 //     if (validateForm()) {
-//         try {
-//             const response = await axios.post('/user/userlogin', formData)
-//             if (response.status === 200) {  // Changed from 201 to 200
-//                 toast.success('Login successful!')
-//                 navigate('/home')  // Ensure navigate is correctly set up
-//             } else {
-//                 toast.error(response.data.message || 'Login failed')
-//             }
-//         } catch (error) {
-//             console.log(error)
-//             toast.error('An error occurred during login')
+//       try {
+//         const response = await axios.post('/user/userlogin', formData)
+//         if (response.status === 200) {
+//           toast.success('Login successful!')
+//           navigate('/home')
+//         } else {
+//           toast.error(response.data.message || 'Login failed')
 //         }
+//       } catch (error) {
+//         console.log(error)
+//         toast.error('An error occurred during login')
+//       }
 //     }
-// }
+//   }
 
 //   const handleChange = (e) => {
 //     const { name, value } = e.target
 //     setFormData(prevState => ({
 //       ...prevState,
 //       [name]: value
+//     }))
+//     setErrors(prevErrors => ({
+//       ...prevErrors,
+//       [name]: ''  // Clear error message when user types
 //     }))
 //   }
 
@@ -76,8 +84,9 @@
 //             value={formData.email}
 //             onChange={handleChange}
 //             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300"
-//             required
+           
 //           />
+//           {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
 //         </div>
 
 //         <div className="relative">
@@ -88,7 +97,7 @@
 //             value={formData.password}
 //             onChange={handleChange}
 //             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300"
-//             required
+           
 //           />
 //           <button
 //             type="button"
@@ -97,6 +106,7 @@
 //           >
 //             {showPassword ? "👁️" : "👁️‍🗨️"}
 //           </button>
+//           {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
 //         </div>
 
 //         <div className="text-right">
@@ -191,6 +201,7 @@ export default function LoginForm() {
     if (validateForm()) {
       try {
         const response = await axios.post('/user/userlogin', formData)
+        
         if (response.status === 200) {
           toast.success('Login successful!')
           navigate('/home')
@@ -199,7 +210,13 @@ export default function LoginForm() {
         }
       } catch (error) {
         console.log(error)
-        toast.error('An error occurred during login')
+
+        // Handle different types of errors
+        if (error.response && error.response.status === 401) {
+          toast.error(error.response.data.message || 'Invalid email or password')
+        } else {
+          toast.error('An error occurred during login')
+        }
       }
     }
   }
@@ -234,7 +251,6 @@ export default function LoginForm() {
             value={formData.email}
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300"
-           
           />
           {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
         </div>
@@ -247,7 +263,6 @@ export default function LoginForm() {
             value={formData.password}
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300"
-           
           />
           <button
             type="button"

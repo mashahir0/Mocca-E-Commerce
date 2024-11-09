@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "../../services/api/axios";
@@ -21,7 +20,7 @@ export default function UserReg() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
-  const [timer, setTimer] = useState(0); // Initial timer value
+  const [timer, setTimer] = useState(0);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -63,7 +62,7 @@ export default function UserReg() {
   const handleSendOTP = async () => {
     try {
       const response = await axios.post('/user/send-otp', { email: formData.email });
-      if (response.status === 201) {
+      if (response.status === 200) {
         setOtpSent(true);
         setTimer(15); // Start countdown at 15 seconds
         toast.success("OTP sent to your email!");
@@ -83,15 +82,15 @@ export default function UserReg() {
     try {
       const otpResponse = await axios.post('/user/verify-otp', { email: formData.email, otp: formData.otp });
       if (otpResponse.status === 200) {
-          const response = await axios.post("/user/register", formData);
-          if (response.status === 201) {
-              navigate("/login");
-              toast.success("Registration successful!");
-          } else {
-              toast.error("User already exists!");
-          }
+        const response = await axios.post("/user/register", formData);
+        if (response.status === 201) {
+          navigate("/login");
+          toast.success("Registration successful!");
+        } else {
+          toast.error("User already exists!");
+        }
       } else {
-          toast.error("Invalid OTP. Please try again.");
+        toast.error("Invalid OTP. Please try again.");
       }
     } catch (error) {
       console.error("Error verifying OTP:", error);
@@ -101,14 +100,16 @@ export default function UserReg() {
 
   // Timer countdown effect
   useEffect(() => {
-    let interval;
     if (timer > 0) {
-      interval = setInterval(() => {
+      const intervalId = setInterval(() => {
         setTimer((prevTimer) => prevTimer - 1);
       }, 1000);
+
+      return () => clearInterval(intervalId); // Clear interval on component unmount
+    } else if (timer === 0 && otpSent) {
+      setOtpSent(false); // Reset OTP state when timer finishes
     }
-    return () => clearInterval(interval); // Cleanup interval on unmount
-  }, [timer]);
+  }, [timer, otpSent]);
 
   return (
     <div className="w-full max-w-md mx-auto p-6">
@@ -117,6 +118,7 @@ export default function UserReg() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Name input */}
         <input
           type="text"
           name="name"
@@ -124,10 +126,10 @@ export default function UserReg() {
           value={formData.name}
           onChange={handleChange}
           className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300"
-          
         />
         {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
 
+        {/* Phone input */}
         <input
           type="text"
           name="phone"
@@ -135,10 +137,10 @@ export default function UserReg() {
           value={formData.phone}
           onChange={handleChange}
           className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300"
-          
         />
         {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
-        
+
+        {/* Email input and OTP button */}
         <input
           type="email"
           name="email"
@@ -146,7 +148,6 @@ export default function UserReg() {
           value={formData.email}
           onChange={handleChange}
           className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300"
-          
         />
         {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
 
@@ -162,7 +163,7 @@ export default function UserReg() {
           <button
             type="button"
             onClick={handleSendOTP}
-            disabled={timer > 0} // Disable when timer is active
+            disabled={timer > 0} // Disable button when timer is active
             className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-blue-600 hover:text-blue-800"
           >
             {otpSent ? `Resend OTP ${timer > 0 ? `(${timer}s)` : ""}` : "Send OTP"}
@@ -170,6 +171,7 @@ export default function UserReg() {
         </div>
         {errors.otp && <p className="text-red-500 text-sm">{errors.otp}</p>}
 
+        {/* Password and Confirm Password */}
         <div className="relative">
           <input
             type={showPassword ? "text" : "password"}
@@ -178,7 +180,6 @@ export default function UserReg() {
             value={formData.password}
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300"
-            
           />
           <button
             type="button"
@@ -198,7 +199,6 @@ export default function UserReg() {
             value={formData.confirmPassword}
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300"
-            
           />
           <button
             type="button"
@@ -210,6 +210,7 @@ export default function UserReg() {
         </div>
         {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
 
+        {/* Submit Button */}
         <button
           type="submit"
           className="w-full bg-black text-white py-2 rounded-md hover:bg-black/90 transition-colors"
@@ -235,8 +236,9 @@ export default function UserReg() {
             Sign In
           </Link>
         </div>
+
+        <ToastContainer />
       </form>
-      <ToastContainer />
     </div>
   );
 }

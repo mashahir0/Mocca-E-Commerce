@@ -12,17 +12,17 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-//  send OTP email
 const sendOTP = async (req, res) => {
     const { email } = req.body;
-    const otp = crypto.randomInt(100000, 999999); 
+    const otp = crypto.randomInt(100000, 999999);
+    const expirationTime = Date.now() + 15 * 60 * 1000; // 15 minutes in milliseconds
 
-    otpStorage[email] = otp;
+    otpStorage[email] = { otp, expirationTime }; // Store OTP and expiration time
     
     const mailOptions = {
         from: 'your-email@gmail.com',
-        to:email,
-        subject: 'Welcome to Mocca fasion hub',
+        to: email,
+        subject: 'Welcome to Mocca Fashion Hub',
         text: `Your OTP code is ${otp}. It expires in 15 minutes.`
     };
 
@@ -35,17 +35,27 @@ const sendOTP = async (req, res) => {
         res.status(500).json({ message: 'Error sending OTP' });
     }
 };
-
+ 
 // verification 
 const verifyOTP = (req, res) => {
     const { email, otp } = req.body;
 
-    if (otpStorage[email] && otpStorage[email] == otp) {
-        delete otpStorage[email]; 
-        res.status(200).json({ message: 'OTP verified successfully' });
-    } else {
-        res.status(400).json({ message: 'Invalid or expired OTP' });
+    if (otpStorage[email]) {
+        const { otp: storedOtp, expirationTime } = otpStorage[email];
+
+        if (Date.now() > expirationTime) {
+            delete otpStorage[email]; // Remove expired OTP
+            return res.status(400).json({ message: 'OTP has expired' });
+        }
+
+        if (storedOtp == otp) {
+            delete otpStorage[email]; // OTP verified, remove it
+            return res.status(200).json({ message: 'OTP verified successfully' });
+        }
     }
+
+    return res.status(400).json({ message: 'Invalid or expired OTP' });
 };
+
 
 export { sendOTP, verifyOTP };
