@@ -1,16 +1,16 @@
 import React from 'react'
 import AdminNav from '../../components/admin/AdminNav'
-import UserList from '../../components/admin/UserList'
 import AdminFooter from '../../components/admin/AdminFooter'
+import CategoryManagement from '../../components/admin/CategoryManagement'
 
-function AdminUserListPage() {
+function CategoryManagmentPage() {
   return (
     <>
     <AdminNav/>
-    <UserList/>
+    <CategoryManagement/>
     <AdminFooter/>
     </>
   )
 }
 
-export default AdminUserListPage
+export default CategoryManagmentPage

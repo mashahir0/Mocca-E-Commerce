@@ -32,9 +32,9 @@ export default function Dashboard() {
   ]
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
+    <div className="p-6 bg-gray-100 ">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-8">
         <h1 className="text-2xl font-semibold mb-2">Dashboard</h1>
         <div className="flex justify-between items-center">
           <div className="text-sm text-gray-600">

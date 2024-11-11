@@ -20,10 +20,10 @@ export default function AdminNav() {
     { label: <Link to='/admin/dashboad'>DASHBOARD</Link>, icon: LayoutDashboard },
     { label: <Link to='/admin/userlist'>    CUSTOMERS</Link>, icon: Users },
     { label: <Link to='/admin/productlist'>ALL PRODUCTS</Link>, icon: Package },
-    { label: 'ORDER LIST', icon: ClipboardList },
+    { label: <Link to='/admin/orderlist'>ORDER LIST</Link>, icon: ClipboardList },
     { label: 'CUPONS', icon: Star },
     { label: 'OFFERS', icon: Gift },
-    { label: 'CATAGORIES', icon: Grid },
+    { label: <Link to='/admin/category'>CATAGORIES</Link>, icon: Grid },
   ]
 
   return (

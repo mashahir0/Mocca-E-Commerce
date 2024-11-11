@@ -4,6 +4,7 @@ import AdminEditProductPage from "../pages/admin/AdminEditProductPage";
 import AdminLoginPage from "../pages/admin/AdminLoginPage";
 import AdminProductListPage from "../pages/admin/AdminProductListPage";
 import AdminUserListPage from "../pages/admin/AdminUserListPage";
+import CategoryManagmentPage from "../pages/admin/CategoryManagmentPage";
 
 
 const adminRoutes = [
@@ -30,6 +31,10 @@ const adminRoutes = [
     {
         path:'/admin/editproduct',
         element : <AdminEditProductPage/>
+    },
+    {
+        path:'/admin/category',
+        element : <CategoryManagmentPage/>
     },
 ]
 
