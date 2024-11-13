@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Calendar, MoreVertical, Pencil, Trash2, ChevronLeft, ChevronRight, Plus } from 'lucide-react'
-
+import { Link } from 'react-router-dom'
 export default function ProductList() {
   const [currentPage, setCurrentPage] = useState(1)
   
@@ -185,7 +185,7 @@ export default function ProductList() {
             className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md hover:bg-black/90 transition-colors"
           >
             <Plus className="h-5 w-5" />
-            ADD NEW PRODUCT
+            <Link to='/admin/addproduct'>addproduct</Link>
           </button>
         </div>
       </div>

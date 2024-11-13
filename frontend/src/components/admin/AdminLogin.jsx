@@ -1,12 +1,15 @@
 import React, { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
+import axios from '../../services/api/userApi'
+import { useNavigate } from 'react-router-dom'
 
 export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
-    identifier: '',
+    email: '',
     password: ''
   })
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -16,9 +19,26 @@ export default function AdminLogin() {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault()
-    // Handle form submission
+    try {
+      const response = await axios.post('/admin/login',formData)
+      if(response.status === 201){
+        const { adminToken} = response.data;
+        localStorage.setItem('adminToken',adminToken)
+        navigate('/admin/dashboard')
+      }else{
+        alert(response.data.message || 'Login failed');
+      }
+      
+    } catch (error) {
+      console.log(error);
+      if (error.response && error.response.status === 401) {
+        alert(error.response.data.message || 'Invalid email or password');
+    } else {
+        alert('An error occurred during login');
+    }
+    }
     console.log('Form submitted:', formData)
   }
 
@@ -39,9 +59,9 @@ export default function AdminLogin() {
             <div>
               <input
                 type="text"
-                name="identifier"
-                placeholder="Username, Email or Phone Number"
-                value={formData.identifier}
+                name="email"
+                placeholder="Enter your  Email "
+                value={formData.email}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border-b border-gray-300 focus:border-gray-900 focus:outline-none transition-colors"
                 required

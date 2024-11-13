@@ -1,8 +1,15 @@
 import React from 'react'
+import AdminNav from '../../components/admin/AdminNav'
+import AdminFooter from '../../components/admin/AdminFooter'
+import AddProduct from '../../components/admin/AddProduct'
 
 function AdminAddProductPage() {
   return (
-    <div>AdminAddProductPage</div>
+    <>
+    <AdminNav/>
+    <AddProduct/>
+    <AdminFooter/>
+    </>
   )
 }
 

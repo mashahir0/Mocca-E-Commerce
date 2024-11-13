@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import axios from '../../services/api/axios'
+import axios from '../../services/api/userApi'
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -35,31 +35,40 @@ export default function LoginForm() {
     return isValid
   }
 
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
     if (validateForm()) {
-      try {
-        const response = await axios.post('/user/userlogin', formData)
-        
-        if (response.status === 200) {
-          toast.success('Login successful!')
-          navigate('/home')
-        } else {
-          toast.error(response.data.message || 'Login failed')
+        try {
+            const response = await axios.post('/user/userlogin', formData);
+            if (response.status === 200) {
+                const { accessToken, refreshToken } = response.data;
+                localStorage.setItem('accessToken', accessToken);
+                localStorage.setItem('refreshToken', refreshToken);
+                navigate('/home');
+            } else {
+                alert('Login failed');
+            }
+        } catch (error) {
+            console.error('Error details:', error);  // Log the complete error for detailed inspection
+            if (error.response) {
+                // This will give you details about the server response
+                console.error('Response error:', error.response.data);
+                alert(`Login failed: ${error.response.data.message || 'Unknown error'}`);
+            } else if (error.request) {
+                // This will give you details if the request was made but no response was received
+                console.error('Request error:', error.request);
+                alert('No response from server');
+            } else {
+                // Catch other errors like incorrect setup
+                console.error('Error message:', error.message);
+                alert('An unexpected error occurred');
+            }
         }
-      } catch (error) {
-        console.log(error)
-
-        // Handle different types of errors
-        if (error.response && error.response.status === 401) {
-          toast.error(error.response.data.message || 'Invalid email or password')
-        } else {
-          toast.error('An error occurred during login')
-        }
-      }
     }
-  }
+}
+
 
   const handleChange = (e) => {
     const { name, value } = e.target

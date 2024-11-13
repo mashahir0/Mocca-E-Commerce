@@ -1,16 +1,15 @@
 import React from 'react'
-import UserReg from '../../components/user/UserReg'
 import Navbar from '../../components/user/Navbar'
 import Footer from '../../components/user/Footer'
 
-function UserRegPage() {
+function CartPage() {
   return (
     <>
     <Navbar/>
-    <UserReg/>
+    <h1>cart</h1>
     <Footer/>
     </>
   )
 }
 
-export default UserRegPage
+export default CartPage

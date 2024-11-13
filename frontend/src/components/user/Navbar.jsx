@@ -27,7 +27,16 @@ export default function Navbar() {
           <Link to="/products" className="hover:text-gray-300">
           Products
           </Link>
-
+          <button aria-label="Favorites" className="hover:text-gray-300">
+          <Link to='/wishlist'><Heart className="h-6 w-6" /></Link>
+          </button>
+          <button aria-label="Cart" className="hover:text-gray-300 relative">
+          <Link to='/cart'><ShoppingCart className="h-6 w-6" /></Link>
+          
+            <span className="absolute -top-1 -right-1 bg-red-500 text-xs rounded-full h-4 w-4 flex items-center justify-center">
+              0
+            </span>
+          </button>
           {/* Search Bar */}
           <div className="relative">
             <input
@@ -46,15 +55,7 @@ export default function Navbar() {
 
         {/* Right Side: Icons and Logout Button */}
         <div className="hidden lg:flex items-center space-x-6">
-          <button aria-label="Favorites" className="hover:text-gray-300">
-            <Heart className="h-6 w-6" />
-          </button>
-          <button aria-label="Cart" className="hover:text-gray-300 relative">
-            <ShoppingCart className="h-6 w-6" />
-            <span className="absolute -top-1 -right-1 bg-red-500 text-xs rounded-full h-4 w-4 flex items-center justify-center">
-              0
-            </span>
-          </button>
+         <p>name</p>
           <button aria-label="User Profile" className="hover:text-gray-300">
             <User className="h-6 w-6" />
           </button>
