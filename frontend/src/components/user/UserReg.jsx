@@ -61,7 +61,7 @@ export default function UserReg() {
 
   const handleSendOTP = async () => {
     try {
-      const response = await axios.post('/user/send-otp', { email: formData.email });
+      const response = await axios.post('/send-otp', { email: formData.email });
       if (response.status === 200) {
         setOtpSent(true);
         setTimer(15); // Start countdown at 15 seconds
@@ -80,9 +80,9 @@ export default function UserReg() {
       return;
     }
     try {
-      const otpResponse = await axios.post('/user/verify-otp', { email: formData.email, otp: formData.otp });
+      const otpResponse = await axios.post('/verify-otp', { email: formData.email, otp: formData.otp });
       if (otpResponse.status === 200) {
-        const response = await axios.post("/user/register", formData);
+        const response = await axios.post("/register", formData);
         if (response.status === 201) {
           navigate("/login");
           toast.success("Registration successful!");
@@ -218,7 +218,7 @@ export default function UserReg() {
           Sign Up
         </button>
 
-        <button
+        {/* <button
           type="button"
           className="w-full border border-gray-300 py-2 rounded-md flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors"
         >
@@ -228,7 +228,7 @@ export default function UserReg() {
             className="w-5 h-5"
           />
           Register with Google
-        </button>
+        </button> */}
 
         <div className="text-center mt-6">
           <span className="text-gray-600">Have an account? </span>

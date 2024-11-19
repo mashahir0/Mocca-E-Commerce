@@ -2,13 +2,24 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Menu, X, Heart, ShoppingCart, User, Search } from 'lucide-react'
+import { useDispatch,useSelector } from 'react-redux'
+import { removeUser } from '../../redux/slice/UserSlice'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
 
+  const { isAuthenticated, user } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+
   const toggleMenu = () => {
     setIsOpen(!isOpen)
   }
+
+  const handleLogout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    dispatch(removeUser());
+  };
 
   return (
     <nav className="bg-black text-white p-4">
@@ -55,18 +66,32 @@ export default function Navbar() {
 
         {/* Right Side: Icons and Logout Button */}
         <div className="hidden lg:flex items-center space-x-6">
-         <p>name</p>
+        
           <button aria-label="User Profile" className="hover:text-gray-300">
             <User className="h-6 w-6" />
           </button>
 
           {/* Logout Button */}
-          <button
-            aria-label="Logout"
-            className="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600"
-          >
-            <Link to='/login'>Logout</Link>
-          </button>
+          <div className="hidden lg:flex items-center space-x-6">
+          {isAuthenticated ? (
+            <>
+              <span>Welcome, {user?.name || 'User'}</span>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/login"
+              className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600"
+            >
+              Login
+            </Link>
+          )}
+        </div>
         </div>
 
         {/* Hamburger Menu Button (Mobile) */}
@@ -132,13 +157,25 @@ export default function Navbar() {
         </div>
 
         {/* Logout Button */}
-        <Link
-          to="/login"
-          className="block py-2 px-4 text-center bg-red-500 text-white rounded-full hover:bg-red-600"
-          onClick={() => setIsOpen(false)}
-        >
-          Logout
-        </Link>
+        {isAuthenticated ? (
+          <button
+            onClick={() => {
+              handleLogout();
+              setIsOpen(false);
+            }}
+            className="block py-2 px-4 text-center bg-red-500 text-white rounded-full hover:bg-red-600"
+          >
+            Logout
+          </button>
+        ) : (
+          <Link
+            to="/login"
+            className="block py-2 px-4 text-center bg-blue-500 text-white rounded-full hover:bg-blue-600"
+            onClick={() => setIsOpen(false)}
+          >
+            Login
+          </Link>
+        )}
       </div>
     </nav>
   )

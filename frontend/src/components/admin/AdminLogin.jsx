@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
-import axios from '../../services/api/userApi'
+import axios from '../../services/api/adminApi'
 import { useNavigate } from 'react-router-dom'
 
 export default function AdminLogin() {
@@ -22,7 +22,7 @@ export default function AdminLogin() {
   const handleSubmit = async(e) => {
     e.preventDefault()
     try {
-      const response = await axios.post('/admin/login',formData)
+      const response = await axios.post('/login',formData)
       if(response.status === 201){
         const { adminToken} = response.data;
         localStorage.setItem('adminToken',adminToken)

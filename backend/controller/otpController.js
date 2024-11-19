@@ -4,6 +4,7 @@ import crypto from 'crypto';
 let otpStorage = {}; 
 
 //configure
+
 const transporter = nodemailer.createTransport({
     service: 'Gmail',
     auth: {

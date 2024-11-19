@@ -24,20 +24,22 @@ const adminRoutes = [
     },
     {
         path:'/admin/productlist',
-        element : <AdminProductListPage/>
+        element : <ReqAdminAuth><AdminProductListPage/></ReqAdminAuth>
     },
     {
         path:'/admin/addproduct',
-        element : <AdminAddProductPage/>
+        element :  <ReqAdminAuth><AdminAddProductPage/></ReqAdminAuth>
     },
     {
-        path:'/admin/editproduct',
-        element : <AdminEditProductPage/>
+        path:'/admin/edit-product/:id',
+        element : <ReqAdminAuth><AdminEditProductPage/></ReqAdminAuth> 
     },
     {
         path:'/admin/category',
-        element : <CategoryManagmentPage/>
+        element :<ReqAdminAuth><CategoryManagmentPage/></ReqAdminAuth> 
     },
+    
+    
 ]
 
 

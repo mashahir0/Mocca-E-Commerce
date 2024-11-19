@@ -4,6 +4,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import axios from '../../services/api/userApi'
+import { useDispatch } from 'react-redux'
+import { setUser } from '../../redux/slice/UserSlice'
+import { GoogleLogin } from '@react-oauth/google'
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -11,7 +14,8 @@ export default function LoginForm() {
     email: '',
     password: ''
   })
-  const [errors, setErrors] = useState({ email: '', password: '' })  // Error state for each field
+  const dispatch = useDispatch()
+  const [errors, setErrors] = useState({ email: '', password: '' })
   const navigate = useNavigate()
 
   const validateForm = () => {
@@ -19,56 +23,55 @@ export default function LoginForm() {
     let isValid = true
     let newErrors = { email: '', password: '' }
 
-    // Check if email is valid
     if (!emailRegex.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address.'
       isValid = false
     }
 
-    // Check if password is entered
     if (formData.password.trim() === '') {
       newErrors.password = 'Password is required.'
       isValid = false
     }
 
-    setErrors(newErrors)  // Update error state with messages
+    setErrors(newErrors)
     return isValid
   }
-
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
     if (validateForm()) {
-        try {
-            const response = await axios.post('/user/userlogin', formData);
-            if (response.status === 200) {
-                const { accessToken, refreshToken } = response.data;
-                localStorage.setItem('accessToken', accessToken);
-                localStorage.setItem('refreshToken', refreshToken);
-                navigate('/home');
-            } else {
-                alert('Login failed');
-            }
-        } catch (error) {
-            console.error('Error details:', error);  // Log the complete error for detailed inspection
-            if (error.response) {
-                // This will give you details about the server response
-                console.error('Response error:', error.response.data);
-                alert(`Login failed: ${error.response.data.message || 'Unknown error'}`);
-            } else if (error.request) {
-                // This will give you details if the request was made but no response was received
-                console.error('Request error:', error.request);
-                alert('No response from server');
-            } else {
-                // Catch other errors like incorrect setup
-                console.error('Error message:', error.message);
-                alert('An unexpected error occurred');
-            }
-        }
-    }
-}
+      try {
+        const response = await axios.post('/userlogin', formData)
+        if (response.status === 200) {
+          const { accessToken, refreshToken, user } = response.data
+          localStorage.setItem('accessToken', accessToken)
+          localStorage.setItem('refreshToken', refreshToken)
 
+          dispatch(setUser({
+            user,
+            accessToken,
+            refreshToken
+          }))
+          navigate('/home')
+        } else {
+          alert('Login failed')
+        }
+      } catch (error) {
+        console.error('Error details:', error)
+        if (error.response) {
+          console.error('Response error:', error.response.data)
+          alert(`Login failed: ${error.response.data.message || 'Unknown error'}`)
+        } else if (error.request) {
+          console.error('Request error:', error.request)
+          alert('No response from server')
+        } else {
+          console.error('Error message:', error.message)
+          alert('An unexpected error occurred')
+        }
+      }
+    }
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -78,8 +81,64 @@ export default function LoginForm() {
     }))
     setErrors(prevErrors => ({
       ...prevErrors,
-      [name]: ''  // Clear error message when user types
+      [name]: ''
     }))
+  }
+
+  // const handleGoogleSuccess = async (response) => {
+  //   const { credential } = response // credential is the ID token returned by Google
+  //   try {
+  //     // Send the Google ID token to the backend for validation and user data retrieval
+  //     const googleUser = await axios.post('/google-login', { tokenId: credential })
+
+  //     const { accessToken, refreshToken, user } = googleUser.data
+  //     localStorage.setItem('accessToken', accessToken)
+  //     localStorage.setItem('refreshToken', refreshToken)
+
+  //     dispatch(setUser({
+  //       user,
+  //       accessToken,
+  //       refreshToken
+  //     }))
+  //     navigate('/home')
+  //   } catch (error) {
+  //     console.error('Google login error:', error)
+  //     toast.error('Failed to login with Google.')
+  //   }
+  // }
+
+
+  const handleGoogleSuccess = async (response) => {
+    const { credential } = response 
+    try {
+     
+      const googleUser = await axios.post('/google-login', { tokenId: credential })
+
+      const { accessToken, refreshToken, user } = googleUser.data
+
+      
+      localStorage.setItem('accessToken', accessToken)
+      localStorage.setItem('refreshToken', refreshToken)
+
+      // Dispatch user info and tokens to Redux store
+      dispatch(setUser({
+        user,
+        accessToken,
+        refreshToken
+      }))
+
+      // Navigate to home page after successful login
+      navigate('/home')
+    } catch (error) {
+      console.error('Google login error:', error)
+      toast.error('Failed to login with Google.')
+    }
+}
+
+
+  const handleGoogleFailure = (error) => {
+    console.error('Google login failed:', error)
+    toast.error('Google login failed. Please try again.')
   }
 
   return (
@@ -136,17 +195,13 @@ export default function LoginForm() {
           Sign in
         </button>
 
-        <button
-          type="button"
-          className="w-full border border-gray-300 py-2 rounded-md flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors"
-        >
-          <img
-            src="/placeholder.svg?height=20&width=20"
-            alt="Google logo"
-            className="w-5 h-5"
-          />
-          Login with Google
-        </button>
+        {/* Google login button */}
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleFailure}
+          useOneTap
+          shape="pill"
+        />
 
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">

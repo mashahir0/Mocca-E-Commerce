@@ -36,7 +36,7 @@ const UserRoutes = [
         element: <ProductsPage/>
     },
     {
-        path:'/productinfo',
+        path:'/productinfo/:id',
         element: <ProductInfo/>
     },
     {

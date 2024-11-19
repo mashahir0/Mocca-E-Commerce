@@ -1,42 +1,99 @@
-import React, { useState } from 'react'
-import { Star, ShoppingCart } from 'lucide-react'
+
+
+
+import React, { useState } from 'react';
+import { Star, ShoppingCart } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import axios from '../../services/api/userApi';
+import { useSelector } from 'react-redux';
+
+
+const postReview = async ({ productId, review }) => {
+  console.log(review);
+  const response = await axios.post(`/product-info/${productId}/review`, review);
+  return response.data;
+};
+
+const fetchReviews = async (productId) => {
+  const response = await axios.get(`/product-info/${productId}/reviews`);
+  return response.data; 
+};
 
 export default function ProductDetails() {
-  const [selectedImage, setSelectedImage] = useState(0)
-  const [selectedSize, setSelectedSize] = useState('')
-  const [quantity, setQuantity] = useState(1)
-  const [rating, setRating] = useState(0)
-  const [reviewText, setReviewText] = useState('')
 
-  const images = [
-    'https://picsum.photos/200/300?grayscale',
-    'https://picsum.photos/200/300?grayscale',
-    'https://picsum.photos/id/237/200/300',
-    'https://picsum.photos/id/237/200/300'
-  ]
+  const { user } = useSelector((state) => state.user);
+  const userId = user?._id
+  
+  
+  const { id } = useParams(); 
 
-  const sizes = ['M', 'L', 'XL']
+  const { data: product, isLoading, error } = useQuery({
+    queryKey: ['product', id],
+    queryFn: async () => {
+      const response = await axios.get(`/product-info/${id}`);
+      return response.data;
+    },
+  });
 
-  const productDetails = {
-    name: 'Printed Polyester Tshirt',
-    price: 195,
-    rating: 4,
-    brand: 'ABC',
-    sleeveLength: 'Short Sleeves',
-    pattern: 'Printed',
-    netQuantity: 'N/1',
-    sizes: [
-      'L (Chest Size : 40 in, Length Size: 29 in)',
-      'XL (Chest Size : 42 in, Length Size: 29 in)'
-    ]
+  const { mutate: addReview, isLoading: isSubmittingReview } = useMutation({
+    mutationFn: postReview,
+    onSuccess: () => {
+      queryClient.invalidateQueries(['product', id]);
+    },
+  });
+
+  // Fetch reviews with react-query
+const { data: reviews, isLoading: loadingReviews, error: reviewsError } = useQuery({
+  queryKey: ['reviews', id], 
+  queryFn: () => fetchReviews(id), 
+});
+
+
+
+
+  
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedSize, setSelectedSize] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [rating, setRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
+
+  const handleReviewSubmit = (e) => {
+    e.preventDefault();
+    if (!rating || !reviewText) {
+      alert('Please provide a rating and review text!');
+      return;
+    }
+    addReview({
+      productId: id,
+      review: {
+        userId,
+        rating,
+        comment: reviewText,
+      },
+    });
+    setRating(0);
+    setReviewText('');
+  };  
+    
+     
+    
+  // Handle loading and error states
+  if (isLoading) {
+    return <div>Loading...</div>;
   }
 
-  const reviews = [
-    { id: 1, title: 'Review title', body: 'Review body', rating: 5, author: 'Reviewer name', avatar: '/placeholder.svg?height=40&width=40' },
-    { id: 2, title: 'Review title', body: 'Review body', rating: 5, author: 'Reviewer name', avatar: '/placeholder.svg?height=40&width=40' },
-    { id: 3, title: 'Review title', body: 'Review body', rating: 5, author: 'Reviewer name', avatar: '/placeholder.svg?height=40&width=40' }
-  ]
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
+  const {mainImage} = product
+  const {thumbnails}  =product
+  
+  const images = [...mainImage,...thumbnails]
+  
 
+  // Render stars for product rating
   const renderStars = (rating, interactive = false) => {
     return [...Array(5)].map((_, index) => (
       <button
@@ -46,13 +103,19 @@ export default function ProductDetails() {
       >
         <Star 
           className={`h-5 w-5 ${
-            index < rating 
-              ? 'fill-yellow-400 text-yellow-400' 
-              : 'text-gray-300'
+            index < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
           }`}
         />
       </button>
-    ))
+    ));
+  }
+
+  if (loadingReviews) {
+    return <p>Loading reviews...</p>;
+  }
+  
+  if (reviewsError) {
+    return <p>Error fetching reviews: {reviewsError.message}</p>;
   }
 
   return (
@@ -61,13 +124,11 @@ export default function ProductDetails() {
         {/* Product Images */}
         <div className="flex gap-4">
           <div className="flex flex-col gap-2">
-            {images.map((image, index) => (
+            {(images?.length > 0) && images.map((image, index) => (
               <button
                 key={index}
                 onClick={() => setSelectedImage(index)}
-                className={`w-20 h-20 border rounded-lg overflow-hidden ${
-                  selectedImage === index ? 'border-black' : 'border-gray-200'
-                }`}
+                className={`w-20 h-20 border rounded-lg overflow-hidden ${selectedImage === index ? 'border-black' : 'border-gray-200'}`}
               >
                 <img
                   src={image}
@@ -79,7 +140,7 @@ export default function ProductDetails() {
           </div>
           <div className="flex-1 aspect-square rounded-lg overflow-hidden">
             <img
-              src={images[selectedImage]}
+              src={images?.[selectedImage] || ""}
               alt="Selected product"
               className="w-full h-full object-cover"
             />
@@ -89,26 +150,25 @@ export default function ProductDetails() {
         {/* Product Info */}
         <div className="space-y-6">
           <div>
-            <h1 className="text-2xl font-semibold mb-2">{productDetails.name}</h1>
+            <h1 className="text-2xl font-semibold mb-2">{product.productName}</h1>
             <div className="flex items-center gap-2 mb-2">
-              {renderStars(productDetails.rating)}
-              <span className="text-gray-500">({productDetails.rating})</span>
+              {renderStars(product.averageRating)}
+              <span className="text-gray-500">({product.averageRating || 0} reviews)</span>
             </div>
-            <p className="text-2xl font-bold">₹{productDetails.price}</p>
+            <p className="text-2xl font-bold">₹{product.salePrice}</p>
           </div>
 
           {/* Product Details */}
           <div className="space-y-4">
             <h2 className="font-semibold">Product Details</h2>
             <div className="space-y-2 text-sm">
-              <p><span className="text-gray-600">Name:</span> {productDetails.name}</p>
-              <p><span className="text-gray-600">Brand:</span> {productDetails.brand}</p>
-              <p><span className="text-gray-600">Sleeve Length:</span> {productDetails.sleeveLength}</p>
-              <p><span className="text-gray-600">Pattern:</span> {productDetails.pattern}</p>
-              <p><span className="text-gray-600">Net Quantity:</span> {productDetails.netQuantity}</p>
+              <p><span className="text-gray-600">Description:</span> {product.description}</p>
+              <p><span className="text-gray-600">Brand:</span> {product.brandName}</p>
+              <p><span className="text-gray-600">Category:</span> {product.category}</p>
+              <p><span className="text-gray-600">Net Quantity:</span> {product.stockQuantity}</p>
               <div className="space-y-1">
                 <p className="text-gray-600">Sizes:</p>
-                {productDetails.sizes.map((size, index) => (
+                {product.size?.map((size, index) => (
                   <p key={index} className="ml-4">- {size}</p>
                 ))}
               </div>
@@ -119,15 +179,11 @@ export default function ProductDetails() {
           <div>
             <p className="font-semibold mb-2">Select Size</p>
             <div className="flex gap-2">
-              {sizes.map((size) => (
+              {product.size?.map((size) => (
                 <button
                   key={size}
                   onClick={() => setSelectedSize(size)}
-                  className={`w-12 h-12 rounded-full border ${
-                    selectedSize === size
-                      ? 'border-black bg-black text-white'
-                      : 'border-gray-300 hover:border-black'
-                  }`}
+                  className={`w-12 h-12 rounded-full border ${selectedSize === size ? 'border-black bg-black text-white' : 'border-gray-300 hover:border-black'}`}
                 >
                   {size}
                 </button>
@@ -168,48 +224,107 @@ export default function ProductDetails() {
         </div>
       </div>
 
-      {/* Reviews Section */}
-      <div className="mt-12">
-        <h2 className="text-xl font-semibold mb-6">Add Review</h2>
-        <div className="max-w-2xl">
-          <div className="flex gap-2 mb-4">
-            {renderStars(rating, true)}
-          </div>
-          <textarea
-            value={reviewText}
-            onChange={(e) => setReviewText(e.target.value)}
-            placeholder="Write your review..."
-            className="w-full h-32 p-3 border rounded-lg resize-none focus:outline-none focus:ring-1 focus:ring-black"
-          />
-          <button className="mt-4 px-6 py-2 bg-black text-white rounded-md hover:bg-black/90">
-            Add Review
-          </button>
-        </div>
 
-        {/* Latest Reviews */}
-        <div className="mt-12">
-          <h2 className="text-xl font-semibold mb-6">Latest</h2>
-          <div className="grid gap-6">
-            {reviews.map((review) => (
-              <div key={review.id} className="border-b pb-6">
-                <div className="flex items-center gap-2 mb-2">
-                  {renderStars(review.rating)}
-                </div>
-                <h3 className="font-semibold mb-2">{review.title}</h3>
-                <p className="text-gray-600 mb-4">{review.body}</p>
-                <div className="flex items-center gap-2">
-                  <img
-                    src={review.avatar}
-                    alt={review.author}
-                    className="w-8 h-8 rounded-full"
-                  />
-                  <span className="text-sm text-gray-500">{review.author}</span>
-                </div>
-              </div>
+      <div className="max-w-4xl mx-auto p-6 space-y-8">
+  {/* Product Name */}
+  <h1 className="text-3xl font-bold text-gray-800">{product?.productName}</h1>
+
+  {/* Form for adding a review */}
+  <form 
+    onSubmit={handleReviewSubmit} 
+    className="space-y-4 p-6 border rounded-lg shadow-sm bg-white"
+  >
+    <h2 className="text-xl font-semibold text-gray-800">Write a Review</h2>
+
+    {/* Star Rating */}
+    <div className="flex items-center gap-2">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          onClick={() => setRating(star)}
+          className={`h-8 w-8 text-yellow-400 ${
+            rating >= star ? 'fill-current' : 'stroke-current'
+          }`}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill={rating >= star ? 'currentColor' : 'none'}
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="h-full w-full"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+            />
+          </svg>
+        </button>
+      ))}
+    </div>
+    <p className="text-gray-600 text-sm">Your rating: {rating} star(s)</p>
+
+    {/* Review Input */}
+    <textarea
+      placeholder="Share your thoughts about this product..."
+      value={reviewText}
+      onChange={(e) => setReviewText(e.target.value)}
+      className="w-full p-4 border rounded-lg resize-none text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      rows={5}
+    ></textarea>
+
+    {/* Submit Button */}
+    {user ? (
+          <button
+            type="submit"
+            className="px-6 py-3 w-full font-medium text-white rounded-lg bg-black hover:bg-gray-800"
+          >
+            Submit Review
+          </button>
+        ) : (
+          <p className="text-gray-600 text-sm">
+            Please <a href="/login" className="text-blue-500">log in</a> to submit a review.
+          </p>
+        )}
+  </form>
+  <div className="space-y-4">
+  <h2 className="text-2xl font-semibold text-gray-800">Customer Reviews</h2>
+  {loadingReviews ? (
+    <p>Loading reviews...</p>
+  ) : reviewsError ? (
+    <p>Error fetching reviews: {reviewsError.message}</p>
+  ) : reviews && reviews.length > 0 ? (
+    reviews.map(({ userId, rating, comment, createdAt }, index) => (
+      <div key={index} className="p-4 border rounded-lg shadow-md bg-white space-y-2">
+        {/* Reviewer Info */}
+        <div className="flex items-center gap-2">
+          {/* Display Rating Stars */}
+          <div className="flex">
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                className={`h-5 w-5 ${
+                  i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                }`}
+              />
             ))}
           </div>
+          <span className="font-semibold text-gray-800">{userId?.name}</span>
+          <span className="text-sm text-gray-600">
+            {new Date(createdAt).toLocaleDateString()}
+          </span>
         </div>
+        {/* Review Comment */}
+        <p className="text-gray-800">{comment}</p>
       </div>
-    </div>
-  )
+    ))
+  ) : (
+    <p className="text-gray-600">No reviews yet. Be the first to review!</p>
+  )}
+</div>
+</div>
+   </div>
+  );
 }

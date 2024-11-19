@@ -12,16 +12,13 @@ const userSchema = new mongoose.Schema({
     },
     phone:{
         type:String,
-        required:true 
+        required:false 
     },
     password:{
         type:String,
-        required:true 
+        required:false 
     },
-    isActive : {
-        type : Boolean,
-        default : true,
-    },
+    status: { type: Boolean, enum: [true, false], default:true },
     isAdmin : {
         type : Boolean,
         default : false,

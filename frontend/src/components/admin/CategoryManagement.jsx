@@ -1,53 +1,87 @@
-import React, { useState } from 'react'
-import { MoreVertical, Pencil, Trash2 } from 'lucide-react'
+
+import React, { useState } from 'react';
+import { MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import api from '../../services/api/adminApi'; 
 
 export default function CategoryManagement() {
-  const [categories, setCategories] = useState([
-    { id: 1, name: 'Shirt', visibility: true, offers: 30, status: true },
-    { id: 2, name: 'T-shirt', visibility: true, offers: 30, status: true },
-    { id: 3, name: 'hoodie', visibility: true, offers: 40, status: true }
-  ])
-
   const [newCategory, setNewCategory] = useState({
     category: '',
-    offer: ''
-  })
+    offer: '',
+    status: true,
+    visibility: true
+  });
+  const queryClient = useQueryClient(); 
+  const { data: categories = [], isLoading, error } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const response = await api.get('get-category');
+      return response.data;
+    },
+  });
 
-  const toggleField = (id, field) => {
-    setCategories(categories.map(category => 
-      category.id === id 
-        ? { ...category, [field]: !category[field] }
-        : category
-    ))
-  }
+  
+  const createCategoryMutation = useMutation({
+    mutationFn: (newCategory) => api.post('/add-category', newCategory),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] }); 
+      setNewCategory({ category: '', offer: '' }); 
+    },
+  });
+
+  
+  const deleteCategoryMutation = useMutation({
+    mutationFn: (categoryId) => api.delete(`/delete-categories/${categoryId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] }); 
+    },
+  });
+
+  
+  const updateCategoryMutation = useMutation({
+    mutationFn: (updatedCategory) => api.patch(`/update-categories/${updatedCategory._id}`, updatedCategory),
+    onSuccess: () => {
+      
+      
+      queryClient.invalidateQueries({ queryKey: ['categories'] }); 
+    }, 
+  });
 
   const handleDelete = (id) => {
-    setCategories(categories.filter(category => category.id !== id))
-  }
+    deleteCategoryMutation.mutate(id);
+  };
 
   const handleSubmit = (e) => {
-    e.preventDefault()
+    e.preventDefault();
     if (newCategory.category && newCategory.offer) {
-      setCategories([
-        ...categories,
-        {
-          id: categories.length + 1,
-          name: newCategory.category,
-          visibility: true,
-          offers: parseInt(newCategory.offer),
-          status: true
-        }
-      ])
-      setNewCategory({ category: '', offer: '' })
+      createCategoryMutation.mutate({
+        category: newCategory.category,
+        offer: parseInt(newCategory.offer),
+        visibility: true,
+        status: true
+      });
     }
-  }
+  };
+
+  const handleToggleField = (categoryId, field) => {
+    if (isLoading) {
+      console.log('Categories are still loading, please wait.');
+      return; 
+    }
+    const updatedCategory = categories.find((category) => category._id === categoryId);
+    const updatedData = {
+      ...updatedCategory,
+      [field]: !updatedCategory[field],
+    };
+    updateCategoryMutation.mutate(updatedData);
+  };
 
   return (
     <div className="max-w-3xl mx-auto p-6">
       {/* Category Management Table */}
       <div className="bg-white rounded-lg shadow-sm mb-8">
         <div className="p-4 flex justify-between items-center border-b">
-          <h2 className="font-medium">category management</h2>
+          <h2 className="font-medium">Category Management</h2>
           <button className="text-gray-600 hover:text-gray-900">
             <MoreVertical className="h-5 w-5" />
           </button>
@@ -59,53 +93,75 @@ export default function CategoryManagement() {
               <tr className="border-b">
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Name</th>
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Visibility</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">offers %</th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Offers %</th>
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Status</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Update</th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">delete</th>
               </tr>
             </thead>
             <tbody>
-              {categories.map((category) => (
-                <tr key={category.id} className="border-b last:border-b-0">
-                  <td className="px-6 py-4">{category.name}</td>
-                  <td className="px-6 py-4">
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={category.visibility}
-                        onChange={() => toggleField(category.id, 'visibility')}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
-                    </label>
-                  </td>
-                  <td className="px-6 py-4">{category.offers}</td>
-                  <td className="px-6 py-4">
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={category.status}
-                        onChange={() => toggleField(category.id, 'status')}
-                        className="sr-only peer"
-                      />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
-                    </label>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <button className="text-gray-600 hover:text-blue-600 transition-colors">
-                        <Pencil className="h-4 w-4" />
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(category.id)}
-                        className="text-gray-600 hover:text-red-600 transition-colors"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
+              {categories.length > 0 ? (
+                categories.map((category) => (
+                  <tr key={category._id} className="border-b last:border-b-0">
+                    <td className="px-6 py-4">{category.category}</td>
+                    <td className="px-6 py-4">
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={category.visibility}
+                          onClick={() => handleToggleField(category._id, 'visibility')}
+                          className="sr-only peer"
+                        />
+                        <div
+                          className={`w-11 h-6 ${category.visibility ? 'bg-green-500' : 'bg-gray-300'} rounded-full transition-colors`}>
+                          <span
+                            className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 transform ${
+                              category.visibility ? 'translate-x-5' : ''
+                            }`}
+                          />
+                        </div>
+                      </label>
+                    </td>
+                    <td className="px-6 py-4">{category.offer}</td>
+                    <td className="px-6 py-4">
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={category.status}
+                          onClick={() => handleToggleField(category._id, 'status')}
+                          className="sr-only peer"
+                        />
+                        <div
+                          className={`w-11 h-6 ${category.status ? 'bg-green-500' : 'bg-gray-300'} rounded-full transition-colors`}>
+                          <span
+                            className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 transform ${
+                              category.status ? 'translate-x-5' : ''
+                            }`}
+                          />
+                        </div>
+                      </label>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        {/* <button className="text-gray-600 hover:text-blue-600 transition-colors">
+                          <Pencil className="h-4 w-4" />
+                        </button> */}
+                        <button
+                          onClick={() => handleDelete(category._id)}
+                          className="text-gray-600 hover:text-red-600 transition-colors"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
+                    No categories available
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -125,7 +181,7 @@ export default function CategoryManagement() {
           />
           <input
             type="number"
-            placeholder="offer"
+            placeholder="Offer"
             value={newCategory.offer}
             onChange={(e) => setNewCategory({ ...newCategory, offer: e.target.value })}
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-black"
@@ -135,10 +191,10 @@ export default function CategoryManagement() {
             type="submit"
             className="w-full bg-black text-white py-2 rounded-md hover:bg-black/90 transition-colors"
           >
-            Add
+            Add Category
           </button>
         </form>
       </div>
     </div>
-  )
+  );
 }
