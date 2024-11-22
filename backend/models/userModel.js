@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
         required:true 
     },
     phone:{
-        type:String,
+        type:Number,
         required:false 
     },
     password:{
@@ -24,11 +24,13 @@ const userSchema = new mongoose.Schema({
         default : false,
     },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
-    createdAt:{
-        type:Date,
-        default:Date.now
-    }
-})
+    profileImage: {type : String , required :false}
+},
+
+{
+    timestamps: true, // Adds `createdAt` and `updatedAt` automatically
+  }
+)
 
 userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) {

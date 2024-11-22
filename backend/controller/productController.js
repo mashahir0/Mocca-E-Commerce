@@ -1,12 +1,10 @@
 import Product from "../models/productModel.js"; // Ensure the path is correct
 
 const addProduct = async (req, res) => {
-
   const {
     productName,
     salePrice,
     offerPrice,
-
     stockQuantity,
     size,
     description,
@@ -16,31 +14,33 @@ const addProduct = async (req, res) => {
     thumbnails,
   } = req.body;
 
-  
-  
-
   try {
-   
+
+    const calculatedStock = size.reduce((total, s) => total + s.stock, 0);
+
+    if (calculatedStock !== stockQuantity) {
+      return res.status(400).json({
+        message: "Mismatch between total stock and size stock quantities",
+      });
+    }
+
     const product = await Product.create({
       productName,
       salePrice,
       offerPrice,
-      stockQuantity,
       brandName,
       description,
       category,
-      size,
+      stockQuantity,
+      size, // Now an array with size and stock
       mainImage,
       thumbnails,
     });
 
-    
     res.status(200).json({ message: "Product added successfully", product });
   } catch (error) {
     console.error("Error adding product:", error.message);
-    res
-      .status(500)
-      .json({ message: "Internal server error", error: error.message });
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
 

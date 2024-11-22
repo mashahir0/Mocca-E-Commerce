@@ -203,11 +203,11 @@ const ProductsList = () => {
                   className="bg-white rounded-lg shadow-md overflow-hidden"
                   
                 >
-                  <div className="relative">
+                  <div className=" flex-1 aspect-square rounded-lg overflow-hidden relative group">
                     <img
                       src={product.mainImage?.[0] || 'default-image.jpg'}
                       alt={product.productName}
-                      className="w-full h-64 object-cover"
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                     />
                     <button
                       onClick={() => toggleWishlist(product._id)}

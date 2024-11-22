@@ -15,10 +15,15 @@ const productSchema = new mongoose.Schema({
   description: { type: String, required: true },
   category: { type: String, required: true },
   brandName: { type: String, required: true },
-  stockQuantity: { type: Number, required: true },
   salePrice: { type: String, required: true },
   offerPrice: { type: String, required: true },
-  size: { type: [String], required: true },
+  stockQuantity: { type: Number, required: true },
+  size: [
+    {
+      name: { type: String, required: true },
+      stock: { type: Number, required: true },
+    },
+  ],
   review: { type: [reviewSchema], default: [] }, // Embedded review schema
   status: { type: Boolean, default: true },
   mainImage: { type: [String], required: true },

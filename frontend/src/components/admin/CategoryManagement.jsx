@@ -8,6 +8,7 @@ export default function CategoryManagement() {
   const [newCategory, setNewCategory] = useState({
     category: '',
     offer: '',
+    description:'',
     status: true,
     visibility: true
   });
@@ -25,7 +26,7 @@ export default function CategoryManagement() {
     mutationFn: (newCategory) => api.post('/add-category', newCategory),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] }); 
-      setNewCategory({ category: '', offer: '' }); 
+      setNewCategory({ category: '', offer: '',description:'' }); 
     },
   });
 
@@ -58,9 +59,12 @@ export default function CategoryManagement() {
         category: newCategory.category,
         offer: parseInt(newCategory.offer),
         visibility: true,
-        status: true
+        status: true,
+        description:newCategory.description
       });
     }
+    console.log(newCategory);
+    
   };
 
   const handleToggleField = (categoryId, field) => {
@@ -92,6 +96,7 @@ export default function CategoryManagement() {
             <thead>
               <tr className="border-b">
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Name</th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Description</th>
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Visibility</th>
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Offers %</th>
                 <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Status</th>
@@ -103,6 +108,7 @@ export default function CategoryManagement() {
                 categories.map((category) => (
                   <tr key={category._id} className="border-b last:border-b-0">
                     <td className="px-6 py-4">{category.category}</td>
+                    <td className="px-6 py-4">{category.description}</td>
                     <td className="px-6 py-4">
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -176,6 +182,14 @@ export default function CategoryManagement() {
             placeholder="Category"
             value={newCategory.category}
             onChange={(e) => setNewCategory({ ...newCategory, category: e.target.value })}
+            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-black"
+            required
+          />
+          <input
+            type="text"
+            placeholder="Desctription"
+            value={newCategory.description}
+            onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-black"
             required
           />

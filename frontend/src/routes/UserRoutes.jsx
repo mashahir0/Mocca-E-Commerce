@@ -9,6 +9,15 @@ import CartPage from "../pages/user/CartPage";
 import WishListPage from "../pages/user/WishListPage";
 import RequireAuth from "../redux/protect/requireAuth";
 import RequireAuthLogin from "../redux/protect/RequireAuthLogin";
+import ProfilePage from "../pages/user/ProfilePage";
+import UpdateProfile from "../components/user/UpdateProfile";
+import UpdateProfilePage from "../pages/user/UpdateProfilePage";
+import ChangePassPage from "../pages/user/ChangePassPage";
+import AddressIfoPage from "../pages/user/AddressIfoPage";
+import AddAddressPage from "../pages/user/AddAddressPage";
+import OrderListPage from "../pages/user/OrderListPage";
+import EditAddressPage from "../pages/user/EditAddressPage";
+import OrderDetailViewPage from "../pages/user/OrderDetailViewPage";
 
 const UserRoutes = [
     {
@@ -25,7 +34,7 @@ const UserRoutes = [
     },
     {
         path:'/forgotpass',
-        element:<RequireAuthLogin><ForgotPage/></RequireAuthLogin> 
+        element:<ForgotPage/>
     },
     {
         path:'/home',
@@ -47,6 +56,39 @@ const UserRoutes = [
         path:'/wishlist',
         element:<RequireAuth><WishListPage/></RequireAuth>  
     },
+    {
+        path:'/profile',
+        element:<RequireAuth><ProfilePage/></RequireAuth>  
+    },
+    {
+        path:'/edit-profile',
+        element:<RequireAuth><UpdateProfilePage/></RequireAuth>  
+    },
+    {
+        path:'/change-password',
+        element:<RequireAuth><ChangePassPage/></RequireAuth>  
+    },
+    {
+        path:'/address-managment',
+        element:<RequireAuth><AddressIfoPage/></RequireAuth>  
+    },
+    {
+        path:'/add-address',
+        element:<RequireAuth><AddAddressPage/></RequireAuth>  
+    },
+    {
+        path:'/edit-address',
+        element:<RequireAuth><EditAddressPage/></RequireAuth>  
+    },
+    {
+        path:'/orders-list',
+        element:<RequireAuth><OrderListPage/></RequireAuth>  
+    },
+    {
+        path:'/order-detail-view',
+        element:<RequireAuth><OrderDetailViewPage/></RequireAuth>  
+    },
+
 
 ]
 

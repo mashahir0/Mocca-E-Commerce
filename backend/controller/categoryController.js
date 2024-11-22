@@ -4,8 +4,8 @@ const addCategory = async (req,res)=>{
     try {
         console.log(req.body);
         
-        const { category, offer, visibility = true, status = true } = req.body;
-        const newCategory = new Category({ category, offer, visibility, status });
+        const { category, offer, visibility = true, status = true , description} = req.body;
+        const newCategory = new Category({ category, offer, visibility, status ,description});
     await newCategory.save();
     res.status(201).json({ message : 'new category added '});
     } catch (error) {

@@ -1,4 +1,5 @@
 import User from '.././models/userModel.js'
+import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
 import Product from '../models/productModel.js'
@@ -52,7 +53,7 @@ const googleLogin = async(req, res) => {
         const accessToken = jwt.sign(
             { id: email },  
             key,          
-            { expiresIn: '2d' }
+            { expiresIn: '1h' }
         );
 
         const refreshToken = jwt.sign(
@@ -67,7 +68,13 @@ const googleLogin = async(req, res) => {
             message: 'User logged in successfully',
             accessToken,
             refreshToken, 
-            user,
+            user: {
+                id: user._id,
+                email: user.email,
+                name: user.name,
+                role:user.role,
+                phone:user.phone
+            }
         });
     } catch (error) {
         console.error(error);
@@ -155,7 +162,8 @@ const userLogin = async (req, res) => {
                 id: user._id,
                 email: user.email,
                 name: user.name,
-                role:user.role
+                role:user.role,
+                phone:user.phone
             }
         });
     } catch (error) {
@@ -165,52 +173,6 @@ const userLogin = async (req, res) => {
 };
 
 
-
-// const getProductDetails = async (req, res) => {
-//     try {
-        
-        
-//         // Get page and limit from query parameters, set default values
-//         const page = parseInt(req.query.page) || 1;
-//         const limit = parseInt(req.query.limit) || 10;
-
-//         // Calculate the number of documents to skip
-//         const skip = (page - 1) * limit;
-
-//         // Fetch products from the database with pagination
-//         const products = await Product.find({ status: true })
-//             .skip(skip)
-//             .limit(limit)
-//             .sort({ createdAt: -1 }); // Sort by newest first (optional)
-
-        
-        
-        
-        
-           
-//         // Get the total number of products
-//         const totalProducts = await Product.countDocuments();
-        
-        
-//         // Calculate the total number of pages
-//         const totalPages = Math.ceil(totalProducts / limit);
-        
-//         // Send response
-//         res.status(200).json({
-//             success: true,
-//             data: products,
-//             pagination: {
-//                 currentPage: page,
-//                 totalPages,
-//                 totalProducts,
-//                 limit,
-//             },
-//         });
-//     } catch (error) {
-//         console.error('Error fetching product details:', error);
-//         res.status(500).json({ success: false, message: 'Server error' });
-//     }
-// };
 
 
 const getProductDetails = async (req, res) => {
@@ -318,10 +280,152 @@ const showProductDetails = async (req, res) => {
 };
 
 
+const getUserDetails = async (req, res) => {
+    try {
+        const userId = req.params.id; // Extract user ID from the URL
+
+        // Fetch the user details from the database (assuming a MongoDB database and Mongoose model)
+        const user = await User.findById(userId); // Replace 'User' with your actual user model
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Return user details
+        res.status(200).json({
+            success: true,
+            user,
+        });
+    } catch (error) {
+        console.error('Error fetching user details:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    }
+};
+
+const updateUserProfile = async (req, res) => {
+    try {
+      const { name, email, phone,image } = req.body; // Extract fields from the request body
+      const userId = req.params.id; // Extract user ID from route parameters
+
+      // Check if the email exists in another user's profile
+    const existingUser = await User.findOne({ email });
+    if (existingUser && existingUser._id.toString() !== userId) {
+      return res.status(409).json({ message: 'Email already exists' });
+    }   
+  
+      if (!name || !email || !phone) {
+        return res.status(400).json({ message: 'Name, email, and phone are required' });
+      }
+  
+     
+     
+  
+      // Update user in the database
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        {
+          name,
+          email,
+          phone,
+         profileImage :image
+        },
+        // Return the updated document
+      );
+  
+      if (!updatedUser) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      res.status(200).json({
+        message: 'Profile updated successfully',
+        user: updatedUser,
+      });
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      res.status(500).json({ message: 'Server error, please try again later' });
+    }
+  };
+  
+
+  const changePassword = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { currentPassword, newPassword, confirmPassword } = req.body;
+
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+
+        if (newPassword.trim() !== confirmPassword.trim()) {
+            return res.status(400).json({ message: 'New password and confirm password do not match' });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({ message: 'Password must be at least 6 characters' });
+        }
+
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const isMatch = await user.matchPassword(currentPassword);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Current password is incorrect' });
+        }
+
+        user.password = newPassword; // The pre('save') hook will hash the password
+        await user.save();
+
+        res.status(200).json({ message: 'Password changed successfully' });
+    } catch (error) {
+        console.error("Error during password change:", error.message);
+        res.status(500).json({ message: 'Server error, please try again later' });
+    }
+};
+
+const changeNewPass = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+       
+        
+        // Step 1: Validate the input
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Email and password are required' });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+        }
+
+        // Step 2: Find the user by email
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Step 3: Update the user's password
+        user.password = password; // The `pre('save')` middleware will hash the password
+        await user.save();
+
+        // Step 4: Respond with success
+        res.status(200).json({ message: 'Password updated successfully' });
+    } catch (error) {
+        console.error('Error changing password:', error);
+        res.status(500).json({ message: 'Server error, please try again later' });
+    }
+};
+
+
+
+  
 
 
 
 
-
-
-export {registerUser,userLogin,refreshAccessToken,getProductDetails,showProductDetails,googleLogin}
+export {registerUser,userLogin,refreshAccessToken,getProductDetails,showProductDetails,googleLogin,
+    getUserDetails,updateUserProfile,changePassword,changeNewPass
+}

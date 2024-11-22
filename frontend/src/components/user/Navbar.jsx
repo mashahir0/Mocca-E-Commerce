@@ -4,12 +4,14 @@ import { Link } from 'react-router-dom'
 import { Menu, X, Heart, ShoppingCart, User, Search } from 'lucide-react'
 import { useDispatch,useSelector } from 'react-redux'
 import { removeUser } from '../../redux/slice/UserSlice'
+import { useNavigate } from 'react-router-dom'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
 
   const { isAuthenticated, user } = useSelector((state) => state.user);
   const dispatch = useDispatch();
+  const navigate = useNavigate()
 
   const toggleMenu = () => {
     setIsOpen(!isOpen)
@@ -19,6 +21,7 @@ export default function Navbar() {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     dispatch(removeUser());
+    navigate('/login')
   };
 
   return (
@@ -68,7 +71,7 @@ export default function Navbar() {
         <div className="hidden lg:flex items-center space-x-6">
         
           <button aria-label="User Profile" className="hover:text-gray-300">
-            <User className="h-6 w-6" />
+           <Link to='/profile'> <User className="h-6 w-6" /></Link>
           </button>
 
           {/* Logout Button */}

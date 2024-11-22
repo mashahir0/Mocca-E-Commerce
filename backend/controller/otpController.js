@@ -38,6 +38,27 @@ const sendOTP = async (req, res) => {
 };
  
 // verification 
+// const verifyOTP = (req, res) => {
+//     const { email, otp } = req.body;
+
+//     if (otpStorage[email]) {
+//         const { otp: storedOtp, expirationTime } = otpStorage[email];
+
+//         if (Date.now() > expirationTime) {
+//             delete otpStorage[email]; // Remove expired OTP
+//             return res.status(400).json({ message: 'OTP has expired' });
+//         }
+
+//         if (storedOtp == otp) {
+//             delete otpStorage[email]; // OTP verified, remove it
+//             return res.status(200).json({ message: 'OTP verified successfully' });
+//         }
+//     }
+
+//     return res.status(400).json({ message: 'Invalid or expired OTP' });
+// };
+
+
 const verifyOTP = (req, res) => {
     const { email, otp } = req.body;
 
@@ -46,16 +67,16 @@ const verifyOTP = (req, res) => {
 
         if (Date.now() > expirationTime) {
             delete otpStorage[email]; // Remove expired OTP
-            return res.status(400).json({ message: 'OTP has expired' });
+            return res.status(400).json({ success: false, message: 'OTP has expired' });
         }
 
         if (storedOtp == otp) {
             delete otpStorage[email]; // OTP verified, remove it
-            return res.status(200).json({ message: 'OTP verified successfully' });
+            return res.status(200).json({ success: true, message: 'OTP verified successfully' });
         }
     }
 
-    return res.status(400).json({ message: 'Invalid or expired OTP' });
+    return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
 };
 
 
