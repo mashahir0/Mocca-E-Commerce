@@ -143,23 +143,23 @@ export default function AddProduct() {
     }
   };
 
-  // const handleSizeToggle = (size) => {
-  //   const existingSize = formData.size.find((s) => s.name === size);
-  //   if (existingSize) {
-  //     setFormData((prev) => ({
-  //       ...prev,
-  //       size: prev.size.filter((s) => s.name !== size),
-  //     }));
-  //   } else {
-  //     const stock = prompt(`Enter stock quantity for size ${size}:`);
-  //     if (!isNaN(stock) && stock > 0) {
-  //       setFormData((prev) => ({
-  //         ...prev,
-  //         size: [...prev.size, { name: size, stock: Number(stock) }],
-  //       }));
-  //     }
-  //   }
-  // };
+  const handleSizeToggle = (size) => {
+    const existingSize = formData.size.find((s) => s.name === size);
+    if (existingSize) {
+      setFormData((prev) => ({
+        ...prev,
+        size: prev.size.filter((s) => s.name !== size),
+      }));
+    } else {
+      const stock = prompt(`Enter stock quantity for size ${size}:`);
+      if (!isNaN(stock) && stock > 0) {
+        setFormData((prev) => ({
+          ...prev,
+          size: [...prev.size, { name: size, stock: Number(stock) }],
+        }));
+      }
+    }
+  };
   const addSizeWithStock = () => {
     if (!isNaN(sizeStock) && sizeStock > 0) {
       setFormData((prev) => ({

@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
 import Product from '../models/productModel.js'
+import Address from '../models/addressModel.js'
 import {OAuth2Client} from 'google-auth-library'
 dotenv.config()
 
@@ -421,11 +422,91 @@ const changeNewPass = async (req, res) => {
 
 
 
+
+
+const addAddress = async (req, res) => {
+  try {
+    const { userId, name, mobile, pincode, houseNo, landmark, city, town, street, state } = req.body;
+
+    // Validation in backend
+    if (!userId || !name || !mobile || !pincode || !houseNo || !city || !state) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const newAddress = new Address({
+      userId,
+      name,
+      phone : mobile,
+      pincode,
+      houseno :houseNo,
+      landmark,
+      city,
+      town,
+      street,
+      state
+    });
+
+    await newAddress.save();
+    res.status(201).json({ message: 'Address added successfully', address: newAddress });
+  } catch (error) {
+    console.error('Error adding address:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
+const getUserAddresses = async (req, res) => {
+    try {
+      const { userId } = req.params;
   
+      if (!userId) {
+        return res.status(400).json({ error: 'User ID is required.' });
+      }
+  
+      const addresses = await Address.find({ userId });
+  
+      if (addresses.length === 0) {
+        return res.status(404).json({ message: 'No addresses found for this user.' });
+      }
+  
+      res.status(200).json(addresses);
+    } catch (error) {
+      console.error('Error fetching addresses:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  };
 
-
+  const deleteAddress = async (req, res) => {
+    try {
+      const { addressId } = req.params;
+      await Address.findByIdAndDelete(addressId);
+      res.status(200).json({ message: 'Address deleted successfully!' });
+    } catch (error) {
+      console.error('Error deleting address:', error);
+      res.status(500).json({ error: 'Failed to delete address.' });
+    }
+  };
+  
+  // Set Default Address
+  const setDefaultAddress = async (req, res) => {
+    try {
+      const { addressId } = req.params;
+      const { userId } = req.body;
+  
+      // Reset isDefault for all addresses
+      await Address.updateMany({ userId }, { isDefault: false });
+  
+      // Set the selected address as default
+      await Address.findByIdAndUpdate(addressId, { isDefault: true });
+  
+      res.status(200).json({ message: 'Default address updated successfully!' });
+    } catch (error) {
+      console.error('Error setting default address:', error);
+      res.status(500).json({ error: 'Failed to set default address.' });
+    }
+  };
 
 
 export {registerUser,userLogin,refreshAccessToken,getProductDetails,showProductDetails,googleLogin,
-    getUserDetails,updateUserProfile,changePassword,changeNewPass
+    getUserDetails,updateUserProfile,changePassword,changeNewPass,addAddress,getUserAddresses,setDefaultAddress,deleteAddress
 }
