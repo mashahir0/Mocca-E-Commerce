@@ -33,7 +33,7 @@ export default function AddressManagment() {
       setError('User is not logged in.');
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId,addresses]);
 
   // Delete Address
   const handleDelete = async (addressId) => {
@@ -81,7 +81,7 @@ export default function AddressManagment() {
         </button>
       </Link>
       <h2 className="text-2xl font-semibold text-center mb-8">Your Addresses</h2>
-      {addresses.length === 0 ? (
+      {addresses.length == 0 ? (
         <p>No addresses found. Please add one!</p>
       ) : (
         <div className="space-y-6">

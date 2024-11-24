@@ -18,6 +18,9 @@ import AddAddressPage from "../pages/user/AddAddressPage";
 import OrderListPage from "../pages/user/OrderListPage";
 import EditAddressPage from "../pages/user/EditAddressPage";
 import OrderDetailViewPage from "../pages/user/OrderDetailViewPage";
+import PlaceOrderPage from "../pages/user/PlaceOrderPage";
+import OrderSuccessPage from "../pages/user/OrderSuccessPage";
+import CartPlaceOrderPage from "../pages/user/CartPlaceOrderPage";
 
 const UserRoutes = [
     {
@@ -88,6 +91,19 @@ const UserRoutes = [
         path:'/order-detail-view',
         element:<RequireAuth><OrderDetailViewPage/></RequireAuth>  
     },
+    {
+        path:'/place-order/:id/:size/:quantity',
+        element:<RequireAuth><PlaceOrderPage/></RequireAuth>  
+    },
+    {
+        path:'/order-confirmation',
+        element:<RequireAuth><OrderSuccessPage/></RequireAuth>  
+    },
+    {
+        path:'/place-order-cart',
+        element:<RequireAuth><CartPlaceOrderPage/></RequireAuth>  
+    },
+    
 
 
 ]

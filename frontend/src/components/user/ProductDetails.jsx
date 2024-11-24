@@ -425,9 +425,11 @@ import { Star, ShoppingCart } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "../../services/api/userApi";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { addToCart } from "../../redux/slice/CartSlice";
+import { useNavigate } from "react-router-dom";
 
 const postReview = async ({ productId, review }) => {
   const response = await axios.post(`/product-info/${productId}/review`, review);
@@ -473,14 +475,16 @@ export default function ProductDetails() {
   const [quantity, setQuantity] = useState(1);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
-  const handleAddToCart = async () => {
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const handleAddToCart = async (id) => {
     try {
       // Validate inputs
       if (!selectedSize) {
         toast.error("Please select a size!");
         return;
       }
-
+      
       if (!userId) {
         toast.error("You must be logged in to add items to your cart.");
         return;
@@ -489,7 +493,7 @@ export default function ProductDetails() {
         toast.error('maximum purchase quantity is 5 !!')
         return
       }
-
+      
       // Make the API request to add the item to the cart
       const response = await axios.post("/add-to-cart", {
         userId,
@@ -497,8 +501,9 @@ export default function ProductDetails() {
         size: selectedSize,
         quantity,
       });
-
+      
       if (response.status === 200) {
+        dispatch(addToCart(id))
         toast.success("Item added to cart!");
       } else {
         toast.error(response.data.message || "Failed to add item to cart.");
@@ -529,6 +534,15 @@ export default function ProductDetails() {
     setRating(0);
     setReviewText("");
   };
+
+  const handleBuy = async (id)=>{
+    if (!selectedSize) {
+      toast.error("Please select a size!");
+      return;
+    }
+    
+    navigate(`/place-order/${id}/${selectedSize}/${quantity}`)
+  }
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -717,13 +731,7 @@ export default function ProductDetails() {
             </button>
             <button
               className="flex-1 px-6 py-3 bg-black text-white rounded-md hover:bg-black/90"
-              onClick={() => {
-                if (!selectedSize) {
-                  toast.error("Please select a size!");
-                  return;
-                }
-                // Proceed with adding to cart logic
-              }}
+              onClick={() => handleBuy(product._id)}
             >
               Buy Now
             </button>

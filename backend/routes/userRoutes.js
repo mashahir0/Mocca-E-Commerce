@@ -13,12 +13,15 @@ import { registerUser,
     getUserAddresses,
     deleteAddress,
     setDefaultAddress,
+    getDefaultAddress,
     } from '../controller/userController.js'
 import { userExistance,userStatus } from '../middleware/userMiddleware.js'
 import { sendOTP,verifyOTP } from '../controller/otpController.js'
 import { addReview, getReviews } from '../controller/productController.js'
 import { protect } from '../middleware/authMiddleware.js'
 import { addToCart, editQuantity, getCartInfo, removeItemFromCart } from '../controller/cartController.js'
+import { addOrder, cartCheckOut } from '../controller/orderController.js'
+
 const user_routes = express.Router()
 user_routes.use(express.json())
 
@@ -54,7 +57,7 @@ user_routes.post('/change-newpassword',changeNewPass)
 //address managment 
 
 user_routes.post('/add-address',addAddress)
-user_routes.get('/get-addresses/:userId',getUserAddresses)
+user_routes.get('/get-addresses/:userId',protect,getUserAddresses)
 user_routes.delete('/delete-address/:addressId', deleteAddress);
 user_routes.patch('/set-default-address/:addressId', setDefaultAddress);
 
@@ -65,5 +68,11 @@ user_routes.get('/get-cartdetails/:id',getCartInfo)
 user_routes.delete('/remove-item', removeItemFromCart);
 user_routes.put('/edit-quantity',editQuantity)
 
+
+//order managment 
+
+user_routes.get('/default-address/:id',getDefaultAddress)
+user_routes.post('/place-order',addOrder)
+user_routes.post('/place-order-cart',cartCheckOut)
 
 export default  user_routes

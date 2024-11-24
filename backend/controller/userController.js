@@ -465,9 +465,9 @@ const getUserAddresses = async (req, res) => {
   
       const addresses = await Address.find({ userId });
   
-      if (addresses.length === 0) {
-        return res.status(404).json({ message: 'No addresses found for this user.' });
-      }
+    //   if (addresses.length === 0) {
+    //     return res.status(404).json({ message: 'No addresses found for this user.' });
+    //   }
   
       res.status(200).json(addresses);
     } catch (error) {
@@ -506,7 +506,27 @@ const getUserAddresses = async (req, res) => {
     }
   };
 
+  const getDefaultAddress = async (req, res) => {
+    try {
+        const userId = req.params.id;
+
+        // Fetch the default address for the user
+        const defaultAddress = await Address.findOne({ userId, isDefault: true });
+
+        if (!defaultAddress) {
+            return res.status(404).json({ message: "Default address not found" });
+        }
+
+        res.status(200).json(defaultAddress);
+    } catch (error) {
+        console.error("Error fetching default address:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+
 
 export {registerUser,userLogin,refreshAccessToken,getProductDetails,showProductDetails,googleLogin,
-    getUserDetails,updateUserProfile,changePassword,changeNewPass,addAddress,getUserAddresses,setDefaultAddress,deleteAddress
+    getUserDetails,updateUserProfile,changePassword,changeNewPass,addAddress,getUserAddresses,setDefaultAddress,
+    deleteAddress,getDefaultAddress
 }

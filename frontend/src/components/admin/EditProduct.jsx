@@ -488,6 +488,24 @@ export default function EditProduct() {
     }
   };
 
+  const handleSizeToggle = (size) => {
+    const existingSize = formData.size.find((s) => s.name === size);
+    if (existingSize) {
+      setFormData((prev) => ({
+        ...prev,
+        size: prev.size.filter((s) => s.name !== size),
+      }));
+    } else {
+      const stock = prompt(`Enter stock quantity for size ${size}:`);
+      if (!isNaN(stock) && stock > 0) {
+        setFormData((prev) => ({
+          ...prev,
+          size: [...prev.size, { name: size, stock: Number(stock) }],
+        }));
+      }
+    }
+  };
+
   const handleImageDrop = (e, type) => {
     e.preventDefault();
     const file = e.dataTransfer?.files[0] || e.target.files[0];
