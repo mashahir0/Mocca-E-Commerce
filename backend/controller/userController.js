@@ -54,7 +54,7 @@ const googleLogin = async(req, res) => {
         const accessToken = jwt.sign(
             { id: email },  
             key,          
-            { expiresIn: '1h' }
+            { expiresIn: '1d' }
         );
 
         const refreshToken = jwt.sign(
@@ -251,6 +251,8 @@ const getProductDetails = async (req, res) => {
       
 // }
 
+// for to show detaild view of the product 
+
 const showProductDetails = async (req, res) => {
     try {
         
@@ -271,8 +273,8 @@ const showProductDetails = async (req, res) => {
 
         
         res.status(200).json({
-            ...product.toObject(), // Convert Mongoose document to plain object
-            averageRating,        // Add average rating to the response
+            ...product.toObject(),
+            averageRating,       
         });
     } catch (error) {
         console.error('Error fetching product details:', error);
@@ -280,19 +282,20 @@ const showProductDetails = async (req, res) => {
     }
 };
 
+//for profile
 
 const getUserDetails = async (req, res) => {
     try {
-        const userId = req.params.id; // Extract user ID from the URL
+        const userId = req.params.id; 
 
-        // Fetch the user details from the database (assuming a MongoDB database and Mongoose model)
-        const user = await User.findById(userId); // Replace 'User' with your actual user model
+       
+        const user = await User.findById(userId); 
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Return user details
+        
         res.status(200).json({
             success: true,
             user,
@@ -308,10 +311,9 @@ const getUserDetails = async (req, res) => {
 
 const updateUserProfile = async (req, res) => {
     try {
-      const { name, email, phone,image } = req.body; // Extract fields from the request body
-      const userId = req.params.id; // Extract user ID from route parameters
+      const { name, email, phone,image } = req.body; 
+      const userId = req.params.id; 
 
-      // Check if the email exists in another user's profile
     const existingUser = await User.findOne({ email });
     if (existingUser && existingUser._id.toString() !== userId) {
       return res.status(409).json({ message: 'Email already exists' });
@@ -322,9 +324,6 @@ const updateUserProfile = async (req, res) => {
       }
   
      
-     
-  
-      // Update user in the database
       const updatedUser = await User.findByIdAndUpdate(
         userId,
         {
@@ -333,7 +332,6 @@ const updateUserProfile = async (req, res) => {
           phone,
          profileImage :image
         },
-        // Return the updated document
       );
   
       if (!updatedUser) {
@@ -378,7 +376,7 @@ const updateUserProfile = async (req, res) => {
             return res.status(401).json({ message: 'Current password is incorrect' });
         }
 
-        user.password = newPassword; // The pre('save') hook will hash the password
+        user.password = newPassword; 
         await user.save();
 
         res.status(200).json({ message: 'Password changed successfully' });
@@ -392,8 +390,6 @@ const changeNewPass = async (req, res) => {
     try {
         const { email, password } = req.body;
        
-        
-        // Step 1: Validate the input
         if (!email || !password) {
             return res.status(400).json({ message: 'Email and password are required' });
         }
@@ -402,17 +398,14 @@ const changeNewPass = async (req, res) => {
             return res.status(400).json({ message: 'Password must be at least 6 characters long' });
         }
 
-        // Step 2: Find the user by email
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Step 3: Update the user's password
-        user.password = password; // The `pre('save')` middleware will hash the password
+        user.password = password; 
         await user.save();
 
-        // Step 4: Respond with success
         res.status(200).json({ message: 'Password updated successfully' });
     } catch (error) {
         console.error('Error changing password:', error);
@@ -428,7 +421,6 @@ const addAddress = async (req, res) => {
   try {
     const { userId, name, mobile, pincode, houseNo, landmark, city, town, street, state } = req.body;
 
-    // Validation in backend
     if (!userId || !name || !mobile || !pincode || !houseNo || !city || !state) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -465,9 +457,7 @@ const getUserAddresses = async (req, res) => {
   
       const addresses = await Address.find({ userId });
   
-    //   if (addresses.length === 0) {
-    //     return res.status(404).json({ message: 'No addresses found for this user.' });
-    //   }
+
   
       res.status(200).json(addresses);
     } catch (error) {
@@ -493,10 +483,10 @@ const getUserAddresses = async (req, res) => {
       const { addressId } = req.params;
       const { userId } = req.body;
   
-      // Reset isDefault for all addresses
+  
       await Address.updateMany({ userId }, { isDefault: false });
   
-      // Set the selected address as default
+ 
       await Address.findByIdAndUpdate(addressId, { isDefault: true });
   
       res.status(200).json({ message: 'Default address updated successfully!' });
@@ -510,7 +500,6 @@ const getUserAddresses = async (req, res) => {
     try {
         const userId = req.params.id;
 
-        // Fetch the default address for the user
         const defaultAddress = await Address.findOne({ userId, isDefault: true });
 
         if (!defaultAddress) {

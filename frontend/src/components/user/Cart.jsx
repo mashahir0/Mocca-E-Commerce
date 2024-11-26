@@ -29,10 +29,10 @@ export default function Cart() {
         setLoading(false);
       }
     };
-
+  
     fetchCartData();
-  }, [id,cartItems]);
-
+  }, [id]); // Only 'id' should be in the dependency array
+  
   const editQuantity = async (productId, size, newQuantity) => {
     if (newQuantity < 1 || newQuantity > 5) {
       toast.error('Quantity must be between 1 and 5');
@@ -64,13 +64,19 @@ export default function Cart() {
       });
       if (response.status === 200) {
         toast.success('Item removed from cart');
-        setCartItems(response.data.items);
+        // Update cart items locally by filtering out the removed item
+        setCartItems((prevItems) =>
+          prevItems.filter(
+            (item) => item.productId._id !== productId || item.size !== size
+          )
+        );
       }
     } catch (err) {
       console.error('Error removing item:', err);
       setError('Failed to remove item from cart.');
     }
   };
+  
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.productId.salePrice * item.quantity,

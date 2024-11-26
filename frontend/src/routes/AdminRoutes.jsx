@@ -5,6 +5,7 @@ import AdminLoginPage from "../pages/admin/AdminLoginPage";
 import AdminProductListPage from "../pages/admin/AdminProductListPage";
 import AdminUserListPage from "../pages/admin/AdminUserListPage";
 import CategoryManagmentPage from "../pages/admin/CategoryManagmentPage";
+import ListOrderPage from "../pages/admin/ListOrderPage";
 import ReqAdminAuth from "../redux/protect/ReqAdminAuth";
 import ReqAdminLoginAuth from "../redux/protect/ReqAdminLoginAuth";
 
@@ -38,6 +39,11 @@ const adminRoutes = [
         path:'/admin/category',
         element :<ReqAdminAuth><CategoryManagmentPage/></ReqAdminAuth> 
     },
+    {
+        path:'/admin/orders',
+        element :<ReqAdminAuth><ListOrderPage/></ReqAdminAuth> 
+    },
+    
     
     
 ]

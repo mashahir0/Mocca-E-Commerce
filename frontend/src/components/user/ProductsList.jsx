@@ -1,52 +1,71 @@
 
 
+
 import React, { useState, useEffect } from 'react';
 import { Heart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import axios from '../../services/api/userApi'
+import axios from '../../services/api/userApi';
 
-// Fetch products function
-
-const fetchProducts = async (currentPage, activeFilter, selectedPriceRanges, selectedRatings) => {
+const fetchProducts = async (currentPage, activeFilter, selectedPriceRanges, selectedRatings, sortOption) => {
   try {
-      
-      const params = {
-          page: currentPage,
-          category: activeFilter !== 'All' ? activeFilter : undefined,
-          price: selectedPriceRanges.length > 0 ? selectedPriceRanges.join(',') : undefined,
-          rating: selectedRatings.length > 0 ? selectedRatings.join(',') : undefined,
-      };
+    // Construct query parameters
+    const params = {
+      page: currentPage,
+      category: activeFilter !== 'All' ? activeFilter : undefined, // Include category if it's not 'All'
+      price: selectedPriceRanges.length > 0 ? selectedPriceRanges.join(',') : undefined, // Join price ranges with comma
+      rating: selectedRatings.length > 0 ? selectedRatings.join(',') : undefined, // Join ratings with comma
+      sort: sortOption || undefined, // Sorting option (e.g., 'price-asc')
+    };
 
-      
-      const response = await axios.get('/get-allproducts', { params });
-      return response.data;
+    // Clean up params by removing undefined values
+    const cleanedParams = Object.fromEntries(Object.entries(params).filter(([_, v]) => v != null));
+
+    // Make the API call with the query params
+    const response = await axios.get('/get-allproducts', { params: cleanedParams });
+
+    return response.data;
   } catch (error) {
-      console.error('Error fetching products:', error);
-      throw error; 
+    console.error('Error fetching products:', error);
+    throw error;
   }
 };
+
 const ProductsList = () => {
   const [activeFilter, setActiveFilter] = useState('All');
   const [selectedPriceRanges, setSelectedPriceRanges] = useState([]);
   const [selectedRatings, setSelectedRatings] = useState([]);
+  const [sortOption, setSortOption] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [wishlist, setWishlist] = useState({});
+  const [products, setProducts] = useState([]);
+  const [pagination, setPagination] = useState({ totalPages: 1 });
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [error, setError] = useState(null);
+
   const navigate = useNavigate();
 
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['products', currentPage, activeFilter, selectedPriceRanges, selectedRatings],
-    queryFn: () => fetchProducts(currentPage, activeFilter, selectedPriceRanges, selectedRatings),
-    keepPreviousData: true,
-    retry: 1,
-    onError: (err) => console.error('Query Error:', err),
-  });
+  const fetchAndSetProducts = async () => {
+    setIsLoading(true);
+    setIsError(false);
 
-  const products = data?.data || [];
-  const pagination = data?.pagination || { totalPages: 1 };
+    try {
+      const data = await fetchProducts(currentPage, activeFilter, selectedPriceRanges, selectedRatings, sortOption);
+      setProducts(data?.data || []);
+      setPagination(data?.pagination || { totalPages: 1 });
+    } catch (err) {
+      setIsError(true);
+      setError(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAndSetProducts();
+  }, [currentPage, activeFilter, selectedPriceRanges, selectedRatings, sortOption]);
 
   const filters = ['All', 'T-Shirt', 'Shirt', 'Bottom Wears'];
-
   const priceRanges = [
     { label: 'All prices', value: 'all' },
     { label: 'Under Rs. 100', value: 'under-100' },
@@ -56,13 +75,20 @@ const ProductsList = () => {
     { label: 'Above Rs. 2000', value: 'above-2000' },
   ];
 
-  const renderStars = (rating) => {
-    return [...Array(5)].map((_, index) => (
+  const sortOptions = [
+    { label: 'Alphabetical (A-Z)', value: 'alphabetical' },
+    { label: 'Price (Low to High)', value: 'price-asc' },
+    { label: 'Price (High to Low)', value: 'price-desc' },
+    { label: 'Rating (High to Low)', value: 'rating-desc' },
+    { label: 'Rating (Low to High)', value: 'rating-asc' },
+  ];
+
+  const renderStars = (rating) =>
+    [...Array(5)].map((_, index) => (
       <span key={index} className={`text-sm ${index < Math.floor(rating) ? 'text-yellow-400' : 'text-gray-300'}`}>
         ★
       </span>
     ));
-  };
 
   const toggleWishlist = (productId) => {
     setWishlist((prev) => ({
@@ -71,47 +97,12 @@ const ProductsList = () => {
     }));
   };
 
-  const handlePriceRangeChange = (value) => {
-    setSelectedPriceRanges((prev) =>
-      prev.includes(value)
-        ? prev.filter((v) => v !== value)
-        : [...prev, value]
-    );
-  };
-
-  const handleRatingChange = (rating) => {
-    setSelectedRatings((prev) =>
-      prev.includes(rating)
-        ? prev.filter((r) => r !== rating)
-        : [...prev, rating]
-    );
-  };
-
-  const filterByPrice = (product) => {
-    if (selectedPriceRanges.length === 0 || selectedPriceRanges.includes('all')) return true;
-    if (selectedPriceRanges.includes('under-100') && product.price < 100) return true;
-    if (selectedPriceRanges.includes('100-500') && product.price >= 100 && product.price <= 500) return true;
-    if (selectedPriceRanges.includes('500-1000') && product.price >= 500 && product.price <= 1000) return true;
-    if (selectedPriceRanges.includes('1000-2000') && product.price >= 1000 && product.price <= 2000) return true;
-    if (selectedPriceRanges.includes('above-2000') && product.price > 2000) return true;
-    return false;
-  };
-
-  const filterByRating = (product) => {
-    if (selectedRatings.length === 0) return true;
-    return selectedRatings.includes(Math.floor(product.rating));
-  };
-
-  const filteredProducts = products
-    .filter(filterByPrice)
-    .filter(filterByRating);
-
   if (isLoading) {
     return <div>Loading products...</div>;
   }
 
   if (isError) {
-    return <div>Error loading products: {error.message}</div>;
+    return <div>Error loading products: {error?.message || 'Something went wrong'}</div>;
   }
 
   return (
@@ -128,9 +119,7 @@ const ProductsList = () => {
                   key={filter}
                   onClick={() => setActiveFilter(filter)}
                   className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
-                    activeFilter === filter
-                      ? 'bg-black text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    activeFilter === filter ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
                   {filter}
@@ -148,7 +137,13 @@ const ProductsList = () => {
                   <input
                     type="checkbox"
                     checked={selectedPriceRanges.includes(range.value)}
-                    onChange={() => handlePriceRangeChange(range.value)}
+                    onChange={() => {
+                      setSelectedPriceRanges((prev) =>
+                        prev.includes(range.value)
+                          ? prev.filter((v) => v !== range.value)
+                          : [...prev, range.value]
+                      );
+                    }}
                     className="rounded border-gray-300"
                   />
                   <span className="text-sm text-gray-600">{range.label}</span>
@@ -161,21 +156,18 @@ const ProductsList = () => {
           <div>
             <h3 className="font-semibold mb-3">Filter by Ratings</h3>
             <div className="space-y-2">
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={selectedRatings.length === 0}
-                  onChange={() => setSelectedRatings([])}
-                  className="rounded border-gray-300"
-                />
-                <span className="text-sm text-gray-600">All Ratings</span>
-              </label>
               {[5, 4, 3, 2, 1].map((rating) => (
                 <label key={rating} className="flex items-center space-x-2">
                   <input
                     type="checkbox"
                     checked={selectedRatings.includes(rating)}
-                    onChange={() => handleRatingChange(rating)}
+                    onChange={() => {
+                      setSelectedRatings((prev) =>
+                        prev.includes(rating)
+                          ? prev.filter((r) => r !== rating)
+                          : [...prev, rating]
+                      );
+                    }}
                     className="rounded border-gray-300"
                   />
                   <span className="flex">
@@ -190,20 +182,33 @@ const ProductsList = () => {
               ))}
             </div>
           </div>
+
+          {/* Sorting Options */}
+          <div>
+            <h3 className="font-semibold mb-3">Sort by</h3>
+            <select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+              className="w-full rounded border-gray-300 px-3 py-2"
+            >
+              <option value="">None</option>
+              {sortOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Main Content */}
         <div className="flex-1">
           {/* Product Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.length > 0 ? (
-              filteredProducts.map((product) => (
-                <div
-                  key={product._id}
-                  className="bg-white rounded-lg shadow-md overflow-hidden"
-                  
-                >
-                  <div className=" flex-1 aspect-square rounded-lg overflow-hidden relative group">
+            {products.length > 0 ? (
+              products.map((product) => (
+                <div key={product._id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div className="relative aspect-square rounded-lg overflow-hidden group">
                     <img
                       src={product.mainImage?.[0] || 'default-image.jpg'}
                       alt={product.productName}
@@ -218,17 +223,19 @@ const ProductsList = () => {
                       />
                     </button>
                   </div>
-
                   <div className="p-4">
                     <h3 className="font-medium text-gray-900 mb-2">{product.productName}</h3>
                     <div className="flex items-center mb-2">
-                      {renderStars(product.averageRating )}
-                      <span className="text-gray-600 text-sm ml-1">({product.averageRating || 0 })</span>
+                      {renderStars(product.averageRating)}
+                      <span className="text-gray-600 text-sm ml-1">({product.averageRating || 0})</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-lg font-semibold">₹{product.salePrice}</span>
-                      <a href="#" className="text-sm text-blue-600 hover:underline"
-                      onClick={() => navigate(`/productinfo/${product._id}`)}>
+                      <a
+                        href="#"
+                        className="text-sm text-blue-600 hover:underline"
+                        onClick={() => navigate(`/productinfo/${product._id}`)}
+                      >
                         View Details
                       </a>
                     </div>
@@ -261,7 +268,7 @@ const ProductsList = () => {
               </button>
             ))}
             <button
-              onClick={() => setCurrentPage((prev) => prev + 1)}
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, pagination.totalPages))}
               disabled={currentPage === pagination.totalPages}
               className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50"
             >

@@ -17,10 +17,10 @@ import { registerUser,
     } from '../controller/userController.js'
 import { userExistance,userStatus } from '../middleware/userMiddleware.js'
 import { sendOTP,verifyOTP } from '../controller/otpController.js'
-import { addReview, getReviews } from '../controller/productController.js'
+import { addReview, getProducts, getReviews } from '../controller/productController.js'
 import { protect } from '../middleware/authMiddleware.js'
 import { addToCart, editQuantity, getCartInfo, removeItemFromCart } from '../controller/cartController.js'
-import { addOrder, cartCheckOut } from '../controller/orderController.js'
+import { addOrder, cancelOrder, cartCheckOut, getDetails, getOrderDetails } from '../controller/orderController.js'
 
 const user_routes = express.Router()
 user_routes.use(express.json())
@@ -38,7 +38,7 @@ user_routes.post('/google-login',googleLogin)
 
 //Product 
 
-user_routes.get('/get-allproducts',getProductDetails)
+user_routes.get('/get-allproducts',getProducts)
 user_routes.get('/product-info/:id',showProductDetails)
 
 //review
@@ -48,7 +48,7 @@ user_routes.get('/product-info/:id/reviews',getReviews)
 
 //Profile 
 
-user_routes.get('/user-details/:id',protect,getUserDetails)
+user_routes.get('/user-details/:id',getUserDetails)
 user_routes.put('/update-profile/:id',updateUserProfile)
 user_routes.put('/change-password/:id',changePassword)  
 user_routes.post('/change-newpassword',changeNewPass)
@@ -57,14 +57,14 @@ user_routes.post('/change-newpassword',changeNewPass)
 //address managment 
 
 user_routes.post('/add-address',addAddress)
-user_routes.get('/get-addresses/:userId',protect,getUserAddresses)
+user_routes.get('/get-addresses/:userId',getUserAddresses)
 user_routes.delete('/delete-address/:addressId', deleteAddress);
 user_routes.patch('/set-default-address/:addressId', setDefaultAddress);
 
 // cart managment 
 
 user_routes.post('/add-to-cart',addToCart)
-user_routes.get('/get-cartdetails/:id',getCartInfo)
+user_routes.get('/get-cartdetails/:id',protect,getCartInfo)
 user_routes.delete('/remove-item', removeItemFromCart);
 user_routes.put('/edit-quantity',editQuantity)
 
@@ -74,5 +74,8 @@ user_routes.put('/edit-quantity',editQuantity)
 user_routes.get('/default-address/:id',getDefaultAddress)
 user_routes.post('/place-order',addOrder)
 user_routes.post('/place-order-cart',cartCheckOut)
+user_routes.get('/order-details/:id',protect,getOrderDetails)
+user_routes.get('/order-details-view/:userId/:orderId',getDetails)
+user_routes.put('/cancel-order/:userId/:orderId',cancelOrder)
 
 export default  user_routes

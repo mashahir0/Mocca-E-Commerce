@@ -21,6 +21,7 @@ export default function ProductList() {
     keepPreviousData: true,
   });
 
+ console.log(data);
  
   const toggleAvailabilityMutation = useMutation({
     mutationFn: (updatedProduct) =>

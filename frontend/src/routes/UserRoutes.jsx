@@ -88,7 +88,7 @@ const UserRoutes = [
         element:<RequireAuth><OrderListPage/></RequireAuth>  
     },
     {
-        path:'/order-detail-view',
+        path:'/order-detail-view/:id',
         element:<RequireAuth><OrderDetailViewPage/></RequireAuth>  
     },
     {

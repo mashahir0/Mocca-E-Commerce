@@ -33,7 +33,7 @@ export default function AddressManagment() {
       setError('User is not logged in.');
       setLoading(false);
     }
-  }, [userId,addresses]);
+  }, [userId]);
 
   // Delete Address
   const handleDelete = async (addressId) => {

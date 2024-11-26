@@ -1,4 +1,4 @@
-import Product from "../models/productModel.js"; // Ensure the path is correct
+import Product from "../models/productModel.js"; 
 
 const addProduct = async (req, res) => {
   const {
@@ -46,35 +46,160 @@ const addProduct = async (req, res) => {
 
 
 
+// const getProducts = async (req, res) => {
+//     try {
+//       const { page = 1, limit = 12 } = req.query; 
+//       const pageNumber = parseInt(page, 10);
+//       const limitNumber = parseInt(limit, 12);
+  
+      
+//       const products = await Product.find()
+//         .skip((pageNumber - 1) * limitNumber) 
+//         .limit(limitNumber); 
+  
+      
+//       const totalCount = await Product.countDocuments();
+  
+//       res.status(200).json({
+//         products,
+//         currentPage: pageNumber,
+//         totalPages: Math.ceil(totalCount / limitNumber),
+//         totalCount,
+//       });
+//     } catch (error) {
+//       console.error("Error fetching products:", error);
+//       res.status(500).json({
+//         message: "Internal Server Error",
+//         error: error.message,
+//       });
+//     }
+//   };    
+
+
+
+//get product with filteer
+
 const getProducts = async (req, res) => {
-    try {
-      const { page = 1, limit = 12 } = req.query; 
-      const pageNumber = parseInt(page, 10);
-      const limitNumber = parseInt(limit, 12);
   
-      
-      const products = await Product.find()
-        .skip((pageNumber - 1) * limitNumber) 
-        .limit(limitNumber); 
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      category,
+      price,
+      rating,
+      sort,
+    } = req.query;
   
-      
-      const totalCount = await Product.countDocuments();
+    const filters = {};
   
-      res.status(200).json({
-        products,
-        currentPage: pageNumber,
-        totalPages: Math.ceil(totalCount / limitNumber),
-        totalCount,
+    if (category && category !== 'All') {
+      filters.category = category;
+    }
+  
+    // Price range filter
+    if (price) {
+      const priceRanges = price.split(',').map((range) => range.trim());
+      const priceFilter = [];
+      priceRanges.forEach((range) => {
+        if (range === 'under-100') priceFilter.push({ salePrice: { $lt: 100 } });
+        else if (range === '100-500') priceFilter.push({ salePrice: { $gte: 100, $lte: 500 } });
+        else if (range === '500-1000') priceFilter.push({ salePrice: { $gte: 500, $lte: 1000 } });
+        else if (range === '1000-2000') priceFilter.push({ salePrice: { $gte: 1000, $lte: 2000 } });
+        else if (range === 'above-2000') priceFilter.push({ salePrice: { $gt: 2000 } });
       });
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      res.status(500).json({
-        message: "Internal Server Error",
-        error: error.message,
+      if (priceFilter.length > 0) filters.$or = priceFilter;
+    }
+  
+    // Sorting
+    let sortOption = {};
+    if (sort) {
+      if (sort === 'price-asc') sortOption.salePrice = 1;
+      else if (sort === 'price-desc') sortOption.salePrice = -1;
+      else if (sort === 'rating-desc') sortOption.averageRating = -1;
+      else if (sort === 'rating-asc') sortOption.averageRating = 1;
+      else if (sort === 'alphabetical') sortOption.productName = 1;
+    }
+  
+    // Apply a default sort if sortOption is empty
+    if (Object.keys(sortOption).length === 0) {
+      sortOption = { _id: 1 };
+    }
+  
+    // Pagination
+    const currentPage = parseInt(page, 10) || 1;
+    const pageSize = parseInt(limit, 10) || 10;
+    const skip = (currentPage - 1) * pageSize;
+  
+    // Aggregation pipeline
+    const pipeline = [
+      { $match: filters }, // Apply filters
+      {
+        $addFields: {
+          averageRating: { $avg: "$review.rating" }, // Compute average rating dynamically
+        },
+      },
+    ];
+  
+    // Apply rating filter if present
+    if (rating) {
+      const ratingValues = rating.split(',').map((r) => parseInt(r.trim())); 
+      pipeline.push({
+        $match: {
+          averageRating: { $in: ratingValues }, 
+        },
       });
     }
-  };    
+  
+    // Add sorting, pagination, and limiting
+    pipeline.push(
+      { $sort: sortOption }, 
+      { $skip: skip }, 
+      { $limit: pageSize } 
+    );
+  
+    // Execute aggregation
+    const products = await Product.aggregate(pipeline);
+  
+    // Get total product count with filters
+    const totalProductsCountPipeline = [
+      { $match: filters },
+      {
+        $addFields: {
+          averageRating: { $avg: "$review.rating" }, 
+        },
+      },
+    ];
+  
+  
+    // Count the total products
+    const totalProductsCountResult = await Product.aggregate([
+      ...totalProductsCountPipeline,
+      { $count: "count" },
+    ]);
+    const totalProductsCount =
+      totalProductsCountResult.length > 0 ? totalProductsCountResult[0].count : 0;
+  
+    // Calculate total pages
+    const totalPages = Math.ceil(totalProductsCount / pageSize);
+  
 
+    res.json({
+      data: products,
+      pagination: {
+        currentPage,
+        totalPages,
+        pageSize,
+        totalProducts: totalProductsCount,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+  
+  };
+  
 
   const toggleProductAvailability = async (req, res) => {
     try {
@@ -298,6 +423,35 @@ const getProducts = async (req, res) => {
       res.status(500).json({ message: "An error occurred while fetching reviews", error: error.message });
     }
   };
+
+  const getProductsAdmin = async (req, res) => {
+    try {
+      const { page = 1, limit = 12 } = req.query; 
+      const pageNumber = parseInt(page, 10);
+      const limitNumber = parseInt(limit, 12);
+  
+      
+      const products = await Product.find()
+        .skip((pageNumber - 1) * limitNumber) 
+        .limit(limitNumber); 
+  
+      
+      const totalCount = await Product.countDocuments();
+  
+      res.status(200).json({
+        products,
+        currentPage: pageNumber,
+        totalPages: Math.ceil(totalCount / limitNumber),
+        totalCount,
+      });
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      res.status(500).json({
+        message: "Internal Server Error",
+        error: error.message,
+      });
+    }
+  };    
   
 
-export { addProduct,getProducts,toggleProductAvailability,getDetailsForEdit,updateProduct,addReview,getReviews  };
+export { addProduct,getProducts,toggleProductAvailability,getDetailsForEdit,updateProduct,addReview,getReviews,getProductsAdmin  };
