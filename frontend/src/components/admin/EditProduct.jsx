@@ -196,6 +196,7 @@ export default function EditProduct() {
 
   const validateForm = () => {
     const newErrors = {};
+    if(formData.offerPrice>formData.salePrice) newErrors.offerPrice = 'offer price must lower than sale price' 
     if (!formData.productName)
       newErrors.productName = "Product name is required";
     if (!formData.description)

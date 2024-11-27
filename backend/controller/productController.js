@@ -18,6 +18,8 @@ const addProduct = async (req, res) => {
 
     const calculatedStock = size.reduce((total, s) => total + s.stock, 0);
 
+    
+
     if (calculatedStock !== stockQuantity) {
       return res.status(400).json({
         message: "Mismatch between total stock and size stock quantities",
@@ -84,14 +86,16 @@ const getProducts = async (req, res) => {
   try {
     const {
       page = 1,
-      limit = 10,
+      limit = 12,
       category,
       price,
       rating,
       sort,
     } = req.query;
   
-    const filters = {};
+    const filters = {
+      status : true
+    };
   
     if (category && category !== 'All') {
       filters.category = category;
@@ -155,7 +159,8 @@ const getProducts = async (req, res) => {
     pipeline.push(
       { $sort: sortOption }, 
       { $skip: skip }, 
-      { $limit: pageSize } 
+      { $limit: pageSize } ,
+      
     );
   
     // Execute aggregation
@@ -426,9 +431,9 @@ const getProducts = async (req, res) => {
 
   const getProductsAdmin = async (req, res) => {
     try {
-      const { page = 1, limit = 12 } = req.query; 
+      const { page = 1, limit = 10 } = req.query; 
       const pageNumber = parseInt(page, 10);
-      const limitNumber = parseInt(limit, 12);
+      const limitNumber = parseInt(limit, 10);
   
       
       const products = await Product.find()

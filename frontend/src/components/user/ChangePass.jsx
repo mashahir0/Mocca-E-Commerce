@@ -3,6 +3,7 @@ import { Eye, EyeOff } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import axios from '../../services/api/userApi'
 import { useSelector } from 'react-redux'
+import { toast, ToastContainer } from 'react-toastify';
 
 export default function ChangePass() {
   const [formData, setFormData] = useState({
@@ -81,12 +82,12 @@ const handleSubmit = async (e) => {
       
       // Handle successful password change
       console.log('Password changed successfully:', response.data);
-      alert('Password changed successfully!');
+      toast.success('Password changed successfully!');
       
     } catch (error) {
       // Handle error
       console.error('Error changing password:', error);
-      alert('Error changing password, please try again.');
+      toast.error('Error changing password, please try again.');
     }
   }
 };
@@ -182,6 +183,7 @@ const handleSubmit = async (e) => {
             Change Password
           </button>
         </form>
+        <ToastContainer />
       </div>
     </>
   )

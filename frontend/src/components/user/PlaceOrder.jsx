@@ -8,6 +8,7 @@ import axios from '../../services/api/userApi'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
+import { toast, ToastContainer } from 'react-toastify';
 
 export default function PlaceOrder() {
     const { id, size, quantity } = useParams();
@@ -72,7 +73,7 @@ export default function PlaceOrder() {
    
     const handlePlaceOrder = async () => {
         if (!address) {
-            alert('Please select a delivery address.');
+            toast.error('Please select a delivery address.');
             return;
         }
     
@@ -100,11 +101,11 @@ export default function PlaceOrder() {
     
         try {
             const response = await axios.post('/place-order', orderDetails);
-            alert(response.data.message); // Success message
+            toast.success(response.data.message); // Success message
             navigate('/order-confirmation'); // Redirect to order confirmation page
         } catch (error) {
             console.error('Error placing order:', error.response?.data?.message || error.message);
-            alert(error.response?.data?.message || 'Failed to place the order. Please try again.');
+            toast.error(error.response?.data?.message || 'Failed to place the order. Please try again.');
         }
     };
   return (
@@ -277,6 +278,7 @@ export default function PlaceOrder() {
           </button>
         </div>
       </div>
+      <ToastContainer />
     </div>
   )
 }
