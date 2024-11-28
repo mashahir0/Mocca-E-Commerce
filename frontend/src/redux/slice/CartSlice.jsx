@@ -22,11 +22,11 @@ const cartSlice = createSlice({
       if (item) item.quantity = quantity;
     },
     checkout(state) {
-      state.order = { items: state.items }; // Move cart items to the order
-      state.items = []; // Clear cart
+      state.order = { items: state.items }; 
+      state.items = []; 
     },
     buyNow(state, action) {
-      state.order = { items: [action.payload] }; // Store only the selected product
+      state.order = { items: [action.payload] }; 
     },
   },
 });

@@ -29,7 +29,7 @@ api.interceptors.response.use(
             const refreshToken = getAccessToken();
 
             // Request new access token using refresh token
-            const response = await axios.post('/refresh-token', { refreshToken });
+            const response = await axios.post('/refresh-token-admin', { refreshToken });
             if (response.status === 200) {
                 const newAccessToken = response.data.adminToken;
 

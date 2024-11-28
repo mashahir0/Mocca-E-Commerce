@@ -12,6 +12,7 @@ import {
   X
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 export default function AdminNav() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -21,11 +22,19 @@ export default function AdminNav() {
     { label: <Link to='/admin/userlist'>    CUSTOMERS</Link>, icon: Users },
     { label: <Link to='/admin/productlist'>ALL PRODUCTS</Link>, icon: Package },
     { label: <Link to='/admin/orders'>ORDER LIST</Link>, icon: ClipboardList },
-    { label: 'CUPONS', icon: Star },
+    { label: <Link to='/admin/coupon'>COUPON</Link>, icon: Star },
     { label: 'OFFERS', icon: Gift },
     { label: <Link to='/admin/category'>CATAGORIES</Link>, icon: Grid },
   ]
 
+  const navigete = useNavigate()
+
+
+  const handleLogout = ()=>{
+    localStorage.removeItem('adminToken')
+    navigete('/admin/login')
+
+  }
   return (
     <nav className="bg-white border-b">
       <div className="max-w-7xl mx-auto px-4">
@@ -64,9 +73,11 @@ export default function AdminNav() {
 
           {/* Logout button */}
           <div className="hidden md:flex items-center">
-            <button className="ml-4 px-4 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-100 flex items-center space-x-1">
+            <button className="ml-4 px-4 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-100 flex items-center space-x-1"
+             onClick={handleLogout}
+            >
               <LogOut className="h-4 w-4" />
-              <Link to='/admin/login'><span>LOGOUT</span></Link>
+              <span>LOGOUT</span>
             </button>
           </div>
         </div>
@@ -84,7 +95,9 @@ export default function AdminNav() {
               <span>{item.label}</span>
             </button>
           ))}
-          <button className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-black hover:bg-gray-100 w-full text-left flex items-center space-x-2">
+          <button className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-black hover:bg-gray-100 w-full text-left flex items-center space-x-2" 
+            onClick={handleLogout}
+          >
             <LogOut className="h-5 w-5" 
             />
             <span>LOGOUT</span>

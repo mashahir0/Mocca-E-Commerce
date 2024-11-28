@@ -28,6 +28,13 @@ export default function CategoryManagement() {
       queryClient.invalidateQueries({ queryKey: ['categories'] }); 
       setNewCategory({ category: '', offer: '',description:'' }); 
     },
+    onError: (error) => {
+      if (error.response) {
+        alert(error.response.data.message);
+      } else {
+        alert('An unexpected error occurred. Please try again later.'); 
+      }
+    }
   });
 
   
@@ -56,7 +63,7 @@ export default function CategoryManagement() {
     e.preventDefault();
     if (newCategory.category && newCategory.offer) {
       createCategoryMutation.mutate({
-        category: newCategory.category,
+        category: newCategory.category.trim(),
         offer: parseInt(newCategory.offer),
         visibility: true,
         status: true,

@@ -5,12 +5,13 @@ import admin from '../middleware/authAdminMiddleware.js'
 import { addCategory, deleteCategory, editStatus, getCategory, listCategory } from '../controller/categoryController.js'
 import { addProduct, getDetailsForEdit, getProducts, getProductsAdmin, toggleProductAvailability, updateProduct } from "../controller/productController.js";
 import { adminCancelOrder, adminUpdateOrderStatus, getAllOrders } from '../controller/orderController.js'
+import { addCoupon } from '../controller/couponController.js'
 
 
 const admin_routes = express.Router()
 admin_routes.use(express.json())
 
-admin_routes.post('/refresh-token', refreshTokenHandler);
+admin_routes.post('/refresh-token-admin', refreshTokenHandler);
 admin_routes.post('/login',adminLogin)
 admin_routes.get('/userlist',protect,admin,getUserList)
 admin_routes.patch('/admin/toggleStatus/:customerId', toggleStatus);
@@ -39,6 +40,10 @@ admin_routes.put('/update-product/:id',updateProduct)
 admin_routes.get('/get-allorders',protect,admin,getAllOrders)
 admin_routes.put('/update-order-status/:orderId',adminUpdateOrderStatus)
 admin_routes.put('/cancel-order/:orderId',adminCancelOrder)
+
+//coupon 
+
+admin_routes.post('/add-coupon',addCoupon)
 
 
 

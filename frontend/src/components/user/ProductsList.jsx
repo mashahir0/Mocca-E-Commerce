@@ -5,8 +5,9 @@ import React, { useState, useEffect } from 'react';
 import { Heart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../services/api/userApi';
+import { useSearch } from '../../../utils/SearchContext';
 
-const fetchProducts = async (currentPage, activeFilter, selectedPriceRanges, selectedRatings, sortOption) => {
+const fetchProducts = async (currentPage, activeFilter, selectedPriceRanges, selectedRatings, sortOption,searchTerm) => {
   try {
     // Construct query parameters
     const params = {
@@ -15,6 +16,7 @@ const fetchProducts = async (currentPage, activeFilter, selectedPriceRanges, sel
       price: selectedPriceRanges.length > 0 ? selectedPriceRanges.join(',') : undefined, // Join price ranges with comma
       rating: selectedRatings.length > 0 ? selectedRatings.join(',') : undefined, // Join ratings with comma
       sort: sortOption || undefined, // Sorting option (e.g., 'price-asc')
+      search : searchTerm || undefined
     };
 
     // Clean up params by removing undefined values
@@ -42,7 +44,13 @@ const ProductsList = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
   const [error, setError] = useState(null);
+  const [filter,setFilter] = useState([])
+  console.log(filter);
 
+  const {searchTerm } = useSearch()
+  console.log(searchTerm);
+  
+  
   const navigate = useNavigate();
 
   const fetchAndSetProducts = async () => {
@@ -50,7 +58,7 @@ const ProductsList = () => {
     setIsError(false);
 
     try {
-      const data = await fetchProducts(currentPage, activeFilter, selectedPriceRanges, selectedRatings, sortOption);
+      const data = await fetchProducts(currentPage, activeFilter, selectedPriceRanges, selectedRatings, sortOption,searchTerm);
       setProducts(data?.data || []);
       setPagination(data?.pagination || { totalPages: 1 });
     } catch (err) {
@@ -61,11 +69,24 @@ const ProductsList = () => {
     }
   };
 
+  const categories = async ()=>{
+    try {
+      const responce  = await axios.get('/get-category-user')
+      setFilter(responce.data)
+    } catch (error) {
+      console.log(error);
+      
+    }
+  }
+
   useEffect(() => {
     fetchAndSetProducts();
-  }, [currentPage, activeFilter, selectedPriceRanges, selectedRatings, sortOption]);
+    categories()
+  }, [currentPage, activeFilter, selectedPriceRanges, selectedRatings, sortOption,searchTerm ]);
 
-  const filters = ['All', 'T-Shirt', 'Shirt', 'Bottom Wears'];
+
+
+  // const filters = ['All', 'T-Shirt', 'Shirt', 'Bottom Wears'];
   const priceRanges = [
     { label: 'All prices', value: 'all' },
     { label: 'Under Rs. 100', value: 'under-100' },
@@ -114,15 +135,15 @@ const ProductsList = () => {
           <div>
             <h3 className="font-semibold mb-3">Filter by Category</h3>
             <div className="space-y-2">
-              {filters.map((filter) => (
+              {filter.map((filter) => (
                 <button
-                  key={filter}
-                  onClick={() => setActiveFilter(filter)}
+                  key={filter._id}
+                  onClick={() => setActiveFilter(filter.category)}
                   className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
-                    activeFilter === filter ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    activeFilter === filter.category ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  {filter}
+                  {filter.category}
                 </button>
               ))}
             </div>

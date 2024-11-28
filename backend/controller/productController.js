@@ -91,7 +91,10 @@ const getProducts = async (req, res) => {
       price,
       rating,
       sort,
+      search
     } = req.query;
+    
+    
   
     const filters = {
       status : true
@@ -113,6 +116,11 @@ const getProducts = async (req, res) => {
         else if (range === 'above-2000') priceFilter.push({ salePrice: { $gt: 2000 } });
       });
       if (priceFilter.length > 0) filters.$or = priceFilter;
+    }
+
+
+    if (search) {
+      filters.productName = { $regex: search, $options: 'i' }; // Case-insensitive search in productName field
     }
   
     // Sorting

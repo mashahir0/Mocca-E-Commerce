@@ -5,6 +5,10 @@ const addCategory = async (req,res)=>{
         console.log(req.body);
         
         const { category, offer, visibility = true, status = true , description} = req.body;
+        const exist  =  await  Category.findOne({category})
+        if(exist){
+          return res.status(409).json({message :'category already exist '})
+        }
         const newCategory = new Category({ category, offer, visibility, status ,description});
     await newCategory.save();
     res.status(201).json({ message : 'new category added '});
@@ -77,4 +81,14 @@ const deleteCategory = async (req, res) => {
   }
 };
 
-export  {addCategory,getCategory,editStatus,listCategory,deleteCategory}
+const categoriesForUser = async (req,res)=>{
+  try {
+    const categories = await Category.find({},{category:1})
+    res.status(200).json(categories)
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+    
+  }
+}
+
+export  {addCategory,getCategory,editStatus,listCategory,deleteCategory,categoriesForUser}

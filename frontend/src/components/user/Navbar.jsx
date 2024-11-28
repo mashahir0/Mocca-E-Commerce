@@ -5,9 +5,13 @@ import { Menu, X, Heart, ShoppingCart, User, Search } from 'lucide-react'
 import { useDispatch,useSelector } from 'react-redux'
 import { removeUser } from '../../redux/slice/UserSlice'
 import { useNavigate } from 'react-router-dom'
+import { useSearch } from '../../../utils/SearchContext'
 
 export default function Navbar() {
+  const {setSearchTerm}  = useSearch()
   const [isOpen, setIsOpen] = useState(false)
+  const [input, setInput] = useState('');
+  const [timeoutId, setTimeoutId] = useState(null);
 
   const { isAuthenticated, user } = useSelector((state) => state.user);
   const dispatch = useDispatch();
@@ -22,6 +26,20 @@ export default function Navbar() {
     localStorage.removeItem('refreshToken');
     dispatch(removeUser());
     navigate('/login')
+  };
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setInput(value); 
+
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+
+    const newTimeoutId = setTimeout(() => {
+      setSearchTerm(value); 
+    }, 500); 
+    setTimeoutId(newTimeoutId); 
   };
 
   return (
@@ -54,9 +72,11 @@ export default function Navbar() {
           {/* Search Bar */}
           <div className="relative">
             <input
+              value={input}
               type="text"
               placeholder="Search"
               className="bg-gray-800 text-white pl-3 pr-10 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-gray-600"
+              onChange={handleInputChange}
             />
             <button
               aria-label="Search"

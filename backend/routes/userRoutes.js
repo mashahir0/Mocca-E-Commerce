@@ -21,6 +21,7 @@ import { addReview, getProducts, getReviews } from '../controller/productControl
 import { protect } from '../middleware/authMiddleware.js'
 import { addToCart, editQuantity, getCartInfo, removeItemFromCart } from '../controller/cartController.js'
 import { addOrder, cancelOrder, cartCheckOut, getDetails, getOrderDetails } from '../controller/orderController.js'
+import { categoriesForUser } from '../controller/categoryController.js'
 
 const user_routes = express.Router()
 user_routes.use(express.json())
@@ -40,6 +41,10 @@ user_routes.post('/google-login',googleLogin)
 
 user_routes.get('/get-allproducts',getProducts)
 user_routes.get('/product-info/:id',showProductDetails)
+
+//get categoris
+
+user_routes.get('/get-category-user',categoriesForUser)
 
 //review
 
