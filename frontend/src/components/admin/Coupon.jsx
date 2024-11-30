@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "../../services/api/adminApi";
 import { Home, MoreVertical, Pencil, Trash2 } from 'lucide-react'
+import { ToastContainer, toast } from "react-toastify";
 
 export default function Coupon() {
   const [coupons ,setCouponse] =useState([])
@@ -16,6 +17,16 @@ export default function Coupon() {
   });
 
   const [errors, setErrors] = useState({});
+
+  const getCoupons = async ()=>{
+    try {
+      const responce = await axios.get('/get-coupons')
+      setCouponse(responce.data)
+    } catch (error) {
+      
+    }
+  }
+
 
   const validate = () => {
     const newErrors = {};
@@ -57,8 +68,8 @@ export default function Coupon() {
 
         
         const response = await axios.post("/add-coupon", newCoupon);
-        alert("Coupon added successfully!");
-
+        toast.success("Coupon added successfully!");
+        getCoupons()
         // Reset form after successful submission
         setNewCoupon({
           name: "",
@@ -73,13 +84,40 @@ export default function Coupon() {
         setErrors({});
       } catch (error) {
         console.error("Error adding coupon:", error);
-        alert(
+        toast.error(
           error.response?.data?.message ||
             "An error occurred while adding the coupon."
         );
       }
     }
   };
+
+  const handleTogle = async (id)=>{
+    try {
+      const responce = await axios.patch(`/coupon-status/${id}`)
+      toast.success(responce.data.message)
+      getCoupons()
+    } catch (error) {
+      console.error(error);
+      
+    }
+    
+  }
+
+  const handleDelete = async(id)=>{
+   try {
+     const responce = await axios.delete(`/delete-coupon/${id}`)
+     toast.success(responce.data.message)
+     getCoupons()
+   } catch (error) {
+    
+   }
+    
+  }
+  
+  useEffect(()=>{
+    getCoupons()
+  },[])
 
 
   return (
@@ -92,21 +130,21 @@ export default function Coupon() {
             <Home className="w-4 h-4" />
             <span>Home</span>
             <span>{'>'}</span>
-            <span>Products</span>
+            <span>Coupons</span>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-sm text-gray-600">
+        {/* <div className="flex items-center gap-2 text-sm text-gray-600">
           <span>Oct 11,2023 - Nov 11,2022</span>
-        </div>
+        </div> */}
       </div>
 
       {/* Coupons Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden mb-8">
         <div className="flex justify-between items-center p-4 border-b">
           <h2 className="text-lg font-semibold">Active Coupons</h2>
-          <button>
+          {/* <button>
             <MoreVertical className="w-5 h-5 text-gray-600" />
-          </button>
+          </button> */}
         </div>
         
         <div className="overflow-x-auto">
@@ -120,30 +158,34 @@ export default function Coupon() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Max Discount Limit</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valid To</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Update</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Delete</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {coupons.map((coupon) => (
-                <tr key={coupon.code} className="hover:bg-gray-50">
+                <tr key={coupon._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 text-sm text-gray-900">{coupon.name}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">{coupon.code}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{coupon.minPurchase}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">{coupon.minPurchaseAmount}</td>
                   <td className="px-6 py-4 text-sm text-gray-500">{coupon.discount}%</td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{coupon.maxDiscount}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">{coupon.maxDiscountAmount}</td>
                   <td className="px-6 py-4 text-sm text-gray-500">{coupon.validTo}</td>
                   <td className="px-6 py-4">
                     <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" checked={coupon.status} className="sr-only peer" readOnly />
+                      <input type="checkbox" checked={coupon.visibility} className="sr-only peer"  
+                      onChange={()=>handleTogle(coupon._id)}
+                      />
                       <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
                     </label>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex gap-3">
-                      <button className="text-blue-600 hover:text-blue-800" aria-label="Edit coupon">
+                      {/* <button className="text-blue-600 hover:text-blue-800" aria-label="Edit coupon">
                         <Pencil className="w-4 h-4" />
-                      </button>
-                      <button className="text-red-600 hover:text-red-800" aria-label="Delete coupon">
+                      </button> */}
+                      <button className="text-red-600 hover:text-red-800" aria-label="Delete coupon"
+                      onClick={()=>handleDelete(coupon._id)}
+                      >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -280,6 +322,7 @@ export default function Coupon() {
         </button>
       </form>
     </div>
+    <ToastContainer />
     </div>
   )
 }

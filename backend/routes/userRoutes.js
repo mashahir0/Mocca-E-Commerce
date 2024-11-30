@@ -22,6 +22,7 @@ import { protect } from '../middleware/authMiddleware.js'
 import { addToCart, editQuantity, getCartInfo, removeItemFromCart } from '../controller/cartController.js'
 import { addOrder, cancelOrder, cartCheckOut, getDetails, getOrderDetails } from '../controller/orderController.js'
 import { categoriesForUser } from '../controller/categoryController.js'
+import { addToWishlist, getWishListProducts, removeFromWishlist } from '../controller/wishlistController.js'
 
 const user_routes = express.Router()
 user_routes.use(express.json())
@@ -82,5 +83,12 @@ user_routes.post('/place-order-cart',cartCheckOut)
 user_routes.get('/order-details/:id',protect,getOrderDetails)
 user_routes.get('/order-details-view/:userId/:orderId',getDetails)
 user_routes.put('/cancel-order/:userId/:orderId',cancelOrder)
+
+
+//wishlist 
+
+user_routes.post('/add-wishlist/:userId/:productId',addToWishlist)
+user_routes.get('/get-wishlist/:id',getWishListProducts)
+user_routes.delete('/remove-from-wishlist/:userId/:productId', removeFromWishlist);
 
 export default  user_routes

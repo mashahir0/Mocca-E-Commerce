@@ -6,6 +6,8 @@ import { Heart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../services/api/userApi';
 import { useSearch } from '../../../utils/SearchContext';
+import { useSelector } from 'react-redux';
+import { ToastContainer, toast } from "react-toastify";
 
 const fetchProducts = async (currentPage, activeFilter, selectedPriceRanges, selectedRatings, sortOption,searchTerm) => {
   try {
@@ -46,6 +48,9 @@ const ProductsList = () => {
   const [error, setError] = useState(null);
   const [filter,setFilter] = useState([])
   console.log(filter);
+
+  const {user} = useSelector((state)=>state.user)
+  const userId = user.id
 
   const {searchTerm } = useSearch()
   console.log(searchTerm);
@@ -111,11 +116,19 @@ const ProductsList = () => {
       </span>
     ));
 
-  const toggleWishlist = (productId) => {
+  const toggleWishlist =  async(productId) => {
     setWishlist((prev) => ({
       ...prev,
       [productId]: !prev[productId],
     }));
+    try {
+      const responce = await axios.post(`/add-wishlist/${userId}/${productId}`)
+      toast.success(responce.data.message)
+    } catch (error) {
+      console.log(error);
+      
+      
+    }
   };
 
   if (isLoading) {
@@ -298,6 +311,7 @@ const ProductsList = () => {
           </div>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };

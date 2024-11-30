@@ -5,7 +5,7 @@ import admin from '../middleware/authAdminMiddleware.js'
 import { addCategory, deleteCategory, editStatus, getCategory, listCategory } from '../controller/categoryController.js'
 import { addProduct, getDetailsForEdit, getProducts, getProductsAdmin, toggleProductAvailability, updateProduct } from "../controller/productController.js";
 import { adminCancelOrder, adminUpdateOrderStatus, getAllOrders } from '../controller/orderController.js'
-import { addCoupon } from '../controller/couponController.js'
+import { addCoupon, couponStatus, deleteCoupon, getCoupons } from '../controller/couponController.js'
 
 
 const admin_routes = express.Router()
@@ -44,6 +44,9 @@ admin_routes.put('/cancel-order/:orderId',adminCancelOrder)
 //coupon 
 
 admin_routes.post('/add-coupon',addCoupon)
+admin_routes.get('/get-coupons',getCoupons)
+admin_routes.patch('/coupon-status/:id',couponStatus)
+admin_routes.delete('/delete-coupon/:id',deleteCoupon)
 
 
 
