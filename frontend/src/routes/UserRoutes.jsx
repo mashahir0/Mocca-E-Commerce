@@ -21,6 +21,7 @@ import OrderDetailViewPage from "../pages/user/OrderDetailViewPage";
 import PlaceOrderPage from "../pages/user/PlaceOrderPage";
 import OrderSuccessPage from "../pages/user/OrderSuccessPage";
 import CartPlaceOrderPage from "../pages/user/CartPlaceOrderPage";
+import WalletPage from "../pages/user/WalletPage";
 
 const UserRoutes = [
     {
@@ -102,6 +103,10 @@ const UserRoutes = [
     {
         path:'/place-order-cart',
         element:<RequireAuth><CartPlaceOrderPage/></RequireAuth>  
+    },
+    {
+        path:'/wallet',
+        element:<RequireAuth><WalletPage/></RequireAuth>  
     },
     
 

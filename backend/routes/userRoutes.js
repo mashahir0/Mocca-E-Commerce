@@ -23,6 +23,7 @@ import { addToCart, editQuantity, getCartInfo, removeItemFromCart } from '../con
 import { addOrder, cancelOrder, cartCheckOut, getDetails, getOrderDetails } from '../controller/orderController.js'
 import { categoriesForUser } from '../controller/categoryController.js'
 import { addToWishlist, getWishListProducts, removeFromWishlist } from '../controller/wishlistController.js'
+import { getCoupons, listCouponUserSide } from '../controller/couponController.js'
 
 const user_routes = express.Router()
 user_routes.use(express.json())
@@ -90,5 +91,9 @@ user_routes.put('/cancel-order/:userId/:orderId',cancelOrder)
 user_routes.post('/add-wishlist/:userId/:productId',addToWishlist)
 user_routes.get('/get-wishlist/:id',getWishListProducts)
 user_routes.delete('/remove-from-wishlist/:userId/:productId', removeFromWishlist);
+
+//coupon
+
+user_routes.get('/coupon-details',listCouponUserSide)
 
 export default  user_routes

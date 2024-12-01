@@ -48,15 +48,18 @@ const ProductsList = () => {
   const [error, setError] = useState(null);
   const [filter,setFilter] = useState([])
   console.log(filter);
+  const navigate = useNavigate();
 
   const {user} = useSelector((state)=>state.user)
   const userId = user.id
+  if(!userId){
+    navigate('/login')
+  }
 
   const {searchTerm } = useSearch()
   console.log(searchTerm);
   
   
-  const navigate = useNavigate();
 
   const fetchAndSetProducts = async () => {
     setIsLoading(true);

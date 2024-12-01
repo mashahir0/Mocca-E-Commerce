@@ -7,7 +7,7 @@ import mongoose from "mongoose";
 // for buy a product 
 const addOrder = async (req, res) => {
     try {
-        const { userId, address, products, paymentMethod, totalAmount } = req.body;
+        const { userId, address, products, paymentMethod, totalAmount,promoCode,discountAmount  } = req.body;
 
         console.log(userId);
         
@@ -21,6 +21,8 @@ const addOrder = async (req, res) => {
             products,
             paymentMethod,
             totalAmount,
+            couponCode: promoCode, 
+            discountedAmount :discountAmount,
         });
 
         const savedOrder = await newOrder.save();
@@ -147,9 +149,9 @@ const getOrderDetails = async (req, res) => {
         .populate('products.productId', 'productName mainImage') 
         .sort({ createdAt: -1 }); 
   
-      if (!orders.length) {
-        return res.status(404).json({ message: 'No orders found' });
-      }
+      // if (!orders.length) {
+      //   return res.status(404).json({ message: 'No orders found' });
+      // }
   
       res.status(200).json(orders);
     } catch (error) {

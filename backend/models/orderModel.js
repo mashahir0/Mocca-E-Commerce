@@ -48,7 +48,9 @@ const orderSchema = new mongoose.Schema(
       enum: ['Processing', 'Shipped', 'Delivered', 'Cancelled'],
       default: 'Processing',
     },
-    totalAmount: { type: Number, required: true }, // Total cost of the order
+    totalAmount: { type: Number, required: true },
+    discountedAmount: { type: Number, required: false }, 
+    couponCode: { type: String, required: false }, 
     orderDate: { type: Date, default: Date.now },
   },
   { timestamps: true } // Automatically adds createdAt and updatedAt fields

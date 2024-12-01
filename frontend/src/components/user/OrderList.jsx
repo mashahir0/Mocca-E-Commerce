@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -24,7 +22,11 @@ export default function OrdersList() {
     return <p>Loading...</p>;
   }
 
-  if (isError || !orders.length) {
+  if (isError) {
+    return <p>Error loading orders.</p>;
+  }
+
+  if (!orders.length) {
     return (
       <div className="text-center mt-10">
         <p className="text-gray-500 mb-4">No orders found. Start shopping now!</p>

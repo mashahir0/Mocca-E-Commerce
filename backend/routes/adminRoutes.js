@@ -37,7 +37,7 @@ admin_routes.put('/update-product/:id',updateProduct)
 
 //orders managment 
 
-admin_routes.get('/get-allorders',protect,admin,getAllOrders)
+admin_routes.get('/get-allorders',getAllOrders)
 admin_routes.put('/update-order-status/:orderId',adminUpdateOrderStatus)
 admin_routes.put('/cancel-order/:orderId',adminCancelOrder)
 

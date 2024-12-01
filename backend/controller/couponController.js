@@ -92,4 +92,20 @@ const deleteCoupon =async(req,res)=>{
   }
 }  
 
-export {addCoupon,getCoupons,couponStatus,deleteCoupon}
+const listCouponUserSide = async(req,res)=>{
+  try {
+
+    const coupons = await Coupon.find({visibility:true})
+
+    if(!coupons){
+      res.status(401).json({message :'no couponce found'})
+    }
+    res.status(200).json(coupons)
+    
+  } catch (error) {
+    console.log(error);
+    
+  }
+}
+
+export {addCoupon,getCoupons,couponStatus,deleteCoupon,listCouponUserSide}

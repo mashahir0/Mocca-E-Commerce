@@ -33,7 +33,7 @@ const cartPersistedReducer = persistReducer(cartConfig, cartReducer);
 const store = configureStore({
   reducer: {
     user: userPersistedReducer,
-    cart : cartPersistedReducer
+    // cart : cartPersistedReducer
   },
 });
 
