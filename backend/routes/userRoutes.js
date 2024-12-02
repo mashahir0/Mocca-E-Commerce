@@ -20,7 +20,7 @@ import { sendOTP,verifyOTP } from '../controller/otpController.js'
 import { addReview, getProducts, getReviews } from '../controller/productController.js'
 import { protect } from '../middleware/authMiddleware.js'
 import { addToCart, editQuantity, getCartInfo, removeItemFromCart } from '../controller/cartController.js'
-import { addOrder, cancelOrder, cartCheckOut, getDetails, getOrderDetails } from '../controller/orderController.js'
+import { addOrder, cancelOrder, cartCheckOut, createRazorpayOrder, getDetails, getOrderDetails, verifyRazorpayPayment } from '../controller/orderController.js'
 import { categoriesForUser } from '../controller/categoryController.js'
 import { addToWishlist, getWishListProducts, removeFromWishlist } from '../controller/wishlistController.js'
 import { getCoupons, listCouponUserSide } from '../controller/couponController.js'
@@ -79,6 +79,8 @@ user_routes.put('/edit-quantity',editQuantity)
 //order managment 
 
 user_routes.get('/default-address/:id',getDefaultAddress)
+user_routes.post('/create-razorpay-order',createRazorpayOrder)
+user_routes.post('/verify-razorpay-payment',verifyRazorpayPayment)
 user_routes.post('/place-order',addOrder)
 user_routes.post('/place-order-cart',cartCheckOut)
 user_routes.get('/order-details/:id',protect,getOrderDetails)

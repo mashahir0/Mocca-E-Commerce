@@ -320,37 +320,43 @@ export default function CartPlaceOrder() {
       toast.error('Please enter a promo code.');
       return false;
     }
-
+  
     const coupon = couponList.find((c) => c.code === promoCode);
-    
+  
     if (!coupon) {
       toast.error('Invalid promo code.');
       setIsCouponValid(false);
       return false;
     }
-
+  
     const currentDate = new Date();
     const validFrom = new Date(coupon.validFrom);
     const validTo = new Date(coupon.validTo);
-
+  
     if (currentDate < validFrom || currentDate > validTo) {
       toast.error('Promo code is not valid today.');
       setIsCouponValid(false);
       return false;
     }
-
+  
     if (subtotal < coupon.minPurchaseAmount) {
       toast.error(`Minimum purchase amount is ₹${coupon.minPurchaseAmount}.`);
       setIsCouponValid(false);
       return false;
     }
-
-    const discount = Math.min(coupon.discount, coupon.maxDiscountAmount);
+  
+    // Calculate the discount as a percentage of the subtotal
+    const calculatedDiscount = (subtotal * coupon.discount) / 100;
+  
+    // Ensure the discount does not exceed the maximum allowed discount
+    const discount = Math.min(calculatedDiscount, coupon.maxDiscountAmount);
+  
     setDiscountAmount(discount);
-    toast.success(`Promo code applied! ₹${discount} off.`);
+    toast.success(`Promo code applied! ₹${discount.toFixed(2)} off.`);
     setIsCouponValid(true);
     return true;
   };
+  
 
   const handleApplyCoupon = () => {
     if (validateCoupon()) {
@@ -389,11 +395,71 @@ export default function CartPlaceOrder() {
       promoCode, // Send applied promo code
       discountAmount, // Send the discount amount
     };
-
     try {
-      const response = await axios.post('/place-order-cart', orderDetails);
+    if(paymentMethod === 'Razor Pay'){
+      try {
+        const razorpayOrderResponse = await axios.post('/create-razorpay-order', {
+            amount: total,
+            currency: 'INR',
+        });
+
+        const { order } = razorpayOrderResponse.data;
+
+        const razorpayOptions = {
+            key: 'rzp_test_fVyWQT9oTgFtNj',
+            amount: order.amount,
+            currency: order.currency,
+            name: 'MOCCA',
+            description: 'Order Payment',
+            order_id: order.id,
+            handler: async function (response) {
+                const paymentVerificationResponse = await axios.post('/verify-razorpay-payment', {
+                    razorpayOrderId: response.razorpay_order_id,
+                    razorpayPaymentId: response.razorpay_payment_id,
+                    razorpaySignature: response.razorpay_signature,
+                });
+
+                if (paymentVerificationResponse.data.success) {
+                    // Save order to the database
+                    const orderResponse = await axios.post('/place-order', orderDetails);
+                    toast.success(orderResponse.data.message);
+                    navigate('/order-confirmation');
+                } else {
+                    toast.error('Payment verification failed.');
+                }
+            },
+            prefill: {
+                name: address.name,
+                email: user.email,
+                contact: address.phone,
+            },
+            theme: {
+                color: '#F37254',
+            },
+        };
+
+        const razorpayInstance = new window.Razorpay(razorpayOptions);
+        razorpayInstance.open();
+    } catch (error) {
+        console.error('Error during Razorpay payment:', error);
+        toast.error('Failed to initialize Razorpay payment.');
+    }
+
+    }else{
+      try {
+        const response = await axios.post('/place-order-cart', orderDetails);
       toast.success(response.data.message); 
       navigate('/order-confirmation');
+        
+      } catch (error) {
+        console.log(error);
+        
+      }
+
+    }
+
+    
+      
     } catch (error) {
       console.error('Error placing order:', error.response?.data?.message || error.message);
       toast.error(error.response?.data?.message || 'Failed to place the order. Please try again.');

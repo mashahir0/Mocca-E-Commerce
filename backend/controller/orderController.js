@@ -3,6 +3,63 @@ import Product from "../models/productModel.js";
 import User from "../models/userModel.js";
 import Cart from "../models/cartModel.js";
 import mongoose from "mongoose";
+import Razorpay from 'razorpay'
+import crypto from 'crypto'
+import dotenv from "dotenv";
+dotenv.config();
+
+//razorpay 
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_SECRET,
+});
+
+
+// Create Razorpay Order
+const createRazorpayOrder = async (req, res) => {
+    const { amount, currency } = req.body;
+
+    try {
+        const options = {
+            amount: amount * 100, // Amount in paisa
+            currency,
+            receipt: `receipt_${Date.now()}`,
+        };
+
+        const order = await razorpay.orders.create(options);
+        res.status(201).json({ success: true, order });
+    } catch (error) {
+        console.error('Error creating Razorpay order:', error);
+        res.status(500).json({ success: false, message: 'Failed to create Razorpay order' });
+    }
+};
+
+// Verify Razorpay Payment
+
+const verifyRazorpayPayment = (req, res) => {
+  const { razorpayOrderId, razorpayPaymentId, razorpaySignature } = req.body;
+
+  try {
+    const secret = process.env.RAZORPAY_SECRET;
+    if (!secret) {
+      return res.status(500).json({ error: 'Razorpay Key Secret is not defined.' });
+    }
+
+    const body = `${razorpayOrderId}|${razorpayPaymentId}`;
+    const expectedSignature = crypto.createHmac('sha256', secret).update(body).digest('hex');
+
+    if (expectedSignature === razorpaySignature) {
+      res.status(200).json({ success: true, message: 'Payment verified successfully!' });
+    } else {
+      res.status(400).json({ success: false, message: 'Payment verification failed!' });
+    }
+  } catch (error) {
+    console.error('Error verifying payment:', error.message);
+    res.status(500).json({ success: false, message: 'Internal Server Error.' });
+  }
+};
+
 
 // for buy a product 
 const addOrder = async (req, res) => {
@@ -19,7 +76,8 @@ const addOrder = async (req, res) => {
             userId,
             address,
             products,
-            paymentMethod,
+            paymentMethod ,
+            paymentStatus  :paymentMethod==='Razor Pay'||paymentMethod ==='Wallet'?'Completed':'Pending',
             totalAmount,
             couponCode: promoCode, 
             discountedAmount :discountAmount,
@@ -73,7 +131,7 @@ const addOrder = async (req, res) => {
 
 const cartCheckOut = async (req, res) => {
     try {
-        const { userId, address, products, paymentMethod, totalAmount } = req.body;
+        const { userId, address, products, paymentMethod, totalAmount, promoCode,discountAmount } = req.body;
 
         
         const user = await User.findById(userId);
@@ -88,6 +146,8 @@ const cartCheckOut = async (req, res) => {
             products,
             paymentMethod,
             totalAmount,
+            couponCode :promoCode,
+            discountedAmount :discountAmount,
             status: 'Pending',
             createdAt: new Date(),
         });
@@ -386,5 +446,5 @@ const cancelOrder = async (req, res) => {
   
 
 export {addOrder,cartCheckOut,getOrderDetails,cancelOrder,getDetails,getAllOrders,adminUpdateOrderStatus,
-  adminCancelOrder
+  adminCancelOrder,createRazorpayOrder,verifyRazorpayPayment
 }

@@ -401,19 +401,19 @@ export default function PlaceOrder() {
             toast.error('Please select a delivery address.');
             return;
         }
-
+    
         if (!paymentMethod) {
             setPayError('Please select a payment method before placing the order.');
             return;
         }
-
+    
         setPayError('');
-
+    
         const orderDetails = {
             userId,
             address,
-            promoCode, // Include selected promo code in order details
-            discountAmount, // Send the discount amount to the backend
+            promoCode,
+            discountAmount,
             products: product.map((item) => ({
                 productId: item._id,
                 productName: item.productName,
@@ -423,18 +423,69 @@ export default function PlaceOrder() {
                 price: item.salePrice,
             })),
             paymentMethod,
-            totalAmount: total, // Final total after discount
+            totalAmount: total,
         };
-
-        try {
-            const response = await axios.post('/place-order', orderDetails);
-            toast.success(response.data.message); // Success message
-            navigate('/order-confirmation'); // Redirect to order confirmation page
-        } catch (error) {
-            console.error('Error placing order:', error.response?.data?.message || error.message);
-            toast.error(error.response?.data?.message || 'Failed to place the order. Please try again.');
+    
+        if (paymentMethod === 'Razor Pay') {
+            try {
+                const razorpayOrderResponse = await axios.post('/create-razorpay-order', {
+                    amount: total,
+                    currency: 'INR',
+                });
+    
+                const { order } = razorpayOrderResponse.data;
+    
+                const razorpayOptions = {
+                    key: 'rzp_test_fVyWQT9oTgFtNj',
+                    amount: order.amount,
+                    currency: order.currency,
+                    name: 'MOCCA',
+                    description: 'Order Payment',
+                    order_id: order.id,
+                    handler: async function (response) {
+                        const paymentVerificationResponse = await axios.post('/verify-razorpay-payment', {
+                            razorpayOrderId: response.razorpay_order_id,
+                            razorpayPaymentId: response.razorpay_payment_id,
+                            razorpaySignature: response.razorpay_signature,
+                        });
+    
+                        if (paymentVerificationResponse.data.success) {
+                            // Save order to the database
+                            const orderResponse = await axios.post('/place-order', orderDetails);
+                            toast.success(orderResponse.data.message);
+                            navigate('/order-confirmation');
+                        } else {
+                            toast.error('Payment verification failed.');
+                        }
+                    },
+                    prefill: {
+                        name: address.name,
+                        email: user.email,
+                        contact: address.phone,
+                    },
+                    theme: {
+                        color: '#F37254',
+                    },
+                };
+    
+                const razorpayInstance = new window.Razorpay(razorpayOptions);
+                razorpayInstance.open();
+            } catch (error) {
+                console.error('Error during Razorpay payment:', error);
+                toast.error('Failed to initialize Razorpay payment.');
+            }
+        } else {
+            try {
+                const orderResponse = await axios.post('/place-order', orderDetails);
+                toast.success(orderResponse.data.message);
+                navigate('/order-confirmation');
+            } catch (error) {
+                console.error('Error placing order:', error.response?.data?.message || error.message);
+                toast.error(error.response?.data?.message || 'Failed to place the order. Please try again.');
+            }
         }
     };
+    
 
     return (
         <div className="max-w-4xl mx-auto p-6">
