@@ -366,105 +366,227 @@ export default function CartPlaceOrder() {
     }
   };
 
+  // const handlePlaceOrder = async () => {
+  //   if (!address) {
+  //     toast.error('Please select a delivery address.');
+  //     return;
+  //   }
+
+  //   if (!paymentMethod) {
+  //     setPayError('Please select a payment method before placing the order.');
+  //     return;
+  //   }
+
+  //   setPayError('');
+
+  //   const orderDetails = {
+  //     userId: userId,
+  //     address,
+  //     products: cartItems.map((item) => ({
+  //       productId: item.productId._id,
+  //       productName: item.productId.productName,
+  //       mainImage: item.productId.mainImage[0],
+  //       size: item.size,
+  //       quantity: item.quantity,
+  //       price: item.productId.salePrice,
+  //     })),
+  //     paymentMethod,
+  //     totalAmount: total, // Total with discount applied
+  //     promoCode, // Send applied promo code
+  //     discountAmount, // Send the discount amount
+  //   };
+  //   try {
+  //   if(paymentMethod === 'Razor Pay'){
+  //     try {
+  //       const razorpayOrderResponse = await axios.post('/create-razorpay-order', {
+  //           amount: total,
+  //           currency: 'INR',
+  //       });
+
+  //       const { order } = razorpayOrderResponse.data;
+
+  //       const razorpayOptions = {
+  //           key: 'rzp_test_fVyWQT9oTgFtNj',
+  //           amount: order.amount,
+  //           currency: order.currency,
+  //           name: 'MOCCA',
+  //           description: 'Order Payment',
+  //           order_id: order.id,
+  //           handler: async function (response) {
+  //               const paymentVerificationResponse = await axios.post('/verify-razorpay-payment', {
+  //                   razorpayOrderId: response.razorpay_order_id,
+  //                   razorpayPaymentId: response.razorpay_payment_id,
+  //                   razorpaySignature: response.razorpay_signature,
+  //               });
+
+  //               if (paymentVerificationResponse.data.success) {
+  //                   // Save order to the database
+  //                   const orderResponse = await axios.post('/place-order', orderDetails);
+  //                   toast.success(orderResponse.data.message);
+  //                   navigate('/order-confirmation');
+  //               } else {
+  //                   toast.error('Payment verification failed.');
+  //               }
+  //           },
+  //           prefill: {
+  //               name: address.name,
+  //               email: user.email,
+  //               contact: address.phone,
+  //           },
+  //           theme: {
+  //               color: '#F37254',
+  //           },
+  //       };
+
+  //       const razorpayInstance = new window.Razorpay(razorpayOptions);
+  //       razorpayInstance.open();
+  //   } catch (error) {
+  //       console.error('Error during Razorpay payment:', error);
+  //       toast.error('Failed to initialize Razorpay payment.');
+  //   }
+
+  //   }else{
+  //     try {
+  //       const response = await axios.post('/place-order-cart', orderDetails);
+  //     toast.success(response.data.message); 
+  //     navigate('/order-confirmation');
+        
+  //     } catch (error) {
+  //       console.log(error);
+        
+  //     }
+
+  //   }
+
+    
+      
+  //   } catch (error) {
+  //     console.error('Error placing order:', error.response?.data?.message || error.message);
+  //     toast.error(error.response?.data?.message || 'Failed to place the order. Please try again.');
+  //   }
+  // };
+
+
   const handlePlaceOrder = async () => {
     if (!address) {
-      toast.error('Please select a delivery address.');
-      return;
+        toast.error('Please select a delivery address.');
+        return;
     }
 
     if (!paymentMethod) {
-      setPayError('Please select a payment method before placing the order.');
-      return;
+        setPayError('Please select a payment method before placing the order.');
+        return;
     }
 
     setPayError('');
 
     const orderDetails = {
-      userId: userId,
-      address,
-      products: cartItems.map((item) => ({
-        productId: item.productId._id,
-        productName: item.productId.productName,
-        mainImage: item.productId.mainImage[0],
-        size: item.size,
-        quantity: item.quantity,
-        price: item.productId.salePrice,
-      })),
-      paymentMethod,
-      totalAmount: total, // Total with discount applied
-      promoCode, // Send applied promo code
-      discountAmount, // Send the discount amount
+        userId,
+        address,
+        products: cartItems.map((item) => ({
+            productId: item.productId._id,
+            productName: item.productId.productName,
+            mainImage: item.productId.mainImage[0],
+            size: item.size,
+            quantity: item.quantity,
+            price: item.productId.salePrice,
+        })),
+        paymentMethod,
+        totalAmount: total, // Total with discount applied
+        promoCode, // Send applied promo code
+        discountAmount, // Send the discount amount
     };
+
     try {
-    if(paymentMethod === 'Razor Pay'){
-      try {
-        const razorpayOrderResponse = await axios.post('/create-razorpay-order', {
-            amount: total,
-            currency: 'INR',
-        });
-
-        const { order } = razorpayOrderResponse.data;
-
-        const razorpayOptions = {
-            key: 'rzp_test_fVyWQT9oTgFtNj',
-            amount: order.amount,
-            currency: order.currency,
-            name: 'MOCCA',
-            description: 'Order Payment',
-            order_id: order.id,
-            handler: async function (response) {
-                const paymentVerificationResponse = await axios.post('/verify-razorpay-payment', {
-                    razorpayOrderId: response.razorpay_order_id,
-                    razorpayPaymentId: response.razorpay_payment_id,
-                    razorpaySignature: response.razorpay_signature,
+        if (paymentMethod === 'Razor Pay') {
+            // Razorpay Payment Flow
+            try {
+                const razorpayOrderResponse = await axios.post('/create-razorpay-order', {
+                    amount: total,
+                    currency: 'INR',
                 });
 
-                if (paymentVerificationResponse.data.success) {
-                    // Save order to the database
-                    const orderResponse = await axios.post('/place-order', orderDetails);
+                const { order } = razorpayOrderResponse.data;
+
+                const razorpayOptions = {
+                    key: 'rzp_test_fVyWQT9oTgFtNj',
+                    amount: order.amount,
+                    currency: order.currency,
+                    name: 'MOCCA',
+                    description: 'Order Payment',
+                    order_id: order.id,
+                    handler: async function (response) {
+                        const paymentVerificationResponse = await axios.post('/verify-razorpay-payment', {
+                            razorpayOrderId: response.razorpay_order_id,
+                            razorpayPaymentId: response.razorpay_payment_id,
+                            razorpaySignature: response.razorpay_signature,
+                        });
+
+                        if (paymentVerificationResponse.data.success) {
+                            // Save order to the database
+                            const orderResponse = await axios.post('/place-order', orderDetails);
+                            toast.success(orderResponse.data.message);
+                            navigate('/order-confirmation');
+                        } else {
+                            toast.error('Payment verification failed.');
+                        }
+                    },
+                    prefill: {
+                        name: address.name,
+                        email: user.email,
+                        contact: address.phone,
+                    },
+                    theme: {
+                        color: '#F37254',
+                    },
+                };
+
+                const razorpayInstance = new window.Razorpay(razorpayOptions);
+                razorpayInstance.open();
+            } catch (error) {
+                console.error('Error during Razorpay payment:', error);
+                toast.error('Failed to initialize Razorpay payment.');
+            }
+        } else if (paymentMethod === 'Wallet') {
+            // Wallet Payment Flow
+            try {
+                const walletResponse = await axios.post('/wallet-payment', { 
+                    userId, 
+                    totalAmount: total 
+                });
+
+                if (walletResponse.data.success) {
+                    // Place the order after successful wallet payment
+                    const orderResponse = await axios.post('/place-order-cart', orderDetails);
                     toast.success(orderResponse.data.message);
                     navigate('/order-confirmation');
                 } else {
-                    toast.error('Payment verification failed.');
+                    toast.error(walletResponse.data.message || 'Insufficient wallet balance.');
                 }
-            },
-            prefill: {
-                name: address.name,
-                email: user.email,
-                contact: address.phone,
-            },
-            theme: {
-                color: '#F37254',
-            },
-        };
-
-        const razorpayInstance = new window.Razorpay(razorpayOptions);
-        razorpayInstance.open();
+            } catch (error) {
+                console.error('Error during wallet payment:', error);
+                toast.error('Wallet payment failed. Please try again.');
+            }
+        } else if (paymentMethod === 'Cash on Delivery') {
+            // Cash-on-Delivery Payment Flow
+            try {
+                const orderResponse = await axios.post('/place-order-cart', orderDetails);
+                toast.success(orderResponse.data.message);
+                navigate('/order-confirmation');
+            } catch (error) {
+                console.error('Error placing COD order:', error.response?.data?.message || error.message);
+                toast.error(error.response?.data?.message || 'Failed to place the order. Please try again.');
+            }
+        } else {
+            // Default Payment Method
+            toast.error('Unsupported payment method.');
+        }
     } catch (error) {
-        console.error('Error during Razorpay payment:', error);
-        toast.error('Failed to initialize Razorpay payment.');
+        console.error('Error placing order:', error.response?.data?.message || error.message);
+        toast.error(error.response?.data?.message || 'Failed to place the order. Please try again.');
     }
+};
 
-    }else{
-      try {
-        const response = await axios.post('/place-order-cart', orderDetails);
-      toast.success(response.data.message); 
-      navigate('/order-confirmation');
-        
-      } catch (error) {
-        console.log(error);
-        
-      }
-
-    }
-
-    
-      
-    } catch (error) {
-      console.error('Error placing order:', error.response?.data?.message || error.message);
-      toast.error(error.response?.data?.message || 'Failed to place the order. Please try again.');
-    }
-  };
 
   return (
     <div className="max-w-4xl mx-auto p-6">

@@ -24,6 +24,7 @@ import { addOrder, cancelOrder, cartCheckOut, createRazorpayOrder, getDetails, g
 import { categoriesForUser } from '../controller/categoryController.js'
 import { addToWishlist, getWishListProducts, removeFromWishlist } from '../controller/wishlistController.js'
 import { getCoupons, listCouponUserSide } from '../controller/couponController.js'
+import { getWalletDetails, walletPayment } from '../controller/walletController.js'
 
 const user_routes = express.Router()
 user_routes.use(express.json())
@@ -97,5 +98,10 @@ user_routes.delete('/remove-from-wishlist/:userId/:productId', removeFromWishlis
 //coupon
 
 user_routes.get('/coupon-details',listCouponUserSide)
+
+//wallet 
+
+user_routes.get('/wallet/:userId',getWalletDetails)
+user_routes.post('/wallet-payment',walletPayment)
 
 export default  user_routes
