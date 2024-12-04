@@ -212,10 +212,11 @@ export default function CartPlaceOrder() {
                 console.error('Error during wallet payment:', error);
                 toast.error('Wallet payment failed. Please try again.');
             }
-        } else if (paymentMethod === 'Cash on Delivery') {
+        } else if (paymentMethod === 'Cash On Delivery') {
             // Cash-on-Delivery Payment Flow
             try {
                 const orderResponse = await axios.post('/place-order-cart', orderDetails);
+                
                 toast.success(orderResponse.data.message);
                 navigate('/order-confirmation');
             } catch (error) {

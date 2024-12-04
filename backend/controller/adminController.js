@@ -30,7 +30,7 @@ const refreshTokenHandler = async (req, res) => {
     const newAccessToken = jwt.sign(
       { id: admin._id, email: admin.email, role: admin.role },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: '15m' }
+      { expiresIn: '1d' }
     );
 
     res.json({ adminToken: newAccessToken });
