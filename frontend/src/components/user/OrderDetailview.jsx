@@ -5,12 +5,14 @@
   import axios from "../../services/api/userApi";
   import { useSelector } from "react-redux";
   import { useParams } from "react-router-dom";
+  import { useNavigate } from "react-router-dom";
   
   function OrderDetailView() {
     const { user } = useSelector((state) => state.user);
-    const userId = user.id; // Assuming `user.id` contains the logged-in user's ID
+    const userId = user.id; 
+    const navigate = useNavigate()
   
-    // Get the orderId from the URL using useParams
+    
     const { id } = useParams();
     const orderId = id;
   
@@ -18,7 +20,7 @@
     const cancelProduct = async ({ productId, orderId }) => {
       try {
         const response = await axios.put(`/cancel-order/${userId}/${orderId}`, { productId });
-        return response.data; // Return response data to use in onSuccess
+        return response.data; 
       } catch (error) {
         throw new Error("Failed to cancel product");
       }
@@ -26,7 +28,7 @@
   
     // Fetch order details using React Query based on orderId
     const { data: order, isLoading, isError } = useQuery({
-      queryKey: ["orderDetails", orderId],  // Use orderId here to fetch the specific order
+      queryKey: ["orderDetails", orderId],  
       queryFn: async () => {
         const response = await axios.get(`/order-details-view/${userId}/${orderId}`);
         return response.data;
@@ -149,12 +151,14 @@
               <div
                 key={product.productId._id}
                 className="flex items-center justify-between border-b pb-4"
+                
               >
                 <div className="flex items-center">
                   <img
                     src={product.productId.mainImage}
                     alt={product.productId.name}
                     className="w-20 h-20 object-cover rounded-md mr-4"
+                    onClick={()=>navigate(`/productinfo/${product.productId._id}`)}
                   />
                   <div>
                     <h4 className="font-semibold">{product.productId.productName}</h4>

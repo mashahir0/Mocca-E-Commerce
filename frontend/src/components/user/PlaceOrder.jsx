@@ -606,6 +606,7 @@ export default function PlaceOrder() {
                                         src={item.mainImage}
                                         alt={item.productName}
                                         className="w-16 h-16 object-cover rounded"
+                                        onClick={()=>navigate(`/productinfo/${item._id}`)}
                                     />
                                     <div className="flex-1">
                                         <h3 className="font-medium">{item.productName}</h3>

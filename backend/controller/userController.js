@@ -515,9 +515,31 @@ const getUserAddresses = async (req, res) => {
     }
 };
 
+const searchSuggestion = async(req,res)=>{
+    try {
+        const searchTerm = req.query.q;
+
+        if (!searchTerm || searchTerm.trim() === '') {
+            return res.status(400).json({ message: 'Search term is required.' });
+        }
+
+        const suggestions = await Product.find({
+            productName: { $regex: searchTerm, $options: 'i' },
+            status :true 
+        })
+            .select('productName mainImage salePrice') // Return relevant fields only
+            .limit(10); // Limit the number of suggestions
+
+        res.status(200).json(suggestions);
+    } catch (error) {
+        console.error('Error fetching search suggestions:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
 
 
 export {registerUser,userLogin,refreshAccessToken,getProductDetails,showProductDetails,googleLogin,
     getUserDetails,updateUserProfile,changePassword,changeNewPass,addAddress,getUserAddresses,setDefaultAddress,
-    deleteAddress,getDefaultAddress
+    deleteAddress,getDefaultAddress,searchSuggestion
 }

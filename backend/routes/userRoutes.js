@@ -14,6 +14,7 @@ import { registerUser,
     deleteAddress,
     setDefaultAddress,
     getDefaultAddress,
+    searchSuggestion,
     } from '../controller/userController.js'
 import { userExistance,userStatus } from '../middleware/userMiddleware.js'
 import { sendOTP,verifyOTP } from '../controller/otpController.js'
@@ -44,6 +45,7 @@ user_routes.post('/google-login',googleLogin)
 
 user_routes.get('/get-allproducts',getProducts)
 user_routes.get('/product-info/:id',showProductDetails)
+user_routes.get('/search-suggestions',searchSuggestion)
 
 //get categoris
 

@@ -11,7 +11,8 @@ export default function Cart() {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+    console.log(cartItems);
+    
   const navigate = useNavigate()
   
 
@@ -90,14 +91,17 @@ export default function Cart() {
     <div className="max-w-4xl mx-auto my-28 p-4">
       <div className="space-y-4">
         {cartItems.map((item) => (
-          <div key={item._id} className="bg-gray-50 rounded-lg p-4 flex items-center gap-4">
+          <div key={item._id} className="bg-gray-50 rounded-lg p-4 flex items-center gap-4"
+          
+          >
             <img
               src={item.productId.mainImage}
-              alt={item.productId.name}
+              alt={item.productId.productName}
               className="w-24 h-24 object-cover rounded-md"
+              onClick={()=>navigate(`/productinfo/${item.productId._id}`)}
             />
             <div className="flex-1">
-              <h3 className="font-medium">{item.productId.name}</h3>
+              <h3 className="font-medium">{item.productId.productName}</h3>
               <p className="text-sm text-gray-600">Size: {item.size}</p>
               <div className="mt-2 flex items-center gap-2">
                 <span className="text-sm">Quantity:</span>
