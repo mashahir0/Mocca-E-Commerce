@@ -80,16 +80,18 @@ const getWishListProducts = async (req, res) => {
       return res.status(500).json({ error: 'Failed to fetch wishlist products' });
     }
   };
+  
+  //remove from wishlist 
 
   const removeFromWishlist = async (req, res) => {
     try {
-      const { userId, productId } = req.params; // Get userId and productId from the URL params
+      const { userId, productId } = req.params; 
         
-      // Update the wishlist by removing the product
+     
       const updatedWishlist = await Wishlist.findOneAndUpdate(
-        { userId }, // Match the user's wishlist
-        { $pull: { items: productId } }, // Remove the product from `items` array
-        { new: true } // Return the updated document
+        { userId }, 
+        { $pull: { items: productId } },
+        { new: true }
       );
   
       if (!updatedWishlist) {

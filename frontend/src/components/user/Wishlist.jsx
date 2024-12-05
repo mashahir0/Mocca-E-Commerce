@@ -3,20 +3,20 @@ import React, { useEffect, useState } from 'react';
 import axios from '../../services/api/userApi';
 import { Star, StarHalf } from 'lucide-react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom'; // For navigation
+import { useNavigate } from 'react-router-dom'; 
 import { ToastContainer, toast } from "react-toastify";
 
 export default function Wishlist() {
   const [products, setProducts] = useState([]);
   const { user } = useSelector((state) => state.user);
   const Id = user.id;
-  const navigate = useNavigate(); // Initialize navigation
+  const navigate = useNavigate(); 
 
-  // Fetch Wishlist Function
+ 
   const fetchWishlist = async () => {
     try {
-      const response = await axios.get(`/get-wishlist/${Id}`); // Fetch wishlist by user ID
-      setProducts(response.data.products); // Assuming `products` is the key in the response
+      const response = await axios.get(`/get-wishlist/${Id}`); 
+      setProducts(response.data.products); 
     } catch (error) {
       console.error('Failed to fetch wishlist', error);
     }

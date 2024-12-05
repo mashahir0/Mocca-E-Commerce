@@ -126,6 +126,7 @@ const verifyRazorpayPayment = (req, res) => {
 //     }
 // };
 
+// direct purchase
 
 const addOrder = async (req, res) => {
   try {
@@ -136,7 +137,7 @@ const addOrder = async (req, res) => {
           return res.status(400).json({ message: 'All fields are required.' });
       }
 
-      // Check payment status for wallet payment
+      
       if (paymentMethod === 'Wallet') {
           const wallet = await Wallet.findOne({ userId });
 
@@ -146,7 +147,7 @@ const addOrder = async (req, res) => {
 
           wallet.balance -= totalAmount;
 
-          // Record transaction in wallet
+          
           wallet.transactions.push({
               type: 'debit',
               amount: totalAmount,
@@ -216,17 +217,17 @@ const cartCheckOut = async (req, res) => {
     console.log(paymentMethod);
     
 
-    // Validate user existence
+    
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Handle payment verification for online payments
+    
     if (paymentMethod === 'Razor Pay') {
       const { razorpayOrderId, razorpayPaymentId, razorpaySignature } = req.body;
 
-      // Call a function to verify Razorpay payment (Assume `verifyRazorpayPayment` exists)
+      
       const isPaymentVerified = await verifyRazorpayPayment(
         razorpayOrderId,
         razorpayPaymentId,
@@ -237,24 +238,24 @@ const cartCheckOut = async (req, res) => {
         return res.status(400).json({ message: 'Payment verification failed.' });
       }
     } else if (paymentMethod === 'Wallet') {
-      // Deduct wallet balance and check if sufficient funds exist
+     
       if (user.walletBalance < totalAmount) {
         return res.status(400).json({ message: 'Insufficient wallet balance.' });
       }
 
-      // Deduct wallet balance
+     
       user.walletBalance -= totalAmount;
       await user.save();
     }
 
-    // Define order status based on payment method
-    let orderStatus = 'Processing'; // Default order status
+    
+    let orderStatus = 'Processing';
 
     if (paymentMethod === 'Cash on Delivery') {
-      orderStatus = 'Pending Payment';  // Set to 'Pending Payment' for COD
+      orderStatus = 'Pending Payment';  
     }
 
-    // Create a new order
+    
     const order = new Order({
       userId,
       address,
@@ -263,7 +264,7 @@ const cartCheckOut = async (req, res) => {
       totalAmount,
       couponCode: promoCode,
       discountedAmount: discountAmount,
-      status: orderStatus,  // Set order status according to payment method
+      status: orderStatus,  
       createdAt: new Date(),
     });
     console.log('11111');
@@ -273,7 +274,7 @@ const cartCheckOut = async (req, res) => {
 
     await order.save();
 
-    // Update product stock
+    
     for (const item of products) {
       const product = await Product.findById(item.productId);
 
@@ -297,12 +298,12 @@ const cartCheckOut = async (req, res) => {
     // Clear the user's cart
     const cart = await Cart.findOne({ userId });
     if (cart) {
-      console.log('Cart before clearing:', cart.items); // Log cart items before clearing
+      console.log('Cart before clearing:', cart.items); 
       cart.items = [];
       cart.totalAmount = 0;
 
-      const updatedCart = await cart.save();  // Saving the updated cart
-      console.log('Updated Cart:', updatedCart); // Log the updated cart after clearing
+      const updatedCart = await cart.save();  
+      console.log('Updated Cart:', updatedCart); 
 
       res.status(200).json({ message: 'Order placed successfully and cart cleared!' });
     } else {
@@ -363,7 +364,7 @@ const cancelOrder = async (req, res) => {
     const { userId, orderId } = req.params;
     const { productId } = req.body;
 
-    // Validate IDs
+    
     if (
       !mongoose.Types.ObjectId.isValid(orderId) ||
       !mongoose.Types.ObjectId.isValid(userId) ||
@@ -372,13 +373,13 @@ const cancelOrder = async (req, res) => {
       return res.status(400).json({ message: 'Invalid Order ID, User ID, or Product ID' });
     }
 
-    // Fetch order
+    
     const order = await Order.findOne({ _id: orderId, userId });
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    // Find the product in the order
+    
     const productInOrder = order.products.find(
       (product) => product.productId.toString() === productId
     );
@@ -397,7 +398,7 @@ const cancelOrder = async (req, res) => {
     }
     product.stockQuantity += productInOrder.quantity;
 
-    // Update the stock for a specific size, if applicable
+    
     if (productInOrder.size) {
       const sizeObj = product.size.find((s) => s.name === productInOrder.size);
       if (sizeObj) {
@@ -410,11 +411,11 @@ const cancelOrder = async (req, res) => {
     }
     await product.save();
 
-    // Update the product status to 'Cancelled'
+    
     productInOrder.status = 'Cancelled';
     await order.save();
 
-    // Check if all products in the order are canceled
+    
     const allProductsCancelled = order.products.every(
       (product) => product.status === 'Cancelled'
     );
@@ -423,7 +424,7 @@ const cancelOrder = async (req, res) => {
       await order.save();
     }
 
-    // Handle wallet refund logic for both Razorpay and COD
+    
     const wallet = await Wallet.findOne({ userId });
     if (!wallet) {
       return res.status(404).json({ message: 'Wallet not found for user.' });
@@ -432,7 +433,7 @@ const cancelOrder = async (req, res) => {
     const refundAmount = productInOrder.price + (order.discountedAmount || 0);
 
     if (order.paymentMethod === 'Cash On Delivery' && productInOrder.status === 'Delivered') {
-      // Refund for delivered COD orders
+      
       wallet.balance += refundAmount;
 
       wallet.transactions.push({
@@ -441,7 +442,7 @@ const cancelOrder = async (req, res) => {
         description: `Refund for canceled product: ${productInOrder.productName}`,
       });
     } else if (order.paymentMethod === 'Razor Pay') {
-      // Refund for Razorpay orders
+      
       wallet.balance += refundAmount;
 
       wallet.transactions.push({

@@ -51,10 +51,10 @@ const ProductsList = () => {
   const navigate = useNavigate();
 
   const {user} = useSelector((state)=>state.user)
-  const userId = user.id
-  if(!userId){
-    navigate('/login')
-  }
+  const userId = user?.id
+  // if(!userId){
+  //   navigate('/login')
+  // }
 
   const {searchTerm } = useSearch()
   console.log(searchTerm);

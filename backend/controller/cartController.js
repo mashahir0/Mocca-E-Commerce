@@ -107,24 +107,24 @@ const addToCart = async (req, res) => {
     try {
         const { userId, productId, size, quantity } = req.body;
 
-        // Validate input data
+        
         if (!userId || !productId || !size || typeof quantity !== 'number') {
             return res.status(400).json({ message: 'Invalid request data' });
         }
 
-        // Ensure quantity is within allowed range
+        
         if (quantity < 1 || quantity > 5) {
             return res.status(400).json({ message: 'Quantity must be between 1 and 5' });
         }
 
-        // Find the cart for the user
+        
         const cart = await Cart.findOne({ userId }).populate('items.productId');
 
         if (!cart) {
             return res.status(404).json({ message: 'Cart not found' });
         }
 
-        // Locate the cart item
+       
         const itemIndex = cart.items.findIndex(
             (item) =>
                 item.productId._id.toString() === productId && item.size === size
@@ -134,7 +134,7 @@ const addToCart = async (req, res) => {
             return res.status(404).json({ message: 'Item not found in cart' });
         }
 
-        // Get the product and check the stock for the specified size
+        
         const product = await Product.findById(productId);
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
@@ -145,14 +145,14 @@ const addToCart = async (req, res) => {
             return res.status(400).json({ message: `Size ${size} not available for this product.` });
         }
 
-        // Check if requested quantity exceeds available stock
+        
         if (quantity > sizeInfo.stock) {
             return res.status(400).json({
                 message: `Cannot update quantity. Only ${sizeInfo.stock} units available for size ${size}.`,
             });
         }
 
-        // Update the cart item quantity
+        
         cart.items[itemIndex].quantity = quantity;
 
         // Recalculate the total amount
@@ -164,7 +164,7 @@ const addToCart = async (req, res) => {
             return sum + validQuantity * validSalePrice;
         }, 0);
 
-        // Save the updated cart
+        
         await cart.save();
 
         res.status(200).json({ message: 'Quantity updated successfully', items: cart.items });

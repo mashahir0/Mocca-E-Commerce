@@ -4,7 +4,7 @@ const getWalletDetails = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    // Fetch or create wallet
+    
     let wallet = await Wallet.findOne({ userId }).populate(
       "userId",
       "name email"
@@ -12,7 +12,6 @@ const getWalletDetails = async (req, res) => {
 
     if (!wallet) {
       wallet = await Wallet.create({ userId, balance: 0, transactions: [] });
-      // Optionally populate userId details
       wallet = await Wallet.findOne({ userId }).populate(
         "userId",
         "name email"
@@ -38,21 +37,21 @@ const walletPayment = async (req, res) => {
             return res.status(400).json({ message: 'User ID and total amount are required.' });
         }
 
-        // Find the user's wallet
+        
         const wallet = await Wallet.findOne({ userId });
         if (!wallet) {
             return res.status(404).json({ message: 'Wallet not found.' });
         }
 
-        // Check if wallet has enough balance
+        
         if (wallet.balance < totalAmount) {
             return res.status(400).json({ message: 'Not enough balance in wallet.' });
         }
 
-        // Deduct amount from wallet balance
+        
         wallet.balance -= totalAmount;
 
-        // Record transaction in wallet history
+        
         wallet.transactions.push({
             type: 'debit',
             amount: totalAmount,
