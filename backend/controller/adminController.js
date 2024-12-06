@@ -220,119 +220,330 @@ const deleteUser = async (req, res) => {
 
 
 
+// const downloadPDFReport = async (req, res) => {
+//   try {
+//       const { filter } = req.query;
+
+//       // Build query for today's orders
+//       let query = {};
+//       if (filter === 'daily') {
+//           const todayStart = new Date();
+//           todayStart.setHours(0, 0, 0, 0); // Set start of the day (midnight)
+          
+//           const todayEnd = new Date();
+//           todayEnd.setHours(23, 59, 59, 999); // Set end of the day (just before midnight)
+
+//           query.orderDate = { $gte: todayStart, $lte: todayEnd };
+//       }
+
+//       const orders = await Order.find(query);
+
+//       // If no orders found, return a message
+//       if (orders.length === 0) {
+//           res.status(200).send("No orders found for today.");
+//           return;
+//       }
+
+//       // Calculate overall metrics
+//       const overallSalesCount = orders.length;
+//       const overallOrderAmount = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+//       const overallDiscount = orders.reduce((sum, order) => sum + (order.discountedAmount || 0), 0);
+
+//       // Create PDF document
+//       const doc = new pdf();
+//       res.setHeader('Content-Disposition', 'attachment; filename="daily_sales_report.pdf"');
+//       res.setHeader('Content-Type', 'application/pdf');
+//       doc.pipe(res);
+
+//       // Add title and overall metrics
+//       doc.fontSize(18).text('Daily Sales Report', { align: 'center' });
+//       doc.text(`Overall Sales Count: ${overallSalesCount}`, { align: 'left' });
+//       doc.text(`Overall Order Amount: ₹${overallOrderAmount.toFixed(2)}`, { align: 'left' });
+//       doc.text(`Overall Discount: ₹${overallDiscount.toFixed(2)}`, { align: 'left' });
+
+//       // Add details for each order
+//       orders.forEach((order, idx) => {
+//           doc.fontSize(12).text(`Order #${idx + 1}: ${order._id}`);
+//           doc.text(`Total Amount: ₹${order.totalAmount}`);
+//           doc.text(`Discount: ₹${order.discountedAmount || 0}`);
+//           doc.text('---');
+//       });
+
+//       doc.end();
+//   } catch (error) {
+//       console.error('Error generating PDF:', error);
+//       res.status(500).json({ message: 'Failed to generate PDF.' });
+//   }
+// };
+
+
 const downloadPDFReport = async (req, res) => {
   try {
-      const { filter } = req.query;
+    const { filter, startDate, endDate } = req.query;
 
-      // Build query for today's orders
-      let query = {};
-      if (filter === 'daily') {
-          const todayStart = new Date();
-          todayStart.setHours(0, 0, 0, 0); // Set start of the day (midnight)
-          
-          const todayEnd = new Date();
-          todayEnd.setHours(23, 59, 59, 999); // Set end of the day (just before midnight)
+    // Build query based on filter (daily, weekly, or custom date range)
+    let query = {};
+    const today = new Date();
 
-          query.orderDate = { $gte: todayStart, $lte: todayEnd };
-      }
+    // Handling the custom date range if provided
+    if (startDate && endDate) {
+      const start = new Date(startDate); // Parse startDate
+      const end = new Date(endDate); // Parse endDate
+      end.setHours(23, 59, 59, 999); // Ensure the end date is set to the end of the day
+      query.orderDate = { $gte: start, $lte: end };
+    } else if (filter === 'daily') {
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999);
+      query.orderDate = { $gte: startOfDay, $lte: endOfDay };
+    } else if (filter === 'weekly') {
+      const startOfWeek = new Date();
+      startOfWeek.setDate(today.getDate() - today.getDay()); // Sunday as the start of the week
+      startOfWeek.setHours(0, 0, 0, 0);
+      const endOfWeek = new Date();
+      endOfWeek.setDate(today.getDate() - today.getDay() + 6); // Saturday as the end of the week
+      endOfWeek.setHours(23, 59, 59, 999);
+      query.orderDate = { $gte: startOfWeek, $lte: endOfWeek };
+    }
 
-      const orders = await Order.find(query);
+    // Fetch orders based on the query
+    const orders = await Order.find(query);
 
-      // If no orders found, return a message
-      if (orders.length === 0) {
-          res.status(200).send("No orders found for today.");
-          return;
-      }
+    // If no orders found, return a message
+    if (orders.length === 0) {
+      res.status(200).send(`No orders found for the selected period.`);
+      return;
+    }
 
-      // Calculate overall metrics
-      const overallSalesCount = orders.length;
-      const overallOrderAmount = orders.reduce((sum, order) => sum + order.totalAmount, 0);
-      const overallDiscount = orders.reduce((sum, order) => sum + (order.discountedAmount || 0), 0);
+    // Calculate overall metrics
+    const overallSalesCount = orders.length;
+    const overallOrderAmount = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+    const overallDiscount = orders.reduce((sum, order) => sum + (order.discountedAmount || 0), 0);
 
-      // Create PDF document
-      const doc = new pdf();
-      res.setHeader('Content-Disposition', 'attachment; filename="daily_sales_report.pdf"');
-      res.setHeader('Content-Type', 'application/pdf');
-      doc.pipe(res);
+    // Create PDF document
+    const doc = new pdf({ size: 'A4', margin: 40 });
+    res.setHeader('Content-Disposition', `attachment; filename="${filter}_sales_report.pdf"`);
+    res.setHeader('Content-Type', 'application/pdf');
+    doc.pipe(res);
 
-      // Add title and overall metrics
-      doc.fontSize(18).text('Daily Sales Report', { align: 'center' });
-      doc.text(`Overall Sales Count: ${overallSalesCount}`, { align: 'left' });
-      doc.text(`Overall Order Amount: ₹${overallOrderAmount.toFixed(2)}`, { align: 'left' });
-      doc.text(`Overall Discount: ₹${overallDiscount.toFixed(2)}`, { align: 'left' });
+    // Title and Overall Metrics
+    doc.fontSize(18).text(`${filter.charAt(0).toUpperCase() + filter.slice(1)} Sales Report`, {
+      align: 'center',
+      underline: true,
+    });
+    doc.moveDown(1);
+    doc.fontSize(12).text(`Overall Sales Count: ${overallSalesCount}`);
+    doc.text(`Overall Order Amount: ₹${overallOrderAmount.toFixed(2)}`);
+    doc.text(`Overall Discount: ₹${overallDiscount.toFixed(2)}`);
+    doc.moveDown(1);
 
-      // Add details for each order
-      orders.forEach((order, idx) => {
-          doc.fontSize(12).text(`Order #${idx + 1}: ${order._id}`);
-          doc.text(`Total Amount: ₹${order.totalAmount}`);
-          doc.text(`Discount: ₹${order.discountedAmount || 0}`);
-          doc.text('---');
+    // Table Headers
+    const headers = ['Order ID', 'User ID', 'Total Amount', 'Discount', 'Order Date'];
+    const columnWidths = [100, 100, 80, 80, 100]; // Optimized column widths
+    const tableTop = doc.y;
+    const rowHeight = 20;
+    const margin = doc.page.margins.left;
+    let y = tableTop;
+
+    // Draw Header Row
+    headers.forEach((header, idx) => {
+      doc
+        .fontSize(10)
+        .text(header, margin + columnWidths.slice(0, idx).reduce((sum, w) => sum + w, 0), y, {
+          width: columnWidths[idx],
+          align: 'center',
+        });
+    });
+
+    // Horizontal line under headers
+    doc.moveTo(margin, y + rowHeight - 10).lineTo(doc.page.width - margin, y + rowHeight - 10).stroke();
+    y += rowHeight;
+
+    // Table Rows
+    orders.forEach((order) => {
+      const rowData = [
+        order._id,
+        order.userId || 'N/A',
+        `₹${order.totalAmount.toFixed(2)}`,
+        `₹${(order.discountedAmount || 0).toFixed(2)}`,
+        new Date(order.orderDate).toLocaleDateString(),
+      ];
+
+      rowData.forEach((data, idx) => {
+        doc
+          .fontSize(10)
+          .text(data, margin + columnWidths.slice(0, idx).reduce((sum, w) => sum + w, 0), y, {
+            width: columnWidths[idx],
+            align: 'center',
+            ellipsis: true,
+          });
       });
 
-      doc.end();
+      // Draw borders for the row
+      doc.rect(margin, y, columnWidths.reduce((sum, w) => sum + w, 0), rowHeight).stroke();
+      y += rowHeight;
+
+      // Add new page if rows exceed page height
+      if (y > doc.page.height - doc.page.margins.bottom) {
+        doc.addPage();
+        y = doc.page.margins.top;
+
+        // Redraw headers on new page
+        headers.forEach((header, idx) => {
+          doc
+            .fontSize(10)
+            .text(header, margin + columnWidths.slice(0, idx).reduce((sum, w) => sum + w, 0), y, {
+              width: columnWidths[idx],
+              align: 'center',
+            });
+        });
+
+        doc.moveTo(margin, y + rowHeight - 10).lineTo(doc.page.width - margin, y + rowHeight - 10).stroke();
+        y += rowHeight;
+      }
+    });
+
+    // Finalize the document
+    doc.end();
   } catch (error) {
-      console.error('Error generating PDF:', error);
-      res.status(500).json({ message: 'Failed to generate PDF.' });
+    console.error('Error generating PDF:', error);
+    res.status(500).json({ message: 'Failed to generate PDF.' });
   }
 };
 
 
+
+// const downloadExcelReport = async (req, res) => {
+//   try {
+//       const { filter } = req.query;
+
+//       // Build query for today's orders
+//       let query = {};
+//       if (filter === 'daily') {
+//           const todayStart = new Date();
+//           todayStart.setHours(0, 0, 0, 0); // Set start of the day (midnight)
+          
+//           const todayEnd = new Date();
+//           todayEnd.setHours(23, 59, 59, 999); // Set end of the day (just before midnight)
+
+//           query.orderDate = { $gte: todayStart, $lte: todayEnd };
+//       }
+
+//       const orders = await Order.find(query);
+
+//       // If no orders found, return a message
+//       if (orders.length === 0) {
+//           res.status(200).send("No orders found for today.");
+//           return;
+//       }
+
+//       // Calculate overall metrics
+//       const overallSalesCount = orders.length;
+//       const overallOrderAmount = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+//       const overallDiscount = orders.reduce((sum, order) => sum + (order.discountedAmount || 0), 0);
+
+//       // Prepare data for CSV
+//       const fields = ['Order ID', 'User', 'Total Amount', 'Discount', 'Date'];
+//       const json2csvParser = new Parser({ fields });
+//       const csv = json2csvParser.parse(
+//           orders.map((order) => ({
+//               'Order ID': order._id,
+//               User: order.userId ? order.userId.name : 'N/A',  // Ensure userId exists
+//               'Total Amount': order.totalAmount,
+//               Discount: order.discountedAmount || 0,
+//               Date: order.orderDate.toISOString().split('T')[0],
+//           }))
+//       );
+
+//       // Add overall metrics at the top of the CSV
+//       const overallData = `Overall Sales Count: ${overallSalesCount}\nOverall Order Amount: ₹${overallOrderAmount.toFixed(2)}\nOverall Discount: ₹${overallDiscount.toFixed(2)}\n\n`;
+
+//       res.setHeader('Content-Disposition', 'attachment; filename="daily_sales_report.csv"');
+//       res.set('Content-Type', 'text/csv');
+//       res.status(200).send(overallData + csv);
+//   } catch (error) {
+//       console.error('Error generating Excel report:', error);
+//       res.status(500).json({ message: 'Failed to generate Excel report.' });
+//   }
+// };
 
 
 const downloadExcelReport = async (req, res) => {
   try {
-      const { filter } = req.query;
+    const { filter, startDate, endDate } = req.query;
 
-      // Build query for today's orders
-      let query = {};
-      if (filter === 'daily') {
-          const todayStart = new Date();
-          todayStart.setHours(0, 0, 0, 0); // Set start of the day (midnight)
-          
-          const todayEnd = new Date();
-          todayEnd.setHours(23, 59, 59, 999); // Set end of the day (just before midnight)
+    // Build query for the orders based on the filter (daily, weekly, or custom date range)
+    let query = {};
+    const today = new Date();
 
-          query.orderDate = { $gte: todayStart, $lte: todayEnd };
-      }
+    // Handling the custom date range if provided
+    if (startDate && endDate) {
+      const start = new Date(startDate); // Parse startDate
+      const end = new Date(endDate); // Parse endDate
+      end.setHours(23, 59, 59, 999); // Ensure the end date is set to the end of the day
+      query.orderDate = { $gte: start, $lte: end };
+    } else if (filter === 'daily') {
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999);
+      query.orderDate = { $gte: startOfDay, $lte: endOfDay };
+    } else if (filter === 'weekly') {
+      const startOfWeek = new Date();
+      startOfWeek.setDate(today.getDate() - today.getDay()); // Sunday as the start of the week
+      startOfWeek.setHours(0, 0, 0, 0);
+      const endOfWeek = new Date();
+      endOfWeek.setDate(today.getDate() - today.getDay() + 6); // Saturday as the end of the week
+      endOfWeek.setHours(23, 59, 59, 999);
+      query.orderDate = { $gte: startOfWeek, $lte: endOfWeek };
+    }
 
-      const orders = await Order.find(query);
+    // Fetch orders based on the query
+    const orders = await Order.find(query);
 
-      // If no orders found, return a message
-      if (orders.length === 0) {
-          res.status(200).send("No orders found for today.");
-          return;
-      }
+    // If no orders found, return a message
+    if (orders.length === 0) {
+      res.status(200).send(`No orders found for the selected period.`);
+      return;
+    }
 
-      // Calculate overall metrics
-      const overallSalesCount = orders.length;
-      const overallOrderAmount = orders.reduce((sum, order) => sum + order.totalAmount, 0);
-      const overallDiscount = orders.reduce((sum, order) => sum + (order.discountedAmount || 0), 0);
+    // Calculate overall metrics
+    const overallSalesCount = orders.length;
+    const overallOrderAmount = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+    const overallDiscount = orders.reduce((sum, order) => sum + (order.discountedAmount || 0), 0);
 
-      // Prepare data for CSV
-      const fields = ['Order ID', 'User', 'Total Amount', 'Discount', 'Date'];
-      const json2csvParser = new Parser({ fields });
-      const csv = json2csvParser.parse(
-          orders.map((order) => ({
-              'Order ID': order._id,
-              User: order.userId ? order.userId.name : 'N/A',  // Ensure userId exists
-              'Total Amount': order.totalAmount,
-              Discount: order.discountedAmount || 0,
-              Date: order.orderDate.toISOString().split('T')[0],
-          }))
-      );
+    // Prepare the overall metrics for display at the top of the CSV
+    const overallData = `\nOverall Sales Count: ${overallSalesCount}\nOverall Order Amount: ₹${overallOrderAmount.toFixed(2)}\nOverall Discount: ₹${overallDiscount.toFixed(2)}\n`;
 
-      // Add overall metrics at the top of the CSV
-      const overallData = `Overall Sales Count: ${overallSalesCount}\nOverall Order Amount: ₹${overallOrderAmount.toFixed(2)}\nOverall Discount: ₹${overallDiscount.toFixed(2)}\n\n`;
+    // Define the fields for the CSV table
+    const fields = ['Order ID', 'User', 'Total Amount', 'Discount', 'Date'];
+    const json2csvParser = new Parser({ fields });
 
-      res.setHeader('Content-Disposition', 'attachment; filename="daily_sales_report.csv"');
-      res.set('Content-Type', 'text/csv');
-      res.status(200).send(overallData + csv);
+    // Map the order data into the CSV format
+    const csvData = orders.map((order) => ({
+      'Order ID': order._id,
+      User: order.userId ? order.userId.name : 'N/A',  // Ensure userId exists
+      'Total Amount': `₹${order.totalAmount.toFixed(2)}`,
+      Discount: `₹${(order.discountedAmount || 0).toFixed(2)}`,
+      Date: order.orderDate.toISOString().split('T')[0],
+    }));
+
+    // Convert the order data to CSV format
+    const csv = json2csvParser.parse(csvData);
+
+    // Combine overall metrics and the CSV table
+    const finalCsvData = overallData + csv;
+
+    // Set the response headers for the CSV file download
+    res.setHeader('Content-Disposition', `attachment; filename="${filter}_sales_report.csv"`);
+    res.set('Content-Type', 'text/csv');
+    res.status(200).send(finalCsvData);
   } catch (error) {
-      console.error('Error generating Excel report:', error);
-      res.status(500).json({ message: 'Failed to generate Excel report.' });
+    console.error('Error generating Excel report:', error);
+    res.status(500).json({ message: 'Failed to generate Excel report.' });
   }
 };
-
 
 
   
