@@ -1,6 +1,3 @@
-
-
-
 import React, { useState } from "react";
 import { Star, ShoppingCart } from "lucide-react";
 import { useParams } from "react-router-dom";
@@ -13,7 +10,10 @@ import { addToCart } from "../../redux/slice/CartSlice";
 import { useNavigate } from "react-router-dom";
 
 const postReview = async ({ productId, review }) => {
-  const response = await axios.post(`/product-info/${productId}/review`, review);
+  const response = await axios.post(
+    `/product-info/${productId}/review`,
+    review
+  );
   return response.data;
 };
 
@@ -22,8 +22,6 @@ const fetchReviews = async (productId) => {
   return response.data;
 };
 
-
-
 export default function ProductDetails() {
   const { user } = useSelector((state) => state.user);
   const userId = user?.id;
@@ -31,7 +29,11 @@ export default function ProductDetails() {
   const { id } = useParams();
   const queryClient = useQueryClient();
 
-  const { data: product, isLoading, error } = useQuery({
+  const {
+    data: product,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["product", id],
     queryFn: async () => {
       const response = await axios.get(`/product-info/${id}`);
@@ -46,7 +48,11 @@ export default function ProductDetails() {
     },
   });
 
-  const { data: reviews, isLoading: loadingReviews, error: reviewsError } = useQuery({
+  const {
+    data: reviews,
+    isLoading: loadingReviews,
+    error: reviewsError,
+  } = useQuery({
     queryKey: ["reviews", id],
     queryFn: () => fetchReviews(id),
   });
@@ -56,8 +62,8 @@ export default function ProductDetails() {
   const [quantity, setQuantity] = useState(1);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const handleAddToCart = async (id) => {
     try {
       // Validate inputs
@@ -65,26 +71,26 @@ export default function ProductDetails() {
         toast.error("Please select a size!");
         return;
       }
-      
+
       if (!userId) {
         toast.error("You must be logged in to add items to your cart.");
         return;
       }
-      if(quantity>5){
-        toast.error('maximum purchase quantity is 5 !!')
-        return
+      if (quantity > 5) {
+        toast.error("maximum purchase quantity is 5 !!");
+        return;
       }
-      
+
       // Make the API request to add the item to the cart
       const response = await axios.post("/add-to-cart", {
         userId,
-        productId : id,
+        productId: id,
         size: selectedSize,
         quantity,
       });
-      
+
       if (response.status === 200) {
-        dispatch(addToCart(id))
+        dispatch(addToCart(id));
         toast.success("Item added to cart!");
       } else {
         toast.error(response.data.message || "Failed to add item to cart.");
@@ -96,7 +102,6 @@ export default function ProductDetails() {
       );
     }
   };
-
 
   const handleReviewSubmit = (e) => {
     e.preventDefault();
@@ -116,14 +121,14 @@ export default function ProductDetails() {
     setReviewText("");
   };
 
-  const handleBuy = async (id)=>{
+  const handleBuy = async (id) => {
     if (!selectedSize) {
       toast.error("Please select a size!");
       return;
     }
-    
-    navigate(`/place-order/${id}/${selectedSize}/${quantity}`)
-  }
+
+    navigate(`/place-order/${id}/${selectedSize}/${quantity}`);
+  };
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -163,161 +168,178 @@ export default function ProductDetails() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        
+        <div className="flex gap-4">
+          <div className="flex flex-col gap-2">
+            {images?.length > 0 &&
+              images.map((image, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedImage(index)}
+                  className={`w-20 h-20 border rounded-lg overflow-hidden transition duration-300 ease-in-out transform hover:scale-110 ${
+                    selectedImage === index ? "border-black" : "border-gray-200"
+                  }`}
+                >
+                  <img
+                    src={image}
+                    alt={`Product image ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+          </div>
+          <div className="flex-1 aspect-square rounded-lg overflow-hidden relative group">
+            <img
+              src={images?.[selectedImage] || ""}
+              alt="Selected product"
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+            />
+          </div>
+        </div>
 
-<div className="flex gap-4">
-  <div className="flex flex-col gap-2">
-    {images?.length > 0 &&
-      images.map((image, index) => (
+        {/* Product Info */}
+        <div className="space-y-6">
+  <div>
+    <h1 className="text-2xl font-semibold mb-2">
+      {product.productName}
+    </h1>
+    <div className="flex items-center gap-2 mb-2">
+      {renderStars(product.averageRating)} {/* Function to render stars based on rating */}
+      <span className="text-gray-500">
+        ({product.averageRating || 0} reviews)
+      </span>
+    </div>
+
+    {/* Display Sale Price, Effective Price, and Discounted Price */}
+    <div className="flex items-center gap-2">
+      {/* Display original price if there's a discount */}
+      {product.effectivePrice < product.salePrice && (
+        <span className="line-through text-gray-500">
+          ₹{Math.floor(product.salePrice)}
+        </span>
+      )}
+      {/* Display the discounted or effective price */}
+      <p className="text-2xl font-bold">
+        ₹{Math.floor(product.effectivePrice) || Math.floor(product.salePrice)}
+      </p>
+      {/* Display discount percentage if it's applicable */}
+      {product.effectivePrice < product.salePrice && (
+        <span className="text-sm text-red-500 ml-4">
+          {product.category?.offer}% OFF
+        </span>
+      )}
+    </div>
+  </div>
+
+  {/* Product Details */}
+  <div className="space-y-4">
+    <h2 className="font-semibold">Product Details</h2>
+    <div className="space-y-2 text-sm">
+      <p>
+        <span className="text-gray-600">Description:</span>{" "}
+        {product.description}
+      </p>
+      <p>
+        <span className="text-gray-600">Brand:</span>{" "}
+        {product.brandName || "Not specified"}
+      </p>
+      <p>
+        <span className="text-gray-600">Category:</span>{" "}
+        {product.category?.category}
+      </p>
+      <p>
+        <span className="text-gray-600">Net Quantity:</span>{" "}
+        {product.stockQuantity}
+      </p>
+      <div className="space-y-1">
+        <p className="text-gray-600">Available Sizes:</p>
+        {product.size?.map(({ name, stock }, index) => (
+          <p key={index} className="ml-4">
+            - {name}: {stock} in stock
+          </p>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  {/* Size Selection */}
+  <div>
+    <p className="font-semibold mb-2">Select Size</p>
+    <div className="flex gap-2">
+      {product.size?.map(({ name, stock }) => (
         <button
-          key={index}
-          onClick={() => setSelectedImage(index)}
-          className={`w-20 h-20 border rounded-lg overflow-hidden transition duration-300 ease-in-out transform hover:scale-110 ${
-            selectedImage === index ? "border-black" : "border-gray-200"
+          key={name}
+          onClick={() => {
+            if (stock > 0) {
+              setSelectedSize(name); // Set the selected size
+              setQuantity(1); // Reset the quantity to 1 when changing size
+            }
+          }}
+          className={`w-12 h-12 rounded-full border ${
+            selectedSize === name
+              ? "border-black bg-black text-white"
+              : stock > 0
+              ? "border-gray-300 hover:border-black"
+              : "border-gray-200 text-gray-400 cursor-not-allowed"
           }`}
+          disabled={stock <= 0} // Disable button if out of stock
         >
-          <img
-            src={image}
-            alt={`Product image ${index + 1}`}
-            className="w-full h-full object-cover"
-          />
+          {name}
         </button>
       ))}
+    </div>
   </div>
-  <div className="flex-1 aspect-square rounded-lg overflow-hidden relative group">
-    <img
-      src={images?.[selectedImage] || ""}
-      alt="Selected product"
-      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-    />
+
+  {/* Quantity Selection */}
+  <div className="flex items-center gap-4">
+    <span className="font-semibold">Quantity:</span>
+    <div className="flex items-center border rounded">
+      <button
+        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+        className="px-3 py-1 border-r hover:bg-gray-100"
+        disabled={quantity <= 1}
+      >
+        -
+      </button>
+      <span className="px-4 py-1">{quantity}</span>
+      <button
+        onClick={() => {
+          const selectedStock =
+            product.size?.find(({ name }) => name === selectedSize)
+              ?.stock || 0;
+          if (quantity < selectedStock) {
+            setQuantity(quantity + 1); // Increase quantity only if it's within stock
+          }
+        }}
+        className="px-3 py-1 border-l hover:bg-gray-100"
+        disabled={
+          product.size?.find(({ name }) => name === selectedSize)
+            ?.stock <= quantity
+        }
+      >
+        +
+      </button>
+    </div>
+  </div>
+
+  {/* Buttons for Add to Cart and Buy Now */}
+  <div className="flex gap-4">
+    <button
+      onClick={() => handleAddToCart(product._id)}
+      className="flex-1 flex items-center justify-center gap-2 px-6 py-3 border border-black rounded-md hover:bg-gray-50"
+    >
+      <ShoppingCart className="h-5 w-5" />
+      Add to Cart
+    </button>
+    <button
+      className="flex-1 px-6 py-3 bg-black text-white rounded-md hover:bg-black/90"
+      onClick={() => handleBuy(product._id)}
+    >
+      Buy Now
+    </button>
   </div>
 </div>
 
 
-        {/* Product Info */}
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-2xl font-semibold mb-2">
-              {product.productName}
-            </h1>
-            <div className="flex items-center gap-2 mb-2">
-              {renderStars(product.averageRating)}
-              <span className="text-gray-500">
-                ({product.averageRating || 0} reviews)
-              </span>
-            </div>
-            <p className="text-2xl font-bold">₹{product.salePrice}</p>
-          </div>
-
-          {/* Product Details */}
-          <div className="space-y-4">
-            <h2 className="font-semibold">Product Details</h2>
-            <div className="space-y-2 text-sm">
-              <p>
-                <span className="text-gray-600">Description:</span>{" "}
-                {product.description}
-              </p>
-              <p>
-                <span className="text-gray-600">Brand:</span>{" "}
-                {product.brandName}
-              </p>
-              <p>
-                <span className="text-gray-600">Category:</span>{" "}
-                {product.category}
-              </p>
-              <p>
-                <span className="text-gray-600">Net Quantity:</span>{" "}
-                {product.stockQuantity}
-              </p>
-              <div className="space-y-1">
-                <p className="text-gray-600">Available Sizes:</p>
-                {product.size?.map(({ name, stock }, index) => (
-                  <p key={index} className="ml-4">
-                    - {name}: {stock} in stock
-                  </p>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Size Selection */}
-          <div>
-            <p className="font-semibold mb-2">Select Size</p>
-            <div className="flex gap-2">
-              {product.size?.map(({ name, stock }) => (
-                <button
-                  key={name}
-                  onClick={() => {
-                    if (stock > 0) {
-                      setSelectedSize(name); // Set the selected size
-                      setQuantity(1); // Reset the quantity to 1 when changing size
-                    }
-                  }}
-                  className={`w-12 h-12 rounded-full border ${
-                    selectedSize === name
-                      ? "border-black bg-black text-white"
-                      : stock > 0
-                      ? "border-gray-300 hover:border-black"
-                      : "border-gray-200 text-gray-400 cursor-not-allowed"
-                  }`}
-                  disabled={stock <= 0} // Disable button if out of stock
-                >
-                  {name}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Quantity */}
-          <div className="flex items-center gap-4">
-            <span className="font-semibold">Quantity:</span>
-            <div className="flex items-center border rounded">
-              <button
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="px-3 py-1 border-r hover:bg-gray-100"
-                disabled={quantity <= 1}
-              >
-                -
-              </button>
-              <span className="px-4 py-1">{quantity}</span>
-              <button
-                onClick={() => {
-                  const selectedStock =
-                    product.size?.find(({ name }) => name === selectedSize)
-                      ?.stock || 0;
-                  if (quantity < selectedStock) {
-                    setQuantity(quantity + 1); // Increase quantity only if it's within stock
-                  }
-                }}
-                className="px-3 py-1 border-l hover:bg-gray-100"
-                disabled={
-                  product.size?.find(({ name }) => name === selectedSize)
-                    ?.stock <= quantity
-                }
-              >
-                +
-              </button>
-            </div>
-          </div>
-
-          {/* Buttons */}
-          <div className="flex gap-4">
-            <button
-              onClick={()=>handleAddToCart(product._id)}
-              
-              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 border border-black rounded-md hover:bg-gray-50"
-            >
-              <ShoppingCart className="h-5 w-5" />
-              Add to Cart
-            </button>
-            <button
-              className="flex-1 px-6 py-3 bg-black text-white rounded-md hover:bg-black/90"
-              onClick={() => handleBuy(product._id)}
-            >
-              Buy Now
-            </button>
-          </div>
-        </div>
       </div>
 
       <div className="max-w-4xl mx-auto p-6 space-y-8">

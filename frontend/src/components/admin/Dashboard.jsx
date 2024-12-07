@@ -96,12 +96,12 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold text-gray-800 mb-2">Dashboard</h1>
         <div className="flex justify-between items-center">
           <div className="text-sm text-gray-600">Home &gt; Dashboard</div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          {/* <div className="flex items-center gap-2 text-sm text-gray-600">
             <Calendar className="h-4 w-4" />
             {startDate && endDate
               ? `${startDate} - ${endDate}`
               : 'Select a Date Range'}
-          </div>
+          </div> */}
         </div>
       </div>
 

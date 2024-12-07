@@ -260,7 +260,7 @@ const ProductsList = () => {
                       />
                     </button>
                   </div>
-                  <div className="p-4">
+                  {/* <div className="p-4">
                     <h3 className="font-medium text-gray-900 mb-2">{product.productName}</h3>
                     <div className="flex items-center mb-2">
                       {renderStars(product.averageRating)}
@@ -276,7 +276,33 @@ const ProductsList = () => {
                         View Details
                       </a>
                     </div>
-                  </div>
+                  </div> */}
+
+<div className="p-4">
+  <h3 className="font-medium text-gray-900 mb-2">{product.productName}</h3>
+  <div className="flex items-center mb-2">
+    {renderStars(product.averageRating)}
+    <span className="text-gray-600 text-sm ml-1">({product.averageRating || 0})</span>
+  </div>
+  <div className="flex items-center justify-between">
+    {product.salePrice !== product.effectivePrice ? (
+      <>
+        <span className="text-sm line-through text-gray-400 mr-2">₹{product.salePrice.toFixed(2)}</span>
+        <span className="text-lg font-semibold text-red-600">₹{product.effectivePrice.toFixed(2)}</span>
+      </>
+    ) : (
+      <span className="text-lg font-semibold">₹{product.salePrice.toFixed(2)}</span>
+    )}
+    <a
+      href="#"
+      className="text-sm text-blue-600 hover:underline"
+      onClick={() => navigate(`/productinfo/${product._id}`)}
+    >
+      View Details
+    </a>
+  </div>
+</div>
+
                 </div>
               ))
             ) : (

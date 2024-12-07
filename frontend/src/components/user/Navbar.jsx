@@ -128,7 +128,7 @@ export default function Navbar() {
                       />
                       <div>
                         <p className="font-medium">{suggestion.productName}</p>
-                        <p className="text-sm text-gray-500">₹{suggestion.salePrice}</p>
+                        {/* <p className="text-sm text-gray-500">₹{suggestion.salePrice}</p> */}
                       </div>
                     </div>
                   </li>
