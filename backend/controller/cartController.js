@@ -1,5 +1,9 @@
 import Cart from "../models/cartModel.js";
 import Product from "../models/productModel.js";
+import Category from "../models/categoryModel.js";
+
+
+
 const addToCart = async (req, res) => {
     try {
       const { userId, productId, size, quantity } = req.body;
@@ -58,26 +62,85 @@ const addToCart = async (req, res) => {
     }
   };
   
-  const getCartInfo = async (req, res) => {
-    try {
-      const userId = req.params.id;
-      const cart = await Cart.findOne({ userId })
-        .populate({
-          path: 'items.productId', 
-          select: 'productName salePrice mainImage' 
-        });
+  // const getCartInfo = async (req, res) => {
+  //   try {
+  //     const userId = req.params.id;
+  //     const cart = await Cart.findOne({ userId })
+  //       .populate({
+  //         path: 'items.productId', 
+  //         select: 'productName salePrice mainImage' 
+  //       });
   
-      if (!cart) {
-        return res.status(404).json({ message: 'Cart not found' });
-      }
+  //     if (!cart) {
+  //       return res.status(404).json({ message: 'Cart not found' });
+  //     }
   
      
-      res.status(200).json(cart);
+  //     res.status(200).json(cart);
+  //   } catch (error) {
+  //     console.error(error);
+  //     res.status(500).json({ message: 'Server error' });
+  //   }
+  // };
+  
+
+  const getCartInfo = async (req, res) => {
+    try {
+        const userId = req.params.id;
+
+        // Fetch the cart
+        const cart = await Cart.findOne({ userId }).populate({
+            path: 'items.productId',
+            select: 'productName salePrice mainImage category',
+        });
+
+        if (!cart) {
+            return res.status(404).json({ message: 'Cart not found' });
+        }
+
+        // Initialize variables for total amount and total discount
+        let totalAmount = 0;
+        let totalDiscount = 0;
+
+        // Process each cart item
+        for (const item of cart.items) {
+            const product = item.productId;
+            const category = await Category.findOne({ category: product.category });
+
+            // Apply discount if category status is true and offer exists
+            if (category && category.status && category.offer > 0) {
+                // Calculate the discount amount (discount = salePrice * offer %)
+                const discount = (product.salePrice * category.offer) / 100;
+                product.salePrice -= discount; // Decrease discount from salePrice
+                totalDiscount += discount * item.quantity; // Sum of discount amount * quantity
+            }
+
+            // Update total amount after applying the discount
+            totalAmount += product.salePrice * item.quantity; // Sum of final salePrice * quantity
+        }
+
+        // Prepare the response object with the calculated values
+        const cartResponse = {
+            ...cart.toObject(),
+            totalAmount,   // Total amount after discount
+            totalDiscount, // Total discount applied to the cart
+            items: cart.items.map(item => ({
+                ...item.toObject(),
+                salePrice: item.productId.salePrice, // Reflect the updated salePrice
+            })),
+        };
+
+        // Send the updated cart info back to the frontend
+        res.status(200).json(cartResponse);
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Server error' });
+        console.error("Error fetching cart info:", error);
+        res.status(500).json({ message: "Server error" });
     }
-  };
+};
+
+  
+  
+  
   
 
   const removeItemFromCart = async (req, res) => {

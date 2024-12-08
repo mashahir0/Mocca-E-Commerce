@@ -74,7 +74,7 @@ user_routes.patch('/set-default-address/:addressId', setDefaultAddress);
 // cart managment 
 
 user_routes.post('/add-to-cart',addToCart)
-user_routes.get('/get-cartdetails/:id',protect,getCartInfo)
+user_routes.get('/get-cartdetails/:id',getCartInfo)
 user_routes.delete('/remove-item', removeItemFromCart);
 user_routes.put('/edit-quantity',editQuantity)
 

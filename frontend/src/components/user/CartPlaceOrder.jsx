@@ -10,6 +10,8 @@ import { toast, ToastContainer } from 'react-toastify';
 export default function CartPlaceOrder() {
   const { state } = useLocation();
   const cartItems = state?.cartItems || [];
+  console.log(cartItems);
+  
 
   const { user } = useSelector((state) => state.user);
   const userId = user.id;
@@ -25,7 +27,7 @@ export default function CartPlaceOrder() {
   const [isCouponValid, setIsCouponValid] = useState(true);
 
   const navigate = useNavigate();
-  console.log(couponList);
+  
   
   const getCouponList = async () => {
     try {
@@ -134,7 +136,7 @@ export default function CartPlaceOrder() {
             mainImage: item.productId.mainImage[0],
             size: item.size,
             quantity: item.quantity,
-            price: item.productId.salePrice,
+            price: Math.floor(item.productId.salePrice),
         })),
         paymentMethod,
         totalAmount: total, // Total with discount applied
@@ -147,7 +149,7 @@ export default function CartPlaceOrder() {
             // Razorpay Payment Flow
             try {
                 const razorpayOrderResponse = await axios.post('/create-razorpay-order', {
-                    amount: total,
+                    amount: Math.floor(total),
                     currency: 'INR',
                 });
 
@@ -247,7 +249,7 @@ export default function CartPlaceOrder() {
                 />
                 <div className="flex-1">
                   <h3 className="font-medium">{item.productId.productName}</h3>
-                  <p className="text-gray-600">₹{item.productId.salePrice}</p>
+                  <p className="text-gray-600">₹{Math.floor(item.productId.salePrice)}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   Quantity
@@ -263,7 +265,7 @@ export default function CartPlaceOrder() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span>Rs. {subtotal}</span>
+                <span>Rs. {Math.floor(subtotal)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Delivery Fee</span>
@@ -279,7 +281,7 @@ export default function CartPlaceOrder() {
               </div>
               <div className="flex justify-between font-semibold pt-2 border-t">
                 <span>Total</span>
-                <span>Rs. {total}</span>
+                <span>Rs. {Math.floor(total)}</span>
               </div>
             </div>
 
