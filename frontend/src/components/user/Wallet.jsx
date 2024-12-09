@@ -32,7 +32,7 @@ export default function Wallet() {
       <div className="border-2 border-black rounded-lg p-6">
         <h2 className="text-xl font-semibold mb-4">My Balance</h2>
         <div className="text-5xl font-bold text-green-500 text-center mb-6">
-          ₹ {wallet.balance}
+          ₹ {Math.floor(wallet.balance)}
         </div>
       </div>
 

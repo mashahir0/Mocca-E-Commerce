@@ -620,6 +620,38 @@ const getProducts = async (req, res) => {
       });
     }
   };    
+
+
+  const toggleOfferStatus = async (req, res) => {
+    const { id } = req.params; // Get product ID from request params
+  
+    try {
+      // Find the product by ID
+      const product = await Product.findById(id);
+  
+      if (!product) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
+  
+      // Toggle the offerStatus
+      product.offerStatus = !product.offerStatus;
+  
+      // Save the updated product
+      await product.save();
+  
+      res.status(200).json({
+        message: 'Offer status updated successfully',
+        product,
+      });
+    } catch (error) {
+      console.error('Error updating offer status:', error);
+      res.status(500).json({
+        message: 'Failed to update offer status',
+        error: error.message,
+      });
+    }
+  };
   
 
-export { addProduct,getProducts,toggleProductAvailability,getDetailsForEdit,updateProduct,addReview,getReviews,getProductsAdmin  };
+export { addProduct,getProducts,toggleProductAvailability,getDetailsForEdit,
+  updateProduct,addReview,getReviews,getProductsAdmin,toggleOfferStatus  };

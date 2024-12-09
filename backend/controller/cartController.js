@@ -62,36 +62,16 @@ const addToCart = async (req, res) => {
     }
   };
   
-  // const getCartInfo = async (req, res) => {
-  //   try {
-  //     const userId = req.params.id;
-  //     const cart = await Cart.findOne({ userId })
-  //       .populate({
-  //         path: 'items.productId', 
-  //         select: 'productName salePrice mainImage' 
-  //       });
-  
-  //     if (!cart) {
-  //       return res.status(404).json({ message: 'Cart not found' });
-  //     }
-  
-     
-  //     res.status(200).json(cart);
-  //   } catch (error) {
-  //     console.error(error);
-  //     res.status(500).json({ message: 'Server error' });
-  //   }
-  // };
   
 
   const getCartInfo = async (req, res) => {
     try {
         const userId = req.params.id;
 
-        // Fetch the cart
+        // Fetch the cart and populate product data, including offerPrice and offerStatus
         const cart = await Cart.findOne({ userId }).populate({
             path: 'items.productId',
-            select: 'productName salePrice mainImage category',
+            select: 'productName salePrice mainImage category offerPrice offerStatus', // Include offerPrice and offerStatus
         });
 
         if (!cart) {
@@ -107,16 +87,22 @@ const addToCart = async (req, res) => {
             const product = item.productId;
             const category = await Category.findOne({ category: product.category });
 
+            // If offerStatus is true, use the offerPrice instead of the salePrice
+            let productPrice = product.salePrice; // Default price is the salePrice
+            if (product.offerStatus && product.offerPrice) {
+                productPrice = product.offerPrice; // Use offerPrice if offerStatus is true
+            }
+
             // Apply discount if category status is true and offer exists
             if (category && category.status && category.offer > 0) {
                 // Calculate the discount amount (discount = salePrice * offer %)
-                const discount = (product.salePrice * category.offer) / 100;
-                product.salePrice -= discount; // Decrease discount from salePrice
+                const discount = (productPrice * category.offer) / 100;
+                productPrice -= discount; // Decrease discount from productPrice
                 totalDiscount += discount * item.quantity; // Sum of discount amount * quantity
             }
 
             // Update total amount after applying the discount
-            totalAmount += product.salePrice * item.quantity; // Sum of final salePrice * quantity
+            totalAmount += productPrice * item.quantity; // Sum of final productPrice * quantity
         }
 
         // Prepare the response object with the calculated values
@@ -127,8 +113,11 @@ const addToCart = async (req, res) => {
             items: cart.items.map(item => ({
                 ...item.toObject(),
                 salePrice: item.productId.salePrice, // Reflect the updated salePrice
+                offerPrice: item.productId.offerPrice, // Include the offerPrice
+                offerStatus: item.productId.offerStatus, // Include the offerStatus
             })),
         };
+        console.log(cartResponse);
 
         // Send the updated cart info back to the frontend
         res.status(200).json(cartResponse);
@@ -137,6 +126,8 @@ const addToCart = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
+
 
   
   

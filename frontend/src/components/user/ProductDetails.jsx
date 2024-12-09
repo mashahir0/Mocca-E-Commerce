@@ -211,23 +211,31 @@ export default function ProductDetails() {
 
     {/* Display Sale Price, Effective Price, and Discounted Price */}
     <div className="flex items-center gap-2">
-      {/* Display original price if there's a discount */}
-      {product.effectivePrice < product.salePrice && (
-        <span className="line-through text-gray-500">
-          ₹{Math.floor(product.salePrice)}
-        </span>
-      )}
-      {/* Display the discounted or effective price */}
-      <p className="text-2xl font-bold">
-        ₹{Math.floor(product.effectivePrice) || Math.floor(product.salePrice)}
-      </p>
-      {/* Display discount percentage if it's applicable */}
-      {product.effectivePrice < product.salePrice && (
-        <span className="text-sm text-red-500 ml-4">
-          {product.category?.offer}% OFF
-        </span>
-      )}
-    </div>
+  {/* Display original price if there's a discount */}
+  {product.offerStatus && product.offerPrice && (
+    <span className="line-through text-gray-500">
+      ₹{Math.floor(product.salePrice)}
+    </span>
+  )}
+  
+  {/* Display the discounted or effective price */}
+  <p className="text-2xl font-bold">
+    ₹
+    {product.offerStatus && product.offerPrice
+      ? Math.floor(product.offerPrice) // Show the offer price when applicable
+      : product.effectivePrice
+      ? Math.floor(product.effectivePrice) // Show effective price if offerPrice isn't applicable
+      : Math.floor(product.salePrice)} 
+  </p>
+  
+  {/* Display discount percentage if applicable */}
+  { product.category?.status && (
+    <span className="text-sm text-red-500 ml-4">
+      {product.category.offer}% OFF
+    </span>
+  )}
+</div>
+
   </div>
 
   {/* Product Details */}

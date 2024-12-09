@@ -17,6 +17,7 @@ const productSchema = new mongoose.Schema({
   brandName: { type: String, required: true },
   salePrice: { type: Number, required: true },
   offerPrice: { type: Number, required: true },
+  offerStatus:{type:Boolean, required: true, default : false},
   stockQuantity: { type: Number, required: true },
   size: [
     {

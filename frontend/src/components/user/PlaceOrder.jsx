@@ -70,8 +70,16 @@ export default function PlaceOrder() {
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
 
-    const suntotal = product && product.length > 0 ? product[0].salePrice * quantity : 0;
-    const total = suntotal - discountAmount; // Adjust total with discount
+    const suntotal = product && product.length > 0
+  ? product[0].offerStatus && product[0].offerPrice
+    ? product[0].offerPrice * quantity // Use offerPrice if offerStatus is true
+    : product[0].effectivePrice
+    ? product[0].effectivePrice * quantity // Use effectivePrice if no offerPrice
+    : product[0].salePrice * quantity // Fallback to salePrice if no offerPrice or effectivePrice
+  : 0;
+
+const total = suntotal - discountAmount; // Apply the discount to the subtotal
+  // Adjust total with discount
     const deliveryFee = 0;
     const gst = 0;
 
@@ -223,7 +231,7 @@ export default function PlaceOrder() {
                                     />
                                     <div className="flex-1">
                                         <h3 className="font-medium">{item.productName}</h3>
-                                        <p className="text-gray-600">₹{item.salePrice}</p>
+                                        {item.offerStatus ? <p className="text-gray-600">₹{item.offerPrice}</p> : item.effectivePrice  ? <p className="text-gray-600">₹{item.effectivePrice}</p> :<p className="text-gray-600">₹{item.salePrice}</p>}
                                         <p className="text-gray-600">{size}</p>
                                     </div>
                                     <div className="flex items-center gap-2">

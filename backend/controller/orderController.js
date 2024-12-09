@@ -210,9 +210,9 @@ const cartCheckOut = async (req, res) => {
       promoCode,
       discountAmount,
     } = req.body;
+    console.log('1111');
     console.log(userId);
     
-    console.log('1111');
     
     console.log(paymentMethod);
     
@@ -260,7 +260,8 @@ const cartCheckOut = async (req, res) => {
       userId,
       address,
       products,
-      paymentMethod,
+      paymentMethod ,
+      paymentStatus:paymentMethod === 'Razor Pay' || paymentMethod === 'Wallet' ? 'Completed' : 'Pending',
       totalAmount,
       couponCode: promoCode,
       discountedAmount: discountAmount,

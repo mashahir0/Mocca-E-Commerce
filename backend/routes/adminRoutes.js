@@ -3,7 +3,7 @@ import { adminLogin, getUserList, toggleStatus ,deleteUser, refreshTokenHandler,
 import { protect } from '../middleware/authMiddleware.js'
 import admin from '../middleware/authAdminMiddleware.js'
 import { addCategory, deleteCategory, editStatus, getCategory, listCategory } from '../controller/categoryController.js'
-import { addProduct, getDetailsForEdit, getProducts, getProductsAdmin, toggleProductAvailability, updateProduct } from "../controller/productController.js";
+import { addProduct, getDetailsForEdit, getProducts, getProductsAdmin, toggleOfferStatus, toggleProductAvailability, updateProduct } from "../controller/productController.js";
 import { adminCancelOrder, adminUpdateOrderStatus, getAllOrders } from '../controller/orderController.js'
 import { addCoupon, couponStatus, deleteCoupon, getCoupons } from '../controller/couponController.js'
 
@@ -30,6 +30,7 @@ admin_routes.delete('/delete-categories/:id',deleteCategory)
 admin_routes.post("/addproduct", addProduct); 
 admin_routes.get('/get-products',getProductsAdmin) 
 admin_routes.put('/toggle-product/:id',toggleProductAvailability)
+admin_routes.put('/toggle-offer/:id', toggleOfferStatus);
 admin_routes.get('/edit-product-details/:id',getDetailsForEdit)
 admin_routes.put('/update-product/:id',updateProduct)
 

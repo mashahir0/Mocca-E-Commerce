@@ -55,7 +55,16 @@ export default function CartPlaceOrder() {
   }, [userId]);
 
   // Calculate subtotal
-  const subtotal = cartItems.reduce((sum, item) => sum + item.productId.salePrice * item.quantity, 0);
+  const subtotal = cartItems.reduce((sum, item) => {
+    // Check if the offerStatus is true, use offerPrice, otherwise use salePrice
+    const price = item.productId.offerStatus && item.productId.offerPrice
+      ? item.productId.offerPrice // Use offerPrice if offerStatus is true
+      : item.productId.salePrice; // Fallback to salePrice
+  
+    // Calculate subtotal for each item considering quantity
+    return sum + price * item.quantity;
+  }, 0);
+  
   const deliveryFee = 0;
   const gst = 0;
   const total = subtotal + deliveryFee + gst - discountAmount; // Subtract discount from total
@@ -249,7 +258,7 @@ export default function CartPlaceOrder() {
                 />
                 <div className="flex-1">
                   <h3 className="font-medium">{item.productId.productName}</h3>
-                  <p className="text-gray-600">₹{Math.floor(item.productId.salePrice)}</p>
+                  {item.productId.offerStatus ? <p className="text-gray-600">₹{Math.floor(item.productId.offerPrice)}</p> :<p className="text-gray-600">₹{Math.floor(item.productId.salePrice)}</p>}
                 </div>
                 <div className="flex items-center gap-2">
                   Quantity
