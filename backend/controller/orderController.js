@@ -598,9 +598,36 @@ const cancelOrder = async (req, res) => {
       res.status(500).json({ success: false, message: 'Failed to cancel product' });
     }
   };
+
+  const returnOrder = async (req,res)=>{
+    const { userId, orderId } = req.params;
+    const { productId, reason } = req.body;
+  
+    try {
+      const order = await Order.findOne({ _id: orderId, userId });
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+  
+      const product = order.products.find((p) => p.productId.toString() === productId);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found in order" });
+      }
+  
+      // Mark the product as returned and save the reason
+      order.orderStatus = "Returned";
+      order.returnReason = reason;
+  
+      await order.save();
+      res.status(200).json({ message: "Product returned successfully", order });
+    } catch (error) {
+      console.error("Error processing return:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
   
   
 
 export {addOrder,cartCheckOut,getOrderDetails,cancelOrder,getDetails,getAllOrders,adminUpdateOrderStatus,
-  adminCancelOrder,createRazorpayOrder,verifyRazorpayPayment
+  adminCancelOrder,createRazorpayOrder,verifyRazorpayPayment,returnOrder
 }

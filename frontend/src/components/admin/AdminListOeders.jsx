@@ -415,6 +415,17 @@ export default function AdminListOrders() {
                 <strong>Phone:</strong> {orderToEdit.address.phone}
               </p>
             </div>
+            {/* return reason*/}
+            <div className='mb-4'>
+              {orderToEdit.returnReason && 
+              (
+                <>
+                <p className='text-sm mt-2'><strong>Return Reson :</strong></p>
+                <p className='text-sm mt-1'>{orderToEdit.returnReason}</p>
+                </>
+              )
+              }
+            </div>
 
             {/* Products List */}
             <div className="mb-4">

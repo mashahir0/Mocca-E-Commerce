@@ -55,7 +55,7 @@ const googleLogin = async(req, res) => {
         const accessToken = jwt.sign(
             { id: email },  
             key,          
-            { expiresIn: '1d' }
+            { expiresIn: '15m' }
         );
 
         const refreshToken = jwt.sign(
@@ -90,22 +90,46 @@ const googleLogin = async(req, res) => {
 
 
 
-const refreshAccessToken = (req, res) => {
-    const { refreshToken } = req.body;
-    if (!refreshToken) return res.status(401).json({ message: 'No refresh token provided' });
+// const refreshAccessToken = (req, res) => {
+//     const { refreshToken } = req.body;
+//     if (!refreshToken) return res.status(401).json({ message: 'No refresh token provided' });
 
-    jwt.verify(refreshToken, refreshTokenKey, (err, user) => {
-        if (err) return res.status(403).json({ message: 'Invalid refresh token' });
+//     jwt.verify(refreshToken, refreshTokenKey, (err, user) => {
+//         if (err) return res.status(403).json({ message: 'Invalid refresh token' });
 
        
-        const newAccessToken = jwt.sign(
-            { id: user.id, email: user.email },
-            key,
-            { expiresIn: '1d' }
-        );
+//         const newAccessToken = jwt.sign(
+//             { id: user.id, email: user.email },
+//             key,
+//             { expiresIn: '1d' }
+//         );
 
-        res.json({ accessToken: newAccessToken });
-    });
+//         res.json({ accessToken: newAccessToken });
+//     });
+// };
+const refreshAccessToken = (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) return res.status(401).json({ message: 'No refresh token provided' });
+
+  jwt.verify(refreshToken, refreshTokenKey, (err, user) => {
+      if (err) return res.status(403).json({ message: 'Invalid or expired refresh token' });
+
+      // Generate new tokens
+      const newAccessToken = jwt.sign(
+          { id: user.id, email: user.email },
+          key,
+          { expiresIn: '15m' } // Same as in login
+      );
+
+      const newRefreshToken = jwt.sign(
+          { id: user.id, email: user.email },
+          refreshTokenKey,
+          { expiresIn: '7d' }
+      );
+
+      res.json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
+  });
 };
 
 
@@ -148,7 +172,7 @@ const userLogin = async (req, res) => {
         const accessToken = jwt.sign(
             { id: user._id, email: user.email },
             key,
-            { expiresIn: '1d' } 
+            { expiresIn: '15m' } 
         );
 
         const refreshToken = jwt.sign(
