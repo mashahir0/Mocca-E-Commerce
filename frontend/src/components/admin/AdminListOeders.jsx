@@ -236,8 +236,9 @@
 // }
 import React, { useState, useEffect } from 'react';
 import axios from '../../services/api/adminApi';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, TagIcon } from 'lucide-react';
 import { Pencil, Trash2 } from 'lucide-react';
+import { ToastContainer, toast } from 'react-toastify'; 
 
 export default function AdminListOrders() {
   const [orders, setOrders] = useState([]);
@@ -279,12 +280,12 @@ export default function AdminListOrders() {
   const handleOrderStatusChange = async (orderId) => {
     try {
       await axios.put(`/update-order-status/${orderId}`, { orderStatus: newStatus });
-      alert('Order status updated successfully');
+      toast.success('Order status updated successfully');
       setIsModalOpen(false); // Close modal after success
       fetchOrders(currentPage); // Re-fetch orders
     } catch (err) {
       console.error(err);
-      alert('Failed to update order status');
+      toast.error('Failed to update order status');
     }
   };
 
@@ -296,6 +297,7 @@ export default function AdminListOrders() {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+   
   };
 
   if (loading) return <div className="text-center mt-10">Loading...</div>;
@@ -499,6 +501,7 @@ export default function AdminListOrders() {
           </div>
         </div>
       )}
+      <ToastContainer />
     </div>
   );
 }

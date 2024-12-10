@@ -109,6 +109,8 @@ const googleLogin = async(req, res) => {
 // };
 const refreshAccessToken = (req, res) => {
   const { refreshToken } = req.body;
+  console.log('user refresh token');
+  
 
   if (!refreshToken) return res.status(401).json({ message: 'No refresh token provided' });
 

@@ -28,9 +28,10 @@ const orderSchema = new mongoose.Schema(
         price: { type: Number, required: true },
         status: {
             type: String,
-            enum: ['Pending', 'Cancelled', 'Shipped', 'Delivered'],
+            enum: ['Pending', 'Cancelled', 'Shipped', 'Delivered','Returned'],
             default: 'Pending', // Default status is "Pending"
           },
+          returnReason :{type :String, required : false}
       },
     ],
     paymentMethod: {

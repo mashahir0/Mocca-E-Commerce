@@ -28,7 +28,7 @@ admin_routes.delete('/delete-categories/:id',deleteCategory)
 //Product management
 
 admin_routes.post("/addproduct", addProduct); 
-admin_routes.get('/get-products',getProductsAdmin) 
+admin_routes.get('/get-products',protect,admin,getProductsAdmin) 
 admin_routes.put('/toggle-product/:id',toggleProductAvailability)
 admin_routes.put('/toggle-offer/:id', toggleOfferStatus);
 admin_routes.get('/edit-product-details/:id',getDetailsForEdit)
@@ -38,13 +38,13 @@ admin_routes.put('/update-product/:id',updateProduct)
 
 //orders managment 
 
-admin_routes.get('/get-allorders',getAllOrders)
+admin_routes.get('/get-allorders',protect,admin,getAllOrders)
 admin_routes.put('/update-order-status/:orderId',adminUpdateOrderStatus)
 admin_routes.put('/cancel-order/:orderId',adminCancelOrder)
 
 //coupon 
 
-admin_routes.post('/add-coupon',addCoupon)
+admin_routes.post('/add-coupon',protect,admin,addCoupon)
 admin_routes.get('/get-coupons',getCoupons)
 admin_routes.patch('/coupon-status/:id',couponStatus)
 admin_routes.delete('/delete-coupon/:id',deleteCoupon)
