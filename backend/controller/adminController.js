@@ -1,5 +1,6 @@
 import User from "../models/userModel.js";
 import Order from "../models/orderModel.js";
+import Product from "../models/productModel.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
@@ -143,79 +144,181 @@ const deleteUser = async (req, res) => {
 
 
 
-  const getSalesReport = async (req, res) => {
-    try {
-        const { filter, startDate, endDate } = req.query;
-        let query = {};
-        let labels = [];
-        let salesData = [];
+//   const getSalesReport = async (req, res) => {
+//     try {
+//         const { filter, startDate, endDate } = req.query;
+//         let query = {};
+//         let labels = [];
+//         let salesData = [];
 
-        // Handle daily filter with correct date range
-        if (filter === 'daily') {
-            const startOfDay = new Date();
-            startOfDay.setHours(0, 0, 0, 0); // Midnight of today
-            const endOfDay = new Date(startOfDay);
-            endOfDay.setHours(23, 59, 59, 999); // End of today
+//         // Handle daily filter with correct date range
+//         if (filter === 'daily') {
+//             const startOfDay = new Date();
+//             startOfDay.setHours(0, 0, 0, 0); // Midnight of today
+//             const endOfDay = new Date(startOfDay);
+//             endOfDay.setHours(23, 59, 59, 999); // End of today
 
-            query.orderDate = { $gte: startOfDay, $lt: endOfDay };
-            labels = ['Today']; // Label for the graph
-        } else if (filter === 'weekly') {
-            query.orderDate = { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) };
-            const days = Array.from({ length: 7 }, (_, i) =>
-                new Date(Date.now() - i * 24 * 60 * 60 * 1000).toLocaleDateString()
-            );
-            labels = days.reverse();
-        } else if (filter === 'yearly') {
-            query.orderDate = { $gte: new Date(new Date().getFullYear(), 0, 1) };
-            labels = Array.from({ length: 12 }, (_, i) =>
-                new Date(new Date().getFullYear(), i).toLocaleString('default', { month: 'short' })
-            );
-        } else if (startDate && endDate) {
-            query.orderDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
-            const days = Array.from(
-                { length: (new Date(endDate) - new Date(startDate)) / (24 * 60 * 60 * 1000) + 1 },
-                (_, i) =>
-                    new Date(new Date(startDate).getTime() + i * 24 * 60 * 60 * 1000).toLocaleDateString()
-            );
-            labels = days;
-        }
+//             query.orderDate = { $gte: startOfDay, $lt: endOfDay };
+//             labels = ['daily']; // Label for the graph
+//         } else if (filter === 'weekly') {
+//             query.orderDate = { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) };
+//             const days = Array.from({ length: 7 }, (_, i) =>
+//                 new Date(Date.now() - i * 24 * 60 * 60 * 1000).toLocaleDateString()
+//             );
+//             labels = days.reverse();
+//         } else if (filter === 'yearly') {
+//             query.orderDate = { $gte: new Date(new Date().getFullYear(), 0, 1) };
+//             labels = Array.from({ length: 12 }, (_, i) =>
+//                 new Date(new Date().getFullYear(), i).toLocaleString('default', { month: 'short' })
+//             );
+//         } else if (startDate && endDate) {
+//             query.orderDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
+//             const days = Array.from(
+//                 { length: (new Date(endDate) - new Date(startDate)) / (24 * 60 * 60 * 1000) + 1 },
+//                 (_, i) =>
+//                     new Date(new Date(startDate).getTime() + i * 24 * 60 * 60 * 1000).toLocaleDateString()
+//             );
+//             labels = days;
+//         }
 
-        // Fetch orders based on query
-        const orders = await Order.find(query).populate('userId', 'name email');
+//         // Fetch orders based on query
+//         const orders = await Order.find(query).populate('userId', 'name email');
 
-        // Calculate sales data for each label
-        labels.forEach((label) => {
-            const filteredOrders = orders.filter((order) => {
-                const orderDate = new Date(order.orderDate).toLocaleDateString();
-                return orderDate === label;
-            });
-            const totalSalesForLabel = filteredOrders.reduce((sum, order) => sum + order.totalAmount, 0);
-            salesData.push(totalSalesForLabel);
-        });
+//         // Calculate sales data for each label
+//         labels.forEach((label) => {
+//             const filteredOrders = orders.filter((order) => {
+//                 const orderDate = new Date(order.orderDate).toLocaleDateString();
+//                 return orderDate === label;
+//             });
+//             const totalSalesForLabel = filteredOrders.reduce((sum, order) => sum + order.totalAmount, 0);
+//             salesData.push(totalSalesForLabel);
+//         });
 
-        // Return report data
-        const overallSalesCount = orders.length;
-        const overallOrderAmount = orders.reduce((sum, order) => sum + order.totalAmount, 0);
-        const overallDiscount = orders.reduce((sum, order) => sum + (order.discountedAmount || 0), 0);
+//         // Return report data
+//         const overallSalesCount = orders.length;
+//         const overallOrderAmount = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+//         const overallDiscount = orders.reduce((sum, order) => sum + (order.discountedAmount || 0), 0);
 
-        const reportData = {
-            overallSalesCount,
-            overallOrderAmount,
-            overallDiscount,
-            chart: {
-                labels,
-                data: salesData,
-            },
-            orders,
-        };
+//         const reportData = {
+//             overallSalesCount,
+//             overallOrderAmount,
+//             overallDiscount,
+//             chart: {
+//                 labels,
+//                 data: salesData,
+//             },
+//             orders,
+//         };
 
-        res.status(200).json(reportData);
-    } catch (error) {
-        console.error('Error generating sales report:', error);
-        res.status(500).json({ message: 'Failed to generate sales report.' });
-    }
+//         res.status(200).json(reportData);
+//     } catch (error) {
+//         console.error('Error generating sales report:', error);
+//         res.status(500).json({ message: 'Failed to generate sales report.' });
+//     }
+// };
+
+const getSalesReport = async (req, res) => {
+  try {
+      const { filter, startDate, endDate } = req.query;
+      let query = {};
+      let labels = [];
+      let salesData = [];
+
+      if (filter === 'daily') {
+          // Set start and end of the current day (UTC)
+          const startOfDay = new Date();
+          startOfDay.setUTCHours(0, 0, 0, 0);
+          const endOfDay = new Date(startOfDay);
+          endOfDay.setUTCHours(23, 59, 59, 999);
+
+          query.orderDate = { $gte: startOfDay, $lt: endOfDay };
+          labels = [new Date().toISOString().slice(0, 10)]; // Format: YYYY-MM-DD
+      } else if (filter === 'weekly') {
+          // Set range for last 7 days
+          const currentDate = new Date();
+          const weekAgo = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+          query.orderDate = { $gte: weekAgo, $lte: currentDate };
+
+          // Generate labels for the past 7 days
+          labels = Array.from({ length: 7 }, (_, i) => {
+              const date = new Date(currentDate.getTime() - i * 24 * 60 * 60 * 1000);
+              return date.toISOString().slice(0, 10); // Format: YYYY-MM-DD
+          }).reverse();
+      } else if (filter === 'yearly') {
+          // Set range for the current year
+          const currentYear = new Date().getFullYear();
+          const startOfYear = new Date(currentYear, 0, 1);
+          const endOfYear = new Date(currentYear, 11, 31, 23, 59, 59, 999);
+
+          query.orderDate = { $gte: startOfYear, $lte: endOfYear };
+
+          // Generate labels for months (Jan, Feb, ..., Dec)
+          labels = Array.from({ length: 12 }, (_, i) => {
+              return new Date(currentYear, i).toLocaleString('default', { month: 'short' });
+          });
+      } else if (startDate && endDate) {
+          // Set custom date range
+          query.orderDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
+
+          // Generate labels for each day in the range
+          const daysDifference =
+              (new Date(endDate) - new Date(startDate)) / (24 * 60 * 60 * 1000) + 1;
+          labels = Array.from({ length: daysDifference }, (_, i) => {
+              const date = new Date(new Date(startDate).getTime() + i * 24 * 60 * 60 * 1000);
+              return date.toISOString().slice(0, 10); // Format: YYYY-MM-DD
+          });
+      }
+
+      // Fetch orders based on the query
+      const orders = await Order.find(query).populate('userId', 'name email');
+
+      if (filter === 'yearly') {
+          // Group orders by month for yearly data
+          const monthlySales = Array(12).fill(0); // Initialize sales data for 12 months
+          orders.forEach((order) => {
+              const orderMonth = new Date(order.orderDate).getMonth(); // 0 = Jan, ..., 11 = Dec
+              monthlySales[orderMonth] += order.totalAmount;
+          });
+          salesData = monthlySales;
+      } else {
+          // Group orders by date (daily, weekly, or custom range)
+          const salesMap = {};
+          orders.forEach((order) => {
+              const orderDate = new Date(order.orderDate).toISOString().slice(0, 10); // Format as YYYY-MM-DD
+              salesMap[orderDate] = (salesMap[orderDate] || 0) + order.totalAmount;
+          });
+
+          // Map labels to salesData
+          labels.forEach((label) => {
+              salesData.push(salesMap[label] || 0); // Default to 0 if no sales
+          });
+      }
+
+      // Calculate overall stats
+      const overallSalesCount = orders.length;
+      const overallOrderAmount = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+      const overallDiscount = orders.reduce((sum, order) => sum + (order.discountedAmount || 0), 0);
+
+      // Prepare report data
+      const reportData = {
+          overallSalesCount,
+          overallOrderAmount,
+          overallDiscount,
+          chart: {
+              labels,
+              data: salesData,
+          },
+          orders,
+      };
+
+      // Send response
+      res.status(200).json(reportData);
+  } catch (error) {
+      console.error('Error generating sales report:', error);
+      res.status(500).json({ message: 'Failed to generate sales report.' });
+  }
 };
-
 
 
 
@@ -544,8 +647,71 @@ const downloadExcelReport = async (req, res) => {
     res.status(500).json({ message: 'Failed to generate Excel report.' });
   }
 };
+const getTopSelling = async (req, res) => {
+  try {
+    // Fetch all orders and aggregate sales data
+    const orders = await Order.find();
+
+    // Create maps to track product and category sales
+    const productSalesMap = {};
+    const categorySalesMap = {};
+
+    // Aggregate sales data using a for...of loop
+    for (const order of orders) {
+      for (const productItem of order.products) {
+        const { productId, quantity } = productItem;
+
+        // Track sales for each product
+        productSalesMap[productId] = (productSalesMap[productId] || 0) + quantity;
+
+        // Fetch product details to track category sales
+        const product = await Product.findById(productId);
+        if (product) {
+          const category = product.category;
+          categorySalesMap[category] = (categorySalesMap[category] || 0) + quantity;
+        }
+      }
+    }
+
+    // Get top 10 best-selling products
+    const topProducts = await Promise.all(
+      Object.entries(productSalesMap)
+        .sort(([, salesA], [, salesB]) => salesB - salesA) // Sort by sales in descending order
+        .slice(0, 10) // Take the top 10
+        .map(async ([productId, sales]) => {
+          const product = await Product.findById(productId);
+          return {
+            productName: product?.productName || 'Unknown',
+            sales,
+            category: product?.category || 'Unknown',
+          };
+        })
+    );
+
+    // Get top 10 best-selling categories
+    const topCategories = Object.entries(categorySalesMap)
+      .sort(([, salesA], [, salesB]) => salesB - salesA) // Sort by sales in descending order
+      .slice(0, 10) // Take the top 10
+      .map(([categoryName, sales]) => {
+        return { categoryName, sales };
+      });
+
+    // Send response
+    res.status(200).json({
+      message: 'Top selling products and categories fetched successfully!',
+      topProducts,
+      topCategories,
+    });
+  } catch (error) {
+    console.error('Error fetching top-selling products/categories:', error);
+    res.status(500).json({ message: 'Failed to fetch top-selling data. Please try again later.' });
+  }
+};
+
+
 
 
   
 export { adminLogin, getUserList, toggleStatus,deleteUser,refreshTokenHandler,
-  getSalesReport,downloadExcelReport,downloadPDFReport };
+  getSalesReport,downloadExcelReport,downloadPDFReport,getTopSelling };
+

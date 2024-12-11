@@ -1,5 +1,5 @@
 import express from 'express'
-import { adminLogin, getUserList, toggleStatus ,deleteUser, refreshTokenHandler, getSalesReport, downloadPDFReport, downloadExcelReport } from '../controller/adminController.js'
+import { adminLogin, getUserList, toggleStatus ,deleteUser, refreshTokenHandler, getSalesReport, downloadPDFReport, downloadExcelReport, getTopSelling } from '../controller/adminController.js'
 import { protect } from '../middleware/authMiddleware.js'
 import admin from '../middleware/authAdminMiddleware.js'
 import { addCategory, deleteCategory, editStatus, getCategory, listCategory } from '../controller/categoryController.js'
@@ -50,10 +50,11 @@ admin_routes.patch('/coupon-status/:id',couponStatus)
 admin_routes.delete('/delete-coupon/:id',deleteCoupon)
 
 
-
+//dashboard
 admin_routes.get('/sales-report', getSalesReport);
 admin_routes.get('/sales-report/download-pdf', downloadPDFReport);
 admin_routes.get('/sales-report/download-excel', downloadExcelReport);
+admin_routes.get('/top-selling',getTopSelling)
 
 
 

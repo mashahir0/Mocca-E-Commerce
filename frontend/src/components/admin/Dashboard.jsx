@@ -49,45 +49,85 @@ export default function Dashboard() {
     }
   };
 
+  // const chartData = {
+  //   labels: salesData?.chart?.labels || ['No Data'],
+  //   datasets: [
+  //     {
+  //       label: 'Sales Amount',
+  //       data: salesData?.chart?.data || [0],
+  //       borderColor: '#3B82F6',
+  //       backgroundColor: 'rgba(59, 130, 246, 0.2)',
+  //       tension: 0.4,
+  //       fill: true,
+  //       pointRadius: 5,
+  //       pointBackgroundColor: '#3B82F6',
+  //     },
+  //   ],
+  // };
+
+  // const chartOptions = {
+  //   responsive: true,
+  //   maintainAspectRatio: false,
+  //   plugins: {
+  //     legend: {
+  //       display: true,
+  //       position: 'top',
+  //     },
+  //   },
+  //   scales: {
+  //     x: {
+  //       grid: {
+  //         display: false,
+  //       },
+  //     },
+  //     y: {
+  //       ticks: {
+  //         beginAtZero: true,
+  //         callback: (value) => `₹${value}`, // Format Y-axis values as currency
+  //       },
+  //     },
+  //   },
+  // };
+
   const chartData = {
     labels: salesData?.chart?.labels || ['No Data'],
     datasets: [
-      {
-        label: 'Sales Amount',
-        data: salesData?.chart?.data || [0],
-        borderColor: '#3B82F6',
-        backgroundColor: 'rgba(59, 130, 246, 0.2)',
-        tension: 0.4,
-        fill: true,
-        pointRadius: 5,
-        pointBackgroundColor: '#3B82F6',
-      },
+        {
+            label: 'Sales Amount',
+            data: salesData?.chart?.data || [0],
+            borderColor: '#3B82F6',
+            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+            tension: 0.4,
+            fill: true,
+            pointRadius: 5,
+            pointBackgroundColor: '#3B82F6',
+        },
     ],
-  };
+};
 
-  const chartOptions = {
+const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        display: true,
-        position: 'top',
-      },
+        legend: {
+            display: true,
+            position: 'top',
+        },
     },
     scales: {
-      x: {
-        grid: {
-          display: false,
+        x: {
+            grid: {
+                display: false,
+            },
         },
-      },
-      y: {
-        ticks: {
-          beginAtZero: true,
-          callback: (value) => `₹${value}`, // Format Y-axis values as currency
+        y: {
+            ticks: {
+                beginAtZero: true,
+                callback: (value) => `₹${value}`, // Format Y-axis values as currency
+            },
         },
-      },
     },
-  };
+};
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
