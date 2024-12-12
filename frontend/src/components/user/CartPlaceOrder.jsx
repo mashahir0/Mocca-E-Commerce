@@ -56,192 +56,175 @@ export default function CartPlaceOrder() {
 
   // Calculate subtotal
   const subtotal = cartItems.reduce((sum, item) => {
-    // Check if the offerStatus is true, use offerPrice, otherwise use salePrice
+    
     const price = item.productId.offerStatus && item.productId.offerPrice
-      ? item.productId.offerPrice // Use offerPrice if offerStatus is true
-      : item.productId.salePrice; // Fallback to salePrice
+      ? item.productId.offerPrice 
+      : item.productId.salePrice; 
   
-    // Calculate subtotal for each item considering quantity
+    
     return sum + price * item.quantity;
   }, 0);
   
   const deliveryFee = 0;
   const gst = 0;
-  const total = subtotal + deliveryFee + gst - discountAmount; // Subtract discount from total
+  const total = subtotal + deliveryFee + gst - discountAmount; 
 
   // Frontend Coupon Validation
-  const validateCoupon = () => {
-    if (!promoCode) {
-      toast.error('Please enter a promo code.');
-      return false;
-    }
-  
-    const coupon = couponList.find((c) => c.code === promoCode);
-  
-    if (!coupon) {
-      toast.error('Invalid promo code.');
-      setIsCouponValid(false);
-      return false;
-    }
-  
-    const currentDate = new Date();
-    const validFrom = new Date(coupon.validFrom);
-    const validTo = new Date(coupon.validTo);
-  
-    if (currentDate < validFrom || currentDate > validTo) {
-      toast.error('Promo code is not valid today.');
-      setIsCouponValid(false);
-      return false;
-    }
-  
-    if (subtotal < coupon.minPurchaseAmount) {
-      toast.error(`Minimum purchase amount is ₹${coupon.minPurchaseAmount}.`);
-      setIsCouponValid(false);
-      return false;
-    }
-  
-    // Calculate the discount as a percentage of the subtotal
-    const calculatedDiscount = (subtotal * coupon.discount) / 100;
-  
-    // Ensure the discount does not exceed the maximum allowed discount
-    const discount = Math.min(calculatedDiscount, coupon.maxDiscountAmount);
-  
-    setDiscountAmount(discount);
-    toast.success(`Promo code applied! ₹${discount.toFixed(2)} off.`);
-    setIsCouponValid(true);
-    return true;
-  };
-  
-
-  const handleApplyCoupon = () => {
-    if (validateCoupon()) {
+    const validateCoupon = () => {
+      if (!promoCode) {
+        toast.error('Please enter a promo code.');
+        return false;
+      }
+    
+      const coupon = couponList.find((c) => c.code === promoCode);
+    
+      if (!coupon) {
+        toast.error('Invalid promo code.');
+        setIsCouponValid(false);
+        return false;
+      }
+    
+      const currentDate = new Date();
+      const validFrom = new Date(coupon.validFrom);
+      const validTo = new Date(coupon.validTo);
+    
+      if (currentDate < validFrom || currentDate > validTo) {
+        toast.error('Promo code is not valid today.');
+        setIsCouponValid(false);
+        return false;
+      }
+    
+      if (subtotal < coupon.minPurchaseAmount) {
+        toast.error(`Minimum purchase amount is ₹${coupon.minPurchaseAmount}.`);
+        setIsCouponValid(false);
+        return false;
+      }
+    
+      // Calculate the discount as a percentage of the subtotal
+      const calculatedDiscount = (subtotal * coupon.discount) / 100;
+    
+      // Ensure the discount does not exceed the maximum allowed discount
+      const discount = Math.min(calculatedDiscount, coupon.maxDiscountAmount);
+    
+      setDiscountAmount(discount);
+      toast.success(`Promo code applied! ₹${discount.toFixed(2)} off.`);
       setIsCouponValid(true);
-    } else {
-      setDiscountAmount(0);
-    }
-  };
+      return true;
+    };
+    
 
-
-
-  const handlePlaceOrder = async () => {
-    if (!address) {
-        toast.error('Please select a delivery address.');
-        return;
-    }
-
-    if (!paymentMethod) {
-        setPayError('Please select a payment method before placing the order.');
-        return;
-    }
-
-    setPayError('');
-
-    const orderDetails = {
-        userId,
-        address,
-        products: cartItems.map((item) => ({
-            productId: item.productId._id,
-            productName: item.productId.productName,
-            mainImage: item.productId.mainImage[0],
-            size: item.size,
-            quantity: item.quantity,
-            price: Math.floor(item.productId.salePrice),
-        })),
-        paymentMethod,
-        totalAmount: total, // Total with discount applied
-        promoCode, // Send applied promo code
-        discountAmount, // Send the discount amount
+    const handleApplyCoupon = () => {
+      if (validateCoupon()) {
+        setIsCouponValid(true);
+      } else {
+        setDiscountAmount(0);
+      }
     };
 
-    try {
-        if (paymentMethod === 'Razor Pay') {
-            // Razorpay Payment Flow
-            try {
-                const razorpayOrderResponse = await axios.post('/create-razorpay-order', {
-                    amount: Math.floor(total),
-                    currency: 'INR',
-                });
 
-                const { order } = razorpayOrderResponse.data;
 
-                const razorpayOptions = {
-                    key: 'rzp_test_fVyWQT9oTgFtNj',
-                    amount: order.amount,
-                    currency: order.currency,
-                    name: 'MOCCA',
-                    description: 'Order Payment',
-                    order_id: order.id,
-                    handler: async function (response) {
-                        const paymentVerificationResponse = await axios.post('/verify-razorpay-payment', {
-                            razorpayOrderId: response.razorpay_order_id,
-                            razorpayPaymentId: response.razorpay_payment_id,
-                            razorpaySignature: response.razorpay_signature,
-                        });
+ 
 
-                        if (paymentVerificationResponse.data.success) {
-                            // Save order to the database
-                            const orderResponse = await axios.post('/place-order', orderDetails);
-                            toast.success(orderResponse.data.message);
-                            navigate('/order-confirmation');
-                        } else {
-                            toast.error('Payment verification failed.');
-                        }
-                    },
-                    prefill: {
-                        name: address.name,
-                        email: user.email,
-                        contact: address.phone,
-                    },
-                    theme: {
-                        color: '#F37254',
-                    },
-                };
+const handlePlaceOrder = async () => {
+  if (!address) {
+    toast.error('Please select a delivery address.');
+    return;
+  }
 
-                const razorpayInstance = new window.Razorpay(razorpayOptions);
-                razorpayInstance.open();
-            } catch (error) {
-                console.error('Error during Razorpay payment:', error);
-                toast.error('Failed to initialize Razorpay payment.');
+  if (!paymentMethod) {
+    setPayError('Please select a payment method before placing the order.');
+    return;
+  }
+
+  setPayError('');
+
+  const orderDetails = {
+    userId,
+    address,
+    products: cartItems.map((item) => ({
+      productId: item.productId._id,
+      productName: item.productId.productName,
+      mainImage: item.productId.mainImage[0],
+      size: item.size,
+      quantity: item.quantity,
+      price: Math.floor(item.productId.salePrice),
+    })),
+    paymentMethod,
+    totalAmount: total, // Total with discount applied
+    promoCode,
+    discountAmount,
+  };
+
+  try {
+    if (paymentMethod === 'Razor Pay') {
+      // Razorpay Payment Flow
+      const razorpayOrderResponse = await axios.post('/create-razorpay-order', {
+        amount: Math.floor(total),
+        currency: 'INR',
+      });
+
+      const { order } = razorpayOrderResponse.data;
+
+      const razorpayOptions = {
+        key: 'rzp_test_fVyWQT9oTgFtNj',
+        amount: order.amount,
+        currency: order.currency,
+        name: 'MOCCA',
+        description: 'Order Payment',
+        order_id: order.id,
+        handler: async function (response) {
+          try {
+            const paymentVerificationResponse = await axios.post('/verify-razorpay-payment', {
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+
+            if (paymentVerificationResponse.data.success) {
+              const orderResponse = await axios.post('/place-order', {
+                ...orderDetails,
+                paymentStatus: 'Completed',
+              });
+              toast.success(orderResponse.data.message);
+              navigate('/order-confirmation');
+            } else {
+              throw new Error('Payment verification failed.');
             }
-        } else if (paymentMethod === 'Wallet') {
-            // Wallet Payment Flow
-            try {
-                const walletResponse = await axios.post('/wallet-payment', { 
-                    userId, 
-                    totalAmount: total 
-                });
+          } catch (error) {
+            console.error('Payment verification error:', error);
+            await axios.post('/place-order', { ...orderDetails, paymentStatus: 'Failed' });
+            toast.error('Payment verification failed. Order status updated to "Payment Failed".');
+          }
+        },
+        prefill: {
+          name: address.name,
+          email: user.email,
+          contact: address.phone,
+        },
+        theme: {
+          color: '#F37254',
+        },
+      };
 
-                if (walletResponse.data.success) {
-                    // Place the order after successful wallet payment
-                    const orderResponse = await axios.post('/place-order-cart', orderDetails);
-                    toast.success(orderResponse.data.message);
-                    navigate('/order-confirmation');
-                } else {
-                    toast.error(walletResponse.data.message || 'Insufficient wallet balance.');
-                }
-            } catch (error) {
-                console.error('Error during wallet payment:', error);
-                toast.error('Wallet payment failed. Please try again.');
-            }
-        } else if (paymentMethod === 'Cash On Delivery') {
-            // Cash-on-Delivery Payment Flow
-            try {
-                const orderResponse = await axios.post('/place-order-cart', orderDetails);
-                
-                toast.success(orderResponse.data.message);
-                navigate('/order-confirmation');
-            } catch (error) {
-                console.error('Error placing COD order:', error.response?.data?.message || error.message);
-                toast.error(error.response?.data?.message || 'Failed to place the order. Please try again.');
-            }
-        } else {
-            // Default Payment Method
-            toast.error('Unsupported payment method.');
-        }
-    } catch (error) {
-        console.error('Error placing order:', error.response?.data?.message || error.message);
-        toast.error(error.response?.data?.message || 'Failed to place the order. Please try again.');
+      const razorpayInstance = new window.Razorpay(razorpayOptions);
+      razorpayInstance.open();
+
+      razorpayInstance.on('payment.failed', async function (response) {
+        console.error('Payment failed:', response.error);
+        await axios.post('/place-order', { ...orderDetails, paymentStatus: 'Failed' });
+        toast.error('Payment failed. Order status updated to "Payment Failed".');
+      });
+    } else {
+      // Handle Wallet or COD payments
+      const paymentStatus = paymentMethod === 'Wallet' ? 'Completed' : 'Pending';
+      const orderResponse = await axios.post('/place-order', { ...orderDetails, paymentStatus });
+      toast.success(orderResponse.data.message);
+      navigate('/order-confirmation');
     }
+  } catch (error) {
+    console.error('Error placing order:', error.response?.data?.message || error.message);
+    toast.error(error.response?.data?.message || 'Failed to place the order. Please try again.');
+  }
 };
 
 

@@ -209,56 +209,6 @@ const userLogin = async (req, res) => {
 
 
 
-// const getProductDetails = async (req, res) => {
-//     try {
-        
-//         const page = parseInt(req.query.page) || 1;
-//         const limit = parseInt(req.query.limit) || 10;
-
-        
-//         const skip = (page - 1) * limit;
-
-       
-//         const products = await Product.find({ status: true })
-//             .skip(skip)
-//             .limit(limit)
-//             .sort({ createdAt: -1 }) 
-//             .lean(); 
-
-//         // Calculate average rating for each product
-//         const productsWithRatings = products.map((product) => {
-//             const totalReviews = product.review.length;
-//             const totalRating = product.review.reduce((sum, review) => sum + (review.rating || 0), 0);
-//             const averageRating = totalReviews > 0 ? (totalRating / totalReviews).toFixed(1) : null; // Null if no reviews
-
-//             return {
-//                 ...product,
-//                 averageRating,
-//             };
-//         });
-
-        
-//         const totalProducts = await Product.countDocuments({ status: true });
-
-       
-//         const totalPages = Math.ceil(totalProducts / limit);
-
-      
-//         res.status(200).json({
-//             success: true,
-//             data: productsWithRatings,
-//             pagination: {
-//                 currentPage: page,
-//                 totalPages,
-//                 totalProducts,
-//                 limit,
-//             },
-//         });
-//     } catch (error) {
-//         console.error('Error fetching product details:', error);
-//         res.status(500).json({ success: false, message: 'Server error' });
-//     }
-// };
 
 
 const getProductDetails = async (req, res) => {
@@ -272,23 +222,23 @@ const getProductDetails = async (req, res) => {
         .skip(skip)
         .limit(limit)
         .sort({ createdAt: -1 })
-        .lean(); // Convert to plain JS objects
+        .lean(); 
   
-      // For each product, find the associated category and calculate the effective price
+      
       const productsWithDetails = await Promise.all(
         products.map(async (product) => {
-          // Fetch the category details using the imported Category model
+          
           const category = await Category.findOne({ _id: product.category })
-            .select('offer status'); // Select only necessary fields
+            .select('offer status'); 
   
           const isCategoryActive = category?.status === true && category?.offer > 0;
   
-          // Calculate the effective price (after category discount if applicable)
+          
           const effectivePrice = isCategoryActive
             ? product.salePrice * (1 - category.offer / 100)
             : product.salePrice;
   
-          // Calculate average rating
+          
           const totalReviews = product.review?.length || 0;
           const totalRating = product.review
             ? product.review.reduce((sum, review) => sum + (review.rating || 0), 0)
@@ -298,14 +248,14 @@ const getProductDetails = async (req, res) => {
   
           return {
             ...product,
-            effectivePrice, // Send the calculated price after discount
+            effectivePrice, 
             averageRating,
-            offer: isCategoryActive ? category.offer : null, // Include offer if active
+            offer: isCategoryActive ? category.offer : null, 
           };
         })
       );
   
-      // Count total products
+      
       const totalProducts = await Product.countDocuments({ status: true });
       const totalPages = Math.ceil(totalProducts / limit);
   
@@ -325,60 +275,6 @@ const getProductDetails = async (req, res) => {
     }
   };
 
-// const showProductDetails = async (req,res)=>{
-    
-//         try {
-//           // Extract product ID from request parameters
-//           const { id } = req.params;
-      
-//           // Fetch the product from the database
-//           const product = await Product.findById(id);
-      
-//           // Check if product exists
-//           if (!product) {
-//             return res.status(404).json({ message: 'Product not found' });
-//           }
-      
-//           // Return product data as JSON response
-//           res.status(200).json(product);
-//         } catch (error) {
-//           console.error(error);
-//           res.status(500).json({ message: 'Server error', error });
-//         }
-      
-// }
-
-// for to show detaild view of the product 
-
-// const showProductDetails = async (req, res) => {
-//     try {
-        
-//         const { id } = req.params;
-
-        
-//         const product = await Product.findById(id);
-
-       
-//         if (!product) {
-//             return res.status(404).json({ message: 'Product not found' });
-//         }
-
-        
-//         const totalReviews = product.review.length;
-//         const totalRating = product.review.reduce((sum, review) => sum + (review.rating || 0), 0);
-//         const averageRating = totalReviews > 0 ? (totalRating / totalReviews).toFixed(1) : null; 
-
-        
-//         res.status(200).json({
-//             ...product.toObject(),
-//             averageRating,       
-//         });
-//     } catch (error) {
-//         console.error('Error fetching product details:', error);
-//         res.status(500).json({ message: 'Server error', error });
-//     }
-// };
-
 
 
 
@@ -387,7 +283,7 @@ const showProductDetails = async (req, res) => {
     try {
       const { id } = req.params;
   
-      // Fetch the product by its ID
+      
       const product = await Product.findById(id);
   
       if (!product) {

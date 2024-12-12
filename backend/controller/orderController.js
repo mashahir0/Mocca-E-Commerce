@@ -199,62 +199,154 @@ const verifyRazorpayPayment = (req, res) => {
 //   }
 // };
 
+// const addOrder = async (req, res) => {
+//   try {
+//     const { userId, address, products, paymentMethod, totalAmount, promoCode, discountAmount } = req.body;
+
+//     console.log('add order initiated');
+
+//     // Validate required fields
+//     if (!userId || !address || !products || !paymentMethod || !totalAmount) {
+//       return res.status(400).json({ message: 'All fields are required.' });
+//     }
+
+    
+//     if (paymentMethod === 'Cash On Delivery' && totalAmount > 1000) {
+//       return res.status(400).json({
+//         message: 'Cash on Delivery is not allowed for orders above Rs. 1000.',
+//       });
+//     }
+
+//     // Handle wallet payment method
+//     if (paymentMethod === 'Wallet') {
+//       const wallet = await Wallet.findOne({ userId });
+
+//       if (!wallet || wallet.balance < totalAmount) {
+//         return res.status(400).json({ message: 'Not enough balance in wallet to place the order.' });
+//       }
+
+//       console.log('2');
+//       wallet.balance -= totalAmount;
+//       wallet.transactions.push({
+//         type: 'debit',
+//         amount: totalAmount,
+//         description: 'Payment for order',
+//       });
+
+//       await wallet.save();
+//     }
+
+//     // Create new order
+//     const newOrder = new Order({
+//       userId,
+//       address,
+//       products,
+//       paymentMethod,
+//       paymentStatus: paymentMethod === 'Razor Pay' || paymentMethod === 'Wallet' ? 'Completed' : 'Pending',
+//       totalAmount,
+//       couponCode: promoCode,
+//       discountedAmount: discountAmount,
+//     });
+
+//     console.log('3');
+//     const savedOrder = await newOrder.save();
+
+//     // Deduct stock for each product in the order
+//     for (const product of products) {
+//       const { productId, size, quantity } = product;
+
+//       const productToUpdate = await Product.findById(productId);
+//       if (!productToUpdate) continue;
+
+//       const sizeToUpdate = productToUpdate.size.find((s) => s.name === size);
+//       if (sizeToUpdate) sizeToUpdate.stock -= quantity;
+
+//       if (sizeToUpdate.stock < 0) {
+//         return res.status(400).json({
+//           message: `Not enough stock for size ${size} of ${productToUpdate.productName}.`,
+//         });
+//       }
+
+//       await productToUpdate.save();
+//       console.log('4');
+//     }
+
+//     // Step to clear the user's cart after placing the order
+//     const cart = await Cart.findOne({ userId });
+//     if (cart) {
+//       console.log('Clearing cart for user:', userId);
+//       cart.items = []; // Empty the cart items
+//       cart.totalAmount = 0; // Reset the cart total amount
+//       await cart.save(); // Save the updated cart
+//       console.log('Cart cleared successfully');
+//     } else {
+//       console.log('Cart not found for the user.');
+//     }
+
+//     // Respond with success message and order details
+//     res.status(201).json({ message: 'Order placed successfully and cart cleared.', order: savedOrder });
+//   } catch (error) {
+//     console.error('Error placing order:', error);
+//     res.status(500).json({ message: 'Failed to place order. Please try again later.' });
+//   }
+// };
+
 const addOrder = async (req, res) => {
   try {
-    const { userId, address, products, paymentMethod, totalAmount, promoCode, discountAmount } = req.body;
-
-    console.log('add order initiated');
+    const {
+      userId,
+      address,
+      products,
+      paymentMethod,
+      totalAmount,
+      promoCode,
+      discountAmount,
+      paymentStatus,
+    } = req.body;
 
     // Validate required fields
     if (!userId || !address || !products || !paymentMethod || !totalAmount) {
       return res.status(400).json({ message: 'All fields are required.' });
     }
 
-    
     if (paymentMethod === 'Cash On Delivery' && totalAmount > 1000) {
       return res.status(400).json({
         message: 'Cash on Delivery is not allowed for orders above Rs. 1000.',
       });
     }
 
-    // Handle wallet payment method
+    // Handle wallet payment
     if (paymentMethod === 'Wallet') {
       const wallet = await Wallet.findOne({ userId });
-
       if (!wallet || wallet.balance < totalAmount) {
         return res.status(400).json({ message: 'Not enough balance in wallet to place the order.' });
       }
-
-      console.log('2');
       wallet.balance -= totalAmount;
       wallet.transactions.push({
         type: 'debit',
         amount: totalAmount,
         description: 'Payment for order',
       });
-
       await wallet.save();
     }
 
-    // Create new order
+    // Create a new order
     const newOrder = new Order({
       userId,
       address,
       products,
       paymentMethod,
-      paymentStatus: paymentMethod === 'Razor Pay' || paymentMethod === 'Wallet' ? 'Completed' : 'Pending',
+      paymentStatus,
       totalAmount,
       couponCode: promoCode,
       discountedAmount: discountAmount,
     });
 
-    console.log('3');
     const savedOrder = await newOrder.save();
 
-    // Deduct stock for each product in the order
+    // Deduct stock for products in the order
     for (const product of products) {
       const { productId, size, quantity } = product;
-
       const productToUpdate = await Product.findById(productId);
       if (!productToUpdate) continue;
 
@@ -266,30 +358,24 @@ const addOrder = async (req, res) => {
           message: `Not enough stock for size ${size} of ${productToUpdate.productName}.`,
         });
       }
-
       await productToUpdate.save();
-      console.log('4');
     }
 
-    // Step to clear the user's cart after placing the order
+    // Clear the user's cart
     const cart = await Cart.findOne({ userId });
     if (cart) {
-      console.log('Clearing cart for user:', userId);
-      cart.items = []; // Empty the cart items
-      cart.totalAmount = 0; // Reset the cart total amount
-      await cart.save(); // Save the updated cart
-      console.log('Cart cleared successfully');
-    } else {
-      console.log('Cart not found for the user.');
+      cart.items = [];
+      cart.totalAmount = 0;
+      await cart.save();
     }
 
-    // Respond with success message and order details
-    res.status(201).json({ message: 'Order placed successfully and cart cleared.', order: savedOrder });
+    res.status(201).json({ message: 'Order placed successfully.', order: savedOrder });
   } catch (error) {
     console.error('Error placing order:', error);
     res.status(500).json({ message: 'Failed to place order. Please try again later.' });
   }
 };
+
 
 
 

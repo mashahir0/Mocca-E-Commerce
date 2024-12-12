@@ -72,14 +72,14 @@ export default function PlaceOrder() {
 
     const suntotal = product && product.length > 0
   ? product[0].offerStatus && product[0].offerPrice
-    ? product[0].offerPrice * quantity // Use offerPrice if offerStatus is true
+    ? product[0].offerPrice * quantity 
     : product[0].effectivePrice
-    ? product[0].effectivePrice * quantity // Use effectivePrice if no offerPrice
-    : product[0].salePrice * quantity // Fallback to salePrice if no offerPrice or effectivePrice
+    ? product[0].effectivePrice * quantity 
+    : product[0].salePrice * quantity 
   : 0;
 
-const total = suntotal - discountAmount; // Apply the discount to the subtotal
-  // Adjust total with discount
+const total = suntotal - discountAmount; 
+ 
     const deliveryFee = 0;
     const gst = 0;
 

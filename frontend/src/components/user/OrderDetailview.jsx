@@ -137,9 +137,9 @@ function OrderDetailView() {
           })
         );
   
-      // Add product image
-      const imgX = 10; // X coordinate for image
-      const imgY = startY; // Y coordinate for image
+      
+      const imgX = 10; 
+      const imgY = startY; 
       const imgWidth = 30; // Width of the image
       const imgHeight = 30; // Height of the image
       doc.addImage(imgData, "JPEG", imgX, imgY, imgWidth, imgHeight);
@@ -279,54 +279,9 @@ function OrderDetailView() {
         </div>
       </div>
 
-      {/* <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-2">Ordered Products</h3>
-        <div className="space-y-4">
-          {order?.products?.map((product) => (
-            <div
-              key={product.productId._id}
-              className="flex items-center justify-between border-b pb-4"
-            >
-              <div className="flex items-center">
-                <img
-                  src={product.productId.mainImage}
-                  alt={product.productId.name}
-                  className="w-20 h-20 object-cover rounded-md mr-4"
-                  onClick={() => navigate(`/productinfo/${product.productId._id}`)}
-                />
-                <div>
-                  <h4 className="font-semibold">{product.productId.productName}</h4>
-                  <p className="text-sm text-gray-500">Quantity: {product.quantity}</p>
-                  <p className="text-sm text-gray-500">Price: ₹{product.productId.salePrice}</p>
-                </div>
-              </div>
-              <div className="flex flex-col items-end">
-                {product.status === "Cancelled" ? (
-                  // Show if product is cancelled
-                  <span className="text-sm text-red-500">Item Cancelled</span>
-                ) : order?.orderStatus === "Delivered" ? (
-                  // Show the "Return Item" button if the order is delivered
-                  <button
-                    className="text-blue-500 hover:text-blue-700"
-                    onClick={() => handleReturnClick(product.productId._id)}
-                  >
-                    Return Item
-                  </button>
-                ) : (
-                  // Show the "Cancel Item" button if the order is not delivered
-                  <button
-                    className="text-red-500 hover:text-red-700"
-                    onClick={() => handleCancelClick(product.productId._id)}
-                  >
-                    Cancel Item
-                  </button>
-                )}
-              </div>
 
-            </div>
-          ))}
-        </div>
-      </div> */}
+
+
 
 <div className="mb-6">
   <h3 className="text-lg font-semibold mb-2">Ordered Products</h3>
@@ -360,9 +315,14 @@ function OrderDetailView() {
               >
                 Return Item
               </button>
-              {/* Button for downloading the invoice */}
-             
             </div>
+          ) : order?.paymentStatus === "Failed" ? (
+            <button
+              className="text-orange-500 hover:text-orange-700"
+              onClick={() => handleRetryPayment(order._id)}
+            >
+              Retry Payment
+            </button>
           ) : (
             <button
               className="text-red-500 hover:text-red-700"
@@ -371,19 +331,22 @@ function OrderDetailView() {
               Cancel Item
             </button>
           )}
-          
         </div>
       </div>
     ))}
-               <button
-  className="bg-black text-white px-4 py-2 rounded shadow-md hover:bg-gray-800 transition duration-300"
-  onClick={handleDownloadInvoice}
->
-  Download Invoice
-</button>
 
+    {/* Button to download invoice - only visible if order is Delivered */}
+    {order?.orderStatus === "Delivered" && (
+      <button
+        className="bg-black text-white px-4 py-2 rounded shadow-md hover:bg-gray-800 transition duration-300"
+        onClick={handleDownloadInvoice}
+      >
+        Download Invoice
+      </button>
+    )}
   </div>
 </div>
+
 
       <ToastContainer />
     </div>
