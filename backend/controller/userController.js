@@ -1,5 +1,6 @@
 import User from '.././models/userModel.js'
 import bcrypt from 'bcryptjs'
+import Order from '../models/orderModel.js'
 import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
 import Product from '../models/productModel.js'
@@ -55,7 +56,7 @@ const googleLogin = async(req, res) => {
         const accessToken = jwt.sign(
             { id: email },  
             key,          
-            { expiresIn: '15m' }
+            { expiresIn: '1d' }
         );
 
         const refreshToken = jwt.sign(
@@ -113,15 +114,17 @@ const refreshAccessToken = (req, res) => {
   
 
   if (!refreshToken) return res.status(401).json({ message: 'No refresh token provided' });
+  console.log('1');
+  
 
   jwt.verify(refreshToken, refreshTokenKey, (err, user) => {
       if (err) return res.status(403).json({ message: 'Invalid or expired refresh token' });
-
+      console.log('2');
       // Generate new tokens
       const newAccessToken = jwt.sign(
           { id: user.id, email: user.email },
           key,
-          { expiresIn: '15m' } // Same as in login
+          { expiresIn: '1d' } // Same as in login
       );
 
       const newRefreshToken = jwt.sign(
@@ -129,6 +132,7 @@ const refreshAccessToken = (req, res) => {
           refreshTokenKey,
           { expiresIn: '7d' }
       );
+      console.log('3');
 
       res.json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
   });
@@ -174,7 +178,7 @@ const userLogin = async (req, res) => {
         const accessToken = jwt.sign(
             { id: user._id, email: user.email },
             key,
-            { expiresIn: '15m' } 
+            { expiresIn: '1d' } 
         );
 
         const refreshToken = jwt.sign(
@@ -683,9 +687,104 @@ const searchSuggestion = async(req,res)=>{
     }
 }
 
+const getTopSellingProducts = async (req, res) => {
+  try {
+    const orders = await Order.find();
+
+    const productSalesMap = {};
+    orders.forEach((order) => {
+      order.products.forEach((productItem) => {
+        const { productId, quantity } = productItem;
+        if (!productSalesMap[productId]) {
+          productSalesMap[productId] = quantity;
+        } else {
+          productSalesMap[productId] += quantity;
+        }
+      });
+    });
+
+    const topProducts = await Promise.all(
+      Object.entries(productSalesMap)
+        .sort(([, salesA], [, salesB]) => salesB - salesA)
+        .slice(0, 3)
+        .map(async ([productId, sales]) => {
+          const product = await Product.findById(productId);
+          if (!product) return null;
+
+          const category = await Category.findOne({ category: product.category });
+
+          // Calculate the final price based on product or category offer
+          let finalPrice = product.salePrice;
+          if (product.offerStatus) {
+            finalPrice = product.offerPrice;
+          } else if (category && category.status && category.offer > 0) {
+            finalPrice = product.salePrice - (product.salePrice * (category.offer / 100));
+          }
+
+          // Calculate average rating
+          const totalRatings = product.review.reduce((sum, review) => sum + review.rating, 0);
+          const ratingCount = product.review.length;
+          const averageRating = ratingCount > 0 ? (totalRatings / ratingCount).toFixed(1) : 0;
+
+          return {
+            id: product._id,
+            name: product.productName,
+            image: product.mainImage[0] || '',
+            price: product.salePrice,
+            finalPrice: finalPrice.toFixed(2), // Include the calculated final price
+            sales,
+            averageRating,
+            sizes: product.size.map((size) => size.name), // Include available sizes
+          };
+        })
+    );
+
+    const filteredProducts = topProducts.filter((product) => product !== null);
+
+    res.status(200).json({
+      message: 'Top selling products fetched successfully!',
+      topProducts: filteredProducts,
+    });
+  } catch (error) {
+    console.error('Error fetching top selling products:', error);
+    res.status(500).json({ message: 'Failed to fetch top selling products' });
+  }
+};
+
+
+
+const getOfferProducts = async (req, res) => {
+  try {
+    // Fetch six products where offerStatus is true
+    const products = await Product.find({ offerStatus: true, status: true }) // Filter by active products and offer status
+      .sort({ createdAt: -1 }) // Sort by the most recently added
+      .limit(6); // Limit to six products
+
+    // Format the response to include only necessary fields
+    const formattedProducts = products.map((product) => ({
+      id: product._id,
+      name: product.productName,
+      description: product.description,
+      offerPrice: product.offerPrice,
+      salePrice: product.salePrice,
+      image: product.mainImage[0] || '', // Use the first image as the main image
+    }));
+
+    res.status(200).json({
+      message: 'Offer products fetched successfully!',
+      products: formattedProducts,
+    });
+  } catch (error) {
+    console.error('Error fetching offer products:', error);
+    res.status(500).json({ message: 'Failed to fetch offer products' });
+  }
+};
+
+
+
 
 
 export {registerUser,userLogin,refreshAccessToken,getProductDetails,showProductDetails,googleLogin,
     getUserDetails,updateUserProfile,changePassword,changeNewPass,addAddress,getUserAddresses,setDefaultAddress,
-    deleteAddress,getDefaultAddress,searchSuggestion
+    deleteAddress,getDefaultAddress,searchSuggestion,getTopSellingProducts,getOfferProducts
 }

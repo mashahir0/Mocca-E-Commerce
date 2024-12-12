@@ -66,7 +66,7 @@ export default function ProductDetails() {
   const navigate = useNavigate();
   const handleAddToCart = async (id) => {
     try {
-      // Validate inputs
+      
       if (!selectedSize) {
         toast.error("Please select a size!");
         return;
@@ -81,7 +81,7 @@ export default function ProductDetails() {
         return;
       }
 
-      // Make the API request to add the item to the cart
+     
       const response = await axios.post("/add-to-cart", {
         userId,
         productId: id,
@@ -203,32 +203,32 @@ export default function ProductDetails() {
       {product.productName}
     </h1>
     <div className="flex items-center gap-2 mb-2">
-      {renderStars(product.averageRating)} {/* Function to render stars based on rating */}
+      {renderStars(product.averageRating)} 
       <span className="text-gray-500">
         ({product.averageRating || 0} reviews)
       </span>
     </div>
 
-    {/* Display Sale Price, Effective Price, and Discounted Price */}
+    
     <div className="flex items-center gap-2">
-  {/* Display original price if there's a discount */}
+  
   {product.offerStatus && product.offerPrice && (
     <span className="line-through text-gray-500">
       ₹{Math.floor(product.salePrice)}
     </span>
   )}
   
-  {/* Display the discounted or effective price */}
+  
   <p className="text-2xl font-bold">
     ₹
     {product.offerStatus && product.offerPrice
-      ? Math.floor(product.offerPrice) // Show the offer price when applicable
+      ? Math.floor(product.offerPrice) 
       : product.effectivePrice
-      ? Math.floor(product.effectivePrice) // Show effective price if offerPrice isn't applicable
+      ? Math.floor(product.effectivePrice) 
       : Math.floor(product.salePrice)} 
   </p>
   
-  {/* Display discount percentage if applicable */}
+  
   { product.category?.status && (
     <span className="text-sm text-red-500 ml-4">
       {product.category.offer}% OFF
@@ -238,7 +238,7 @@ export default function ProductDetails() {
 
   </div>
 
-  {/* Product Details */}
+  
   <div className="space-y-4">
     <h2 className="font-semibold">Product Details</h2>
     <div className="space-y-2 text-sm">
@@ -278,8 +278,8 @@ export default function ProductDetails() {
           key={name}
           onClick={() => {
             if (stock > 0) {
-              setSelectedSize(name); // Set the selected size
-              setQuantity(1); // Reset the quantity to 1 when changing size
+              setSelectedSize(name); 
+              setQuantity(1); 
             }
           }}
           className={`w-12 h-12 rounded-full border ${
@@ -289,7 +289,7 @@ export default function ProductDetails() {
               ? "border-gray-300 hover:border-black"
               : "border-gray-200 text-gray-400 cursor-not-allowed"
           }`}
-          disabled={stock <= 0} // Disable button if out of stock
+          disabled={stock <= 0} 
         >
           {name}
         </button>
@@ -315,7 +315,7 @@ export default function ProductDetails() {
             product.size?.find(({ name }) => name === selectedSize)
               ?.stock || 0;
           if (quantity < selectedStock) {
-            setQuantity(quantity + 1); // Increase quantity only if it's within stock
+            setQuantity(quantity + 1); 
           }
         }}
         className="px-3 py-1 border-l hover:bg-gray-100"

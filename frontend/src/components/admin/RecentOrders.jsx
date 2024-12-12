@@ -1,6 +1,3 @@
-
-
-
 import React, { useEffect, useState } from 'react';
 import axios from '../../services/api/adminApi';
 import { MoreVertical } from 'lucide-react';

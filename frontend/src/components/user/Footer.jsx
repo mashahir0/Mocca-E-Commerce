@@ -20,47 +20,63 @@ export default function Footer() {
   ]
 
   return (
-    <header className="bg-gradient-to-b from-gray-50 to-white">
+    <footer className="bg-gray-100 text-gray-700 py-12">
       <div className="max-w-7xl mx-auto px-4">
-        <nav className="flex flex-col md:flex-row items-center justify-between py-4">
-          {/* Social Media Icons */}
-          <div className="flex space-x-4 mb-4 md:mb-0">
-            {socialLinks.map((social) => (
-              <a
-                key={social.label}
-                href={social.href}
-                className="text-gray-600 hover:text-gray-900 transition-colors"
-                aria-label={social.label}
-              >
-                <social.icon className="h-5 w-5" />
-              </a>
-            ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-12">
+          {/* About Section */}
+          <div>
+            <h3 className="text-xl font-bold mb-4 text-gray-900">About MOCCA</h3>
+            <p className="text-sm">
+              MOCCA is a forward-thinking fashion brand focused on providing high-quality apparel for the modern individual. We specialize in unique, contemporary designs that reflect individuality and style, catering to all your fashion needs.
+            </p>
           </div>
 
-          {/* Logo */}
-          <div className="text-2xl font-bold mb-4 md:mb-0">
-            MOCCA
+          {/* Fashion Inspiration Section */}
+          <div>
+            <h3 className="text-xl font-bold mb-4 text-gray-900">Fashion Inspiration</h3>
+            <p className="text-sm">
+              Stay ahead of the trends with MOCCA! Our collections are inspired by the latest fashion movements, from street style to haute couture. Whether you're looking for casual chic or bold statement pieces, MOCCA brings you the best of contemporary fashion.
+            </p>
           </div>
 
-          {/* Navigation Links */}
+          {/* Social Media Links */}
+          <div>
+            <h3 className="text-xl font-bold mb-4 text-gray-900">Follow Us</h3>
+            <div className="flex space-x-6">
+              {socialLinks.map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  className="text-gray-700 hover:text-gray-500 transition-colors"
+                  aria-label={social.label}
+                >
+                  <social.icon className="h-6 w-6" />
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation Links Section */}
+        <div className="mt-8">
           <div className="flex flex-wrap justify-center gap-6">
             {navLinks.map((link) => (
               <a
                 key={link.text}
                 href={link.href}
-                className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                className="text-sm text-gray-700 hover:text-gray-500 transition-colors"
               >
                 {link.text}
               </a>
             ))}
           </div>
-        </nav>
+        </div>
 
-        {/* Copyright */}
-        <div className="text-center py-2 text-xs text-gray-500 border-t">
-          Copyright © {new Date().getFullYear()}. All rights reserved.
+        {/* Copyright Section */}
+        <div className="text-center py-4 text-xs text-gray-500 border-t border-gray-300 mt-8">
+          Copyright © {new Date().getFullYear()} MOCCA. All rights reserved.
         </div>
       </div>
-    </header>
+    </footer>
   )
 }

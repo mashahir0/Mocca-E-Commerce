@@ -15,6 +15,8 @@ import { registerUser,
     setDefaultAddress,
     getDefaultAddress,
     searchSuggestion,
+    getTopSellingProducts,
+    getOfferProducts,
     } from '../controller/userController.js'
 import { userExistance,userStatus } from '../middleware/userMiddleware.js'
 import { sendOTP,verifyOTP } from '../controller/otpController.js'
@@ -39,6 +41,11 @@ user_routes.post('/userlogin',userStatus,userLogin)
 //google login 
 
 user_routes.post('/google-login',googleLogin)
+
+// home page 
+
+user_routes.get('/top-selling',getTopSellingProducts)
+user_routes.get('/offer-products',getOfferProducts)
 
 
 //Product 
