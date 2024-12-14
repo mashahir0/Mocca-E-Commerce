@@ -943,10 +943,53 @@ const cancelOrder = async (req, res) => {
       res.status(500).json({ message: "Internal server error" });
     }
   };
+
+  const retryPayment  = async(req,res)=>{
+    const { orderId, paymentStatus } = req.body;
+
+    try {
+        // Validate request body
+        if (!orderId || !paymentStatus) {
+            return res.status(400).json({ success: false, message: 'Order ID and Payment Status are required.' });
+        }
+
+        // Validate payment status
+        const validStatuses = ['Pending', 'Completed', 'Failed'];
+        if (!validStatuses.includes(paymentStatus)) {
+            return res.status(400).json({ success: false, message: 'Invalid payment status.' });
+        }
+
+        // Find and update the order
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found.' });
+        }
+
+        // Update the payment status
+        order.paymentStatus = paymentStatus;
+
+        // Optionally, update the orderStatus when payment is completed
+        if (paymentStatus === 'Completed') {
+            order.orderStatus = 'Processing'; // Update the order status to "Processing"
+        }
+
+        await order.save();
+
+        // Send success response
+        res.status(200).json({ 
+            success: true, 
+            message: 'Order payment status updated successfully.', 
+            updatedOrder: order 
+        });
+    } catch (error) {
+        console.error('Error updating order status:', error);
+        res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+  }
   
   
   
 
 export {addOrder,cartCheckOut,getOrderDetails,cancelOrder,getDetails,getAllOrders,adminUpdateOrderStatus,
-  adminCancelOrder,createRazorpayOrder,verifyRazorpayPayment,returnOrder
+  adminCancelOrder,createRazorpayOrder,verifyRazorpayPayment,returnOrder,retryPayment
 }

@@ -38,27 +38,51 @@ const listCategory = async(req,res)=>{
 }
 
 
-const editStatus = async(req,res) =>{
+// const editStatus = async(req,res) =>{
     
-    const { id } = req.params;
-    const { status, visibility } = req.body; 
+//     const { id } = req.params;
+//     const { status, visibility } = req.body; 
   
-    try {
-      const updatedCategory = await Category.findByIdAndUpdate(
-        id,
-        { $set: { status, visibility } }, 
-        { new: true } 
-      );
+//     try {
+//       const updatedCategory = await Category.findByIdAndUpdate(
+//         id,
+//         { $set: { status, visibility } }, 
+//         { new: true } 
+//       );
   
-      if (!updatedCategory) {
-        return res.status(404).json({ message: 'Category not found' });
-      }
+//       if (!updatedCategory) {
+//         return res.status(404).json({ message: 'Category not found' });
+//       }
   
-      res.json(updatedCategory);
-    } catch (err) {
-      res.status(500).json({ message: 'Error updating category' });
+//       res.json(updatedCategory);
+//     } catch (err) {
+//       res.status(500).json({ message: 'Error updating category' });
+//     }
+// }
+
+const editStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status, visibility, category, description, offer } = req.body;
+
+  try {
+    const updatedCategory = await Category.findByIdAndUpdate(
+      id,
+      {
+        $set: { status, visibility, category, description, offer },
+      },
+      { new: true }
+    );
+
+    if (!updatedCategory) {
+      return res.status(404).json({ message: 'Category not found' });
     }
-}
+
+    res.json(updatedCategory);
+  } catch (err) {
+    res.status(500).json({ message: 'Error updating category' });
+  }
+};
+
 
 const deleteCategory = async (req, res) => {
   try {

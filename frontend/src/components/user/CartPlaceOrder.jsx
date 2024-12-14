@@ -56,18 +56,29 @@ export default function CartPlaceOrder() {
 
   // Calculate subtotal
   const subtotal = cartItems.reduce((sum, item) => {
-    
-    const price = item.productId.offerStatus && item.productId.offerPrice
-      ? item.productId.offerPrice 
-      : item.productId.salePrice; 
+    let price;
   
-    
+    // Prioritize discountedPrice if available
+    if (item.discountedPrice) {
+      price = item.discountedPrice;
+    } 
+    // Use offerPrice if offerStatus is true
+    else if (item.productId.offerStatus && item.productId.offerPrice) {
+      price = item.productId.offerPrice;
+    } 
+    // Default to salePrice
+    else {
+      price = item.productId.salePrice;
+    }
+  
+    // Calculate subtotal by multiplying price by quantity
     return sum + price * item.quantity;
   }, 0);
   
-  const deliveryFee = 0;
-  const gst = 0;
-  const total = subtotal + deliveryFee + gst - discountAmount; 
+  const deliveryFee = 0; // Adjust as needed
+  const gst = 0; // Adjust as needed
+  const total = subtotal + deliveryFee + gst - discountAmount; // Final total
+  
 
   // Frontend Coupon Validation
     const validateCoupon = () => {
@@ -239,10 +250,31 @@ const handlePlaceOrder = async () => {
                 <img src={item.productId.mainImage[0]} alt={item.productId.productName} className="w-16 h-16 object-cover rounded"
                 onClick={()=>navigate(`/productinfo/${item.productId._id}`)}
                 />
-                <div className="flex-1">
+                {/* <div className="flex-1">
                   <h3 className="font-medium">{item.productId.productName}</h3>
                   {item.productId.offerStatus ? <p className="text-gray-600">₹{Math.floor(item.productId.offerPrice)}</p> :<p className="text-gray-600">₹{Math.floor(item.productId.salePrice)}</p>}
-                </div>
+                </div> */}
+                <div className="flex-1">
+  <h3 className="font-medium">{item.productId.productName}</h3>
+  {item.discountedPrice ? (
+    <p className="text-green-600">
+      ₹{Math.floor(item.discountedPrice)} 
+      <span className="line-through text-gray-500 ml-2">
+        ₹{Math.floor(item.productId.salePrice)}
+      </span>
+    </p>
+  ) : item.productId.offerStatus ? (
+    <p className="text-green-600">
+      ₹{Math.floor(item.productId.offerPrice)} 
+      <span className="line-through text-gray-500 ml-2">
+        ₹{Math.floor(item.productId.salePrice)}
+      </span>
+    </p>
+  ) : (
+    <p className="text-gray-600">₹{Math.floor(item.productId.salePrice)}</p>
+  )}
+</div>
+
                 <div className="flex items-center gap-2">
                   Quantity
                   <span className="w-8 text-center">{item.quantity}</span>

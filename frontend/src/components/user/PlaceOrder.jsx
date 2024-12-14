@@ -109,6 +109,109 @@ const total = suntotal - discountAmount;
 
     
 
+    // const handlePlaceOrder = async () => {
+    //     if (!address) {
+    //         toast.error('Please select a delivery address.');
+    //         return;
+    //     }
+    
+    //     if (!paymentMethod) {
+    //         setPayError('Please select a payment method before placing the order.');
+    //         return;
+    //     }
+    
+    //     setPayError('');
+    
+    //     const orderDetails = {
+    //         userId,
+    //         address,
+    //         promoCode,
+    //         discountAmount,
+    //         products: product.map((item) => ({
+    //             productId: item._id,
+    //             productName: item.productName,
+    //             mainImage: item.mainImage,
+    //             size,
+    //             quantity,
+    //             price: item.salePrice,
+    //         })),
+    //         paymentMethod,
+    //         totalAmount: total,
+    //     };
+    
+    //     try {
+    //         if (paymentMethod === 'Wallet') {
+    //             // Wallet Payment Flow
+    //             const walletResponse = await axios.post('/wallet-payment', { 
+    //                 userId, 
+    //                 totalAmount: total 
+    //             });
+    
+    //             if (walletResponse.data.success) {
+    //                 // Place the order after wallet payment
+    //                 const orderResponse = await axios.post('/place-order', orderDetails);
+    //                 toast.success(orderResponse.data.message);
+    //                 navigate('/order-confirmation');
+    //             } else {
+    //                 toast.error(walletResponse.data.message || 'Insufficient wallet balance.');
+    //             }
+    //         } else if (paymentMethod === 'Razor Pay') {
+    //             // Razorpay Payment Flow
+    //             const razorpayOrderResponse = await axios.post('/create-razorpay-order', {
+    //                 amount: Math.floor(total),
+    //                 currency: 'INR',
+    //             });
+    
+    //             const { order } = razorpayOrderResponse.data;
+    
+    //             const razorpayOptions = {
+    //                 key: 'rzp_test_fVyWQT9oTgFtNj',
+    //                 amount: order.amount,
+    //                 currency: order.currency,
+    //                 name: 'MOCCA',
+    //                 description: 'Order Payment',
+    //                 order_id: order.id,
+    //                 handler: async function (response) {
+    //                     const paymentVerificationResponse = await axios.post('/verify-razorpay-payment', {
+    //                         razorpayOrderId: response.razorpay_order_id,
+    //                         razorpayPaymentId: response.razorpay_payment_id,
+    //                         razorpaySignature: response.razorpay_signature,
+    //                     });
+    
+    //                     if (paymentVerificationResponse.data.success) {
+    //                         // Save order to the database
+    //                         const orderResponse = await axios.post('/place-order', orderDetails);
+    //                         toast.success(orderResponse.data.message);
+    //                         navigate('/order-confirmation');
+    //                     } else {
+    //                         toast.error('Payment verification failed.');
+    //                     }
+    //                 },
+    //                 prefill: {
+    //                     name: address.name,
+    //                     email: user.email,
+    //                     contact: address.phone,
+    //                 },
+    //                 theme: {
+    //                     color: '#F37254',
+    //                 },
+    //             };
+    
+    //             const razorpayInstance = new window.Razorpay(razorpayOptions);
+    //             razorpayInstance.open();
+    //         } else {
+    //             // Cash-on-Delivery or Other Payment Methods
+    //             const orderResponse = await axios.post('/place-order', orderDetails);
+    //             toast.success(orderResponse.data.message);
+    //             navigate('/order-confirmation');
+    //         }
+    //     } catch (error) {
+    //         console.error('Error placing order:', error.response?.data?.message || error.message);
+    //         toast.error(error.response?.data?.message || 'Failed to place the order. Please try again.');
+    //     }
+    // };
+    
+
     const handlePlaceOrder = async () => {
         if (!address) {
             toast.error('Please select a delivery address.');
@@ -149,7 +252,7 @@ const total = suntotal - discountAmount;
     
                 if (walletResponse.data.success) {
                     // Place the order after wallet payment
-                    const orderResponse = await axios.post('/place-order', orderDetails);
+                    const orderResponse = await axios.post('/place-order', { ...orderDetails, paymentStatus: 'Completed' });
                     toast.success(orderResponse.data.message);
                     navigate('/order-confirmation');
                 } else {
@@ -158,7 +261,7 @@ const total = suntotal - discountAmount;
             } else if (paymentMethod === 'Razor Pay') {
                 // Razorpay Payment Flow
                 const razorpayOrderResponse = await axios.post('/create-razorpay-order', {
-                    amount: total,
+                    amount: Math.floor(total),
                     currency: 'INR',
                 });
     
@@ -172,19 +275,28 @@ const total = suntotal - discountAmount;
                     description: 'Order Payment',
                     order_id: order.id,
                     handler: async function (response) {
-                        const paymentVerificationResponse = await axios.post('/verify-razorpay-payment', {
-                            razorpayOrderId: response.razorpay_order_id,
-                            razorpayPaymentId: response.razorpay_payment_id,
-                            razorpaySignature: response.razorpay_signature,
-                        });
+                        try {
+                            const paymentVerificationResponse = await axios.post('/verify-razorpay-payment', {
+                                razorpayOrderId: response.razorpay_order_id,
+                                razorpayPaymentId: response.razorpay_payment_id,
+                                razorpaySignature: response.razorpay_signature,
+                            });
     
-                        if (paymentVerificationResponse.data.success) {
-                            // Save order to the database
-                            const orderResponse = await axios.post('/place-order', orderDetails);
-                            toast.success(orderResponse.data.message);
-                            navigate('/order-confirmation');
-                        } else {
-                            toast.error('Payment verification failed.');
+                            if (paymentVerificationResponse.data.success) {
+                                const orderResponse = await axios.post('/place-order', {
+                                    ...orderDetails,
+                                    paymentStatus: 'Completed',
+                                });
+                                toast.success(orderResponse.data.message);
+                                navigate('/order-confirmation');
+                            } else {
+                                throw new Error('Payment verification failed.');
+                            }
+                        } catch (error) {
+                            console.error('Payment verification error:', error);
+                            // Call API to update the order status to "Failed"
+                            await axios.post('/place-order', { ...orderDetails, paymentStatus: 'Failed' });
+                            toast.error('Payment verification failed. Order status updated to "Payment Failed".');
                         }
                     },
                     prefill: {
@@ -199,9 +311,16 @@ const total = suntotal - discountAmount;
     
                 const razorpayInstance = new window.Razorpay(razorpayOptions);
                 razorpayInstance.open();
+    
+                razorpayInstance.on('payment.failed', async function (response) {
+                    console.error('Payment failed:', response.error);
+                    // Call API to update the order status to "Failed"
+                    await axios.post('/place-order', { ...orderDetails, paymentStatus: 'Failed' });
+                    toast.error('Payment failed. Order status updated to "Payment Failed".');
+                });
             } else {
                 // Cash-on-Delivery or Other Payment Methods
-                const orderResponse = await axios.post('/place-order', orderDetails);
+                const orderResponse = await axios.post('/place-order', { ...orderDetails, paymentStatus: 'Pending' });
                 toast.success(orderResponse.data.message);
                 navigate('/order-confirmation');
             }
@@ -231,7 +350,7 @@ const total = suntotal - discountAmount;
                                     />
                                     <div className="flex-1">
                                         <h3 className="font-medium">{item.productName}</h3>
-                                        {item.offerStatus ? <p className="text-gray-600">₹{item.offerPrice}</p> : item.effectivePrice  ? <p className="text-gray-600">₹{item.effectivePrice}</p> :<p className="text-gray-600">₹{item.salePrice}</p>}
+                                        {item.offerStatus ? <p className="text-gray-600">₹{Math.floor(item.offerPrice)}</p> : Math.floor(item.effectivePrice)  ? <p className="text-gray-600">₹{Math.floor(item.effectivePrice)}</p> :<p className="text-gray-600">₹{item.salePrice}</p>}
                                         <p className="text-gray-600">{size}</p>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -251,7 +370,7 @@ const total = suntotal - discountAmount;
                         <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                                 <span>Subtotal</span>
-                                <span>Rs. {suntotal}</span>
+                                <span>Rs. {Math.floor(suntotal)}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span>Delivery Fee</span>
@@ -267,11 +386,11 @@ const total = suntotal - discountAmount;
                             </div>
                             <div className="flex justify-between">
                                 <span>Discount</span>
-                                <span>- Rs. {discountAmount.toFixed(2)}</span>
+                                <span>- Rs. {Math.floor(discountAmount)}</span>
                             </div>
                             <div className="flex justify-between font-semibold pt-2 border-t">
                                 <span>Total</span>
-                                <span>Rs. {total.toFixed(2)}</span>
+                                <span>Rs. {Math.floor(total)}</span>
                             </div>
                         </div>
                         <div className="mt-4">

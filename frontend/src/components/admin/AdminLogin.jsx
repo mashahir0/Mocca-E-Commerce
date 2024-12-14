@@ -92,14 +92,14 @@ export default function AdminLogin() {
             </div>
           </div>
 
-          <div className="text-right">
+          {/* <div className="text-right">
             <a
               href="#"
               className="text-sm text-gray-600 hover:text-gray-900"
             >
               Forgot Password ?
             </a>
-          </div>
+          </div> */}
 
           <button
             type="submit"

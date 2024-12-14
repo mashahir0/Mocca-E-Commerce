@@ -168,6 +168,88 @@ function OrderDetailView() {
     // Save the PDF
     doc.save(`Invoice_${order?._id}.pdf`);
   };
+
+  const handleRetryPayment = async (orderId) => {
+    try {
+      console.log('1');
+      
+        // Fetch the order details from the server using the order ID
+        const response = await axios.get(`/order-details-view/${userId}/${orderId}`);
+        const orderDetails = response.data;
+        console.log(response.data);
+
+        // Check if the order has a pending payment
+        if (orderDetails.paymentStatus !== 'Failed') {
+            toast.error('This order does not have a failed payment status.');
+            return;
+        }
+
+        // Create a new Razorpay order for the retry
+        const razorpayOrderResponse = await axios.post('/create-razorpay-order', {
+            amount: Math.floor(orderDetails.totalAmount),
+            currency: 'INR',
+        });
+        console.log('2');
+        
+
+        const { order } = razorpayOrderResponse.data;
+        console.log(order);
+        
+
+        const razorpayOptions = {
+            key: 'rzp_test_fVyWQT9oTgFtNj', // Replace with your Razorpay key
+            amount: order.amount,
+            currency: order.currency,
+            name: 'MOCCA',
+            description: 'Order Payment Retry',
+            order_id: order.id,
+            handler: async function (response) {
+                try {
+                    // Verify the payment
+                    const paymentVerificationResponse = await axios.post('/verify-razorpay-payment', {
+                        razorpayOrderId: response.razorpay_order_id,
+                        razorpayPaymentId: response.razorpay_payment_id,
+                        razorpaySignature: response.razorpay_signature,
+                    });
+
+                    if (paymentVerificationResponse.data.success) {
+                        // Update order status to "Completed"
+                        await axios.post('/update-order-status', {
+                          orderId: orderDetails._id,
+                          paymentStatus: 'Completed',
+                      });
+                        toast.success('Payment successful. Order status updated to "Completed".');
+                    } else {
+                        throw new Error('Payment verification failed.');
+                    }
+                } catch (error) {
+                    console.error('Payment verification error:', error);
+                    toast.error('Payment verification failed. Please try again.');
+                }
+            },
+            prefill: {
+                name: orderDetails.address.name,
+                // email: orderDetails.user.email,
+                contact: orderDetails.address.phone,
+            },
+            theme: {
+                color: '#F37254',
+            },
+        };
+
+        const razorpayInstance = new window.Razorpay(razorpayOptions);
+        razorpayInstance.open();
+
+        razorpayInstance.on('payment.failed', async function (response) {
+            console.error('Payment failed:', response.error);
+            toast.error('Payment failed. Please try again.');
+        });
+    } catch (error) {
+        console.error('Error during retry payment:', error.response?.data?.message || error.message);
+        toast.error('Failed to initiate payment retry. Please try again later.');
+    }
+};
+
   
   
 
