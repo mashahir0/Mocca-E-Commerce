@@ -1,11 +1,10 @@
-
-import React, { useState, useEffect } from 'react';
-import axios from '../../services/api/adminApi';
-import { ChevronLeft, ChevronRight, TagIcon } from 'lucide-react';
-import { Pencil, Trash2 } from 'lucide-react';
-import { ToastContainer, toast } from 'react-toastify'; 
-import Loading from '../common/Loading';
-import Error from '../common/Error';
+import React, { useState, useEffect } from "react";
+import axios from "../../services/api/adminApi";
+import { ChevronLeft, ChevronRight, TagIcon } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
+import { ToastContainer, toast } from "react-toastify";
+import Loading from "../common/Loading";
+import Error from "../common/Error";
 
 export default function AdminListOrders() {
   const [orders, setOrders] = useState([]);
@@ -16,9 +15,7 @@ export default function AdminListOrders() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [orderToEdit, setOrderToEdit] = useState(null);
-  const [newStatus, setNewStatus] = useState('');
-  console.log(orders);
-  
+  const [newStatus, setNewStatus] = useState("");
   
 
   const fetchOrders = async (page) => {
@@ -30,7 +27,7 @@ export default function AdminListOrders() {
       setTotalPages(response.data.totalPages);
       setLoading(false);
     } catch (err) {
-      setError('Failed to fetch orders');
+      setError("Failed to fetch orders");
       setLoading(false);
     }
   };
@@ -49,13 +46,15 @@ export default function AdminListOrders() {
 
   const handleOrderStatusChange = async (orderId) => {
     try {
-      await axios.put(`/update-order-status/${orderId}`, { orderStatus: newStatus });
-      toast.success('Order status updated successfully');
+      await axios.put(`/update-order-status/${orderId}`, {
+        orderStatus: newStatus,
+      });
+      toast.success("Order status updated successfully");
       setIsModalOpen(false); // Close modal after success
       fetchOrders(currentPage); // Re-fetch orders
     } catch (err) {
       console.error(err);
-      toast.error('Failed to update order status');
+      toast.error("Failed to update order status");
     }
   };
 
@@ -67,11 +66,10 @@ export default function AdminListOrders() {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-   
   };
 
-  if (loading) return <Loading/>
-  if (error) return <Error error = {error}/>;
+  if (loading) return <Loading />;
+  if (error) return <Error error={error} />;
 
   return (
     <div className="max-w-7xl mx-auto p-6">
@@ -98,15 +96,17 @@ export default function AdminListOrders() {
             {orders.map((order) => (
               <tr key={order._id} className="hover:bg-gray-50">
                 <td className="px-6 py-4">{order._id}</td>
-                <td className="px-6 py-4">{order.userId?.name || 'Guest'}</td>
-                <td className="px-6 py-4">{new Date(order.orderDate).toLocaleDateString()}</td>
+                <td className="px-6 py-4">{order.userId?.name || "Guest"}</td>
+                <td className="px-6 py-4">
+                  {new Date(order.orderDate).toLocaleDateString()}
+                </td>
                 <td className="px-6 py-4">₹{order.totalAmount}</td>
                 <td className="px-6 py-4">
                   <span
                     className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
-                      order.paymentStatus === 'Paid'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
+                      order.paymentStatus === "Paid"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
                     }`}
                   >
                     {order.paymentStatus}
@@ -115,9 +115,9 @@ export default function AdminListOrders() {
                 <td className="px-6 py-4">
                   <span
                     className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
-                      order.orderStatus === 'Cancelled'
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-green-100 text-green-800'
+                      order.orderStatus === "Cancelled"
+                        ? "bg-red-100 text-red-800"
+                        : "bg-green-100 text-green-800"
                     }`}
                   >
                     {order.orderStatus}
@@ -168,7 +168,9 @@ export default function AdminListOrders() {
 
             {/* Shipping Address */}
             <div className="mb-4">
-              <h4 className="text-md font-medium text-gray-800">Shipping Address:</h4>
+              <h4 className="text-md font-medium text-gray-800">
+                Shipping Address:
+              </h4>
               <p className="text-sm mt-2">
                 <strong>Name:</strong> {orderToEdit.address.name}
                 <br />
@@ -178,7 +180,8 @@ export default function AdminListOrders() {
                 <br />
                 <strong>Landmark:</strong> {orderToEdit.address.landmark}
                 <br />
-                <strong>Town:</strong> {orderToEdit.address.town}, {orderToEdit.address.city}
+                <strong>Town:</strong> {orderToEdit.address.town},{" "}
+                {orderToEdit.address.city}
                 <br />
                 <strong>State:</strong> {orderToEdit.address.state}
                 <br />
@@ -188,25 +191,21 @@ export default function AdminListOrders() {
               </p>
             </div>
             {/* return reason*/}
-            <div className='mb-4'>
-              
-              
-                
-            <p className="text-sm mt-2"><strong>Return Reasons:</strong></p>
-{orderToEdit.products.map((product, index) => (
-  <div key={index} className="mt-1">
-    <p className="text-sm">
-      <strong>Product:</strong> {product.productName}
-    </p>
-    <p className="text-sm">
-      <strong>Reason:</strong> {product.returnReason || "No return reason provided."}
-    </p>
-  </div>
-))}
-
-                
-              
-              
+            <div className="mb-4">
+              <p className="text-sm mt-2">
+                <strong>Return Reasons:</strong>
+              </p>
+              {orderToEdit.products.map((product, index) => (
+                <div key={index} className="mt-1">
+                  <p className="text-sm">
+                    <strong>Product:</strong> {product.productName}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Reason:</strong>{" "}
+                    {product.returnReason || "No return reason provided."}
+                  </p>
+                </div>
+              ))}
             </div>
 
             {/* Products List */}
@@ -214,7 +213,10 @@ export default function AdminListOrders() {
               <h4 className="text-md font-medium text-gray-800">Products:</h4>
               <ul className="mt-2 space-y-4">
                 {orderToEdit.products.map((product) => (
-                  <li key={product.productId} className="flex items-center space-x-4">
+                  <li
+                    key={product.productId}
+                    className="flex items-center space-x-4"
+                  >
                     <img
                       src={product.mainImage}
                       alt={product.productName}
@@ -222,9 +224,13 @@ export default function AdminListOrders() {
                     />
                     <div className="flex-grow">
                       <span className="font-medium">{product.productName}</span>
-                      <span className="block text-gray-600 text-sm">Size: {product.size}</span>
+                      <span className="block text-gray-600 text-sm">
+                        Size: {product.size}
+                      </span>
                     </div>
-                    <span className="text-sm">₹{product.price} x {product.quantity}</span>
+                    <span className="text-sm">
+                      ₹{product.price} x {product.quantity}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -232,12 +238,14 @@ export default function AdminListOrders() {
 
             {/* Payment Status */}
             <div className="mb-4">
-              <h4 className="text-md font-medium text-gray-800">Payment Status:</h4>
+              <h4 className="text-md font-medium text-gray-800">
+                Payment Status:
+              </h4>
               <span
                 className={`inline-block px-2 py-1 text-sm font-semibold rounded-full ${
-                  orderToEdit.paymentStatus === 'Paid'
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
+                  orderToEdit.paymentStatus === "Paid"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
                 }`}
               >
                 {orderToEdit.paymentStatus}
@@ -285,5 +293,3 @@ export default function AdminListOrders() {
     </div>
   );
 }
-
-

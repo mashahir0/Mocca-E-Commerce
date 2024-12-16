@@ -1,12 +1,10 @@
-
-
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "../../services/api/userApi";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from "react-toastify";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import Loading from "../common/Loading";
@@ -25,10 +23,16 @@ function OrderDetailView() {
   const [returnReason, setReturnReason] = useState("");
 
   // Fetch order details using React Query based on orderId
-  const { data: order, isLoading, isError } = useQuery({
+  const {
+    data: order,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["orderDetails", orderId],
     queryFn: async () => {
-      const response = await axios.get(`/order-details-view/${userId}/${orderId}`);
+      const response = await axios.get(
+        `/order-details-view/${userId}/${orderId}`
+      );
       return response.data;
     },
   });
@@ -39,7 +43,10 @@ function OrderDetailView() {
   // Mutation to handle return
   const { mutate: returnProduct, isLoading: isReturning } = useMutation({
     mutationFn: async ({ productId, reason }) => {
-      const response = await axios.put(`/return-order/${userId}/${orderId}`, { productId, reason });
+      const response = await axios.put(`/return-order/${userId}/${orderId}`, {
+        productId,
+        reason,
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -55,7 +62,9 @@ function OrderDetailView() {
 
   const { mutate: cancelProduct, isLoading: isCancelling } = useMutation({
     mutationFn: async (productId) => {
-      const response = await axios.put(`/cancel-order/${userId}/${orderId}`, { productId });
+      const response = await axios.put(`/cancel-order/${userId}/${orderId}`, {
+        productId,
+      });
       return response.data;
     },
     onSuccess: () => {
@@ -69,12 +78,8 @@ function OrderDetailView() {
   });
 
   const handleCancelClick = (productId) => {
-
     cancelProduct(productId);
-
   };
-
-
 
   const handleReturnClick = (productId) => {
     setSelectedProductId(productId);
@@ -91,24 +96,28 @@ function OrderDetailView() {
 
   const handleDownloadInvoice = async () => {
     const doc = new jsPDF();
-  
+
     // Title and Company Info
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.text("MOCCA", 105, 10, { align: "center" });
     doc.setFontSize(12);
     doc.text("Invoice", 105, 20, { align: "center" });
-  
+
     // Separator line
     doc.setLineWidth(0.5);
     doc.line(10, 25, 200, 25);
-  
+
     // Order Details
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
     doc.text(`Order ID: ${order?._id}`, 10, 35);
-    doc.text(`Order Date: ${new Date(order?.orderDate).toLocaleDateString()}`, 10, 45);
-  
+    doc.text(
+      `Order Date: ${new Date(order?.orderDate).toLocaleDateString()}`,
+      10,
+      45
+    );
+
     // Customer Details
     doc.text("Customer Details:", 10, 55);
     doc.text(`Name: ${order?.address?.name}`, 10, 65);
@@ -118,41 +127,45 @@ function OrderDetailView() {
       75,
       { maxWidth: 180 }
     );
-  
+
     // Products Section
     let startY = 95;
     doc.setFont("helvetica", "bold");
     doc.text("Products:", 10, startY);
-  
+
     doc.setFont("helvetica", "normal");
     for (let product of order?.products) {
       startY += 10;
-  
+
       // Fetch image as Base64
       const imgData = await fetch(product.productId.mainImage)
         .then((res) => res.blob())
-        .then((blob) =>
-          new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.readAsDataURL(blob);
-          })
+        .then(
+          (blob) =>
+            new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.readAsDataURL(blob);
+            })
         );
-  
-      
-      const imgX = 10; 
-      const imgY = startY; 
+
+      const imgX = 10;
+      const imgY = startY;
       const imgWidth = 30; // Width of the image
       const imgHeight = 30; // Height of the image
       doc.addImage(imgData, "JPEG", imgX, imgY, imgWidth, imgHeight);
-  
+
       // Add product details
       const detailsX = imgX + imgWidth + 10; // Start X for details, right of image
       const detailsY = imgY + 5; // Start Y for details
       doc.text(`Name: ${product.productId.productName}`, detailsX, detailsY);
-      doc.text(`Price: ₹${product.productId.salePrice}`, detailsX, detailsY + 10);
+      doc.text(
+        `Price: ₹${product.productId.salePrice}`,
+        detailsX,
+        detailsY + 10
+      );
       doc.text(`Quantity: ${product.quantity}`, detailsX, detailsY + 20);
-  
+
       // Adjust the startY for the next product
       startY += imgHeight + 10; // Leave space after each product
       if (startY > 270) {
@@ -161,110 +174,117 @@ function OrderDetailView() {
         startY = 20; // Reset startY for the new page
       }
     }
-  
+
     // Total Amount
     startY += 10;
     doc.setFont("helvetica", "bold");
     doc.text(`Total Amount: ₹${order?.totalAmount}`, 10, startY);
-  
+
     // Save the PDF
     doc.save(`Invoice_${order?._id}.pdf`);
   };
 
   const handleRetryPayment = async (orderId) => {
     try {
-      console.log('1');
-      
-        // Fetch the order details from the server using the order ID
-        const response = await axios.get(`/order-details-view/${userId}/${orderId}`);
-        const orderDetails = response.data;
-        console.log(response.data);
+      console.log("1");
 
-        // Check if the order has a pending payment
-        if (orderDetails.paymentStatus !== 'Failed') {
-            toast.error('This order does not have a failed payment status.');
-            return;
-        }
+      // Fetch the order details from the server using the order ID
+      const response = await axios.get(
+        `/order-details-view/${userId}/${orderId}`
+      );
+      const orderDetails = response.data;
+      console.log(response.data);
 
-        // Create a new Razorpay order for the retry
-        const razorpayOrderResponse = await axios.post('/create-razorpay-order', {
-            amount: Math.floor(orderDetails.totalAmount),
-            currency: 'INR',
-        });
-        console.log('2');
-        
+      // Check if the order has a pending payment
+      if (orderDetails.paymentStatus !== "Failed") {
+        toast.error("This order does not have a failed payment status.");
+        return;
+      }
 
-        const { order } = razorpayOrderResponse.data;
-        console.log(order);
-        
+      // Create a new Razorpay order for the retry
+      const razorpayOrderResponse = await axios.post("/create-razorpay-order", {
+        amount: Math.floor(orderDetails.totalAmount),
+        currency: "INR",
+      });
+      console.log("2");
 
-        const razorpayOptions = {
-            key: 'rzp_test_fVyWQT9oTgFtNj', // Replace with your Razorpay key
-            amount: order.amount,
-            currency: order.currency,
-            name: 'MOCCA',
-            description: 'Order Payment Retry',
-            order_id: order.id,
-            handler: async function (response) {
-                try {
-                    // Verify the payment
-                    const paymentVerificationResponse = await axios.post('/verify-razorpay-payment', {
-                        razorpayOrderId: response.razorpay_order_id,
-                        razorpayPaymentId: response.razorpay_payment_id,
-                        razorpaySignature: response.razorpay_signature,
-                    });
+      const { order } = razorpayOrderResponse.data;
+      console.log(order);
 
-                    if (paymentVerificationResponse.data.success) {
-                        // Update order status to "Completed"
-                        await axios.post('/update-order-status', {
-                          orderId: orderDetails._id,
-                          paymentStatus: 'Completed',
-                      });
-                        toast.success('Payment successful. Order status updated to "Completed".');
-                    } else {
-                        throw new Error('Payment verification failed.');
-                    }
-                } catch (error) {
-                    console.error('Payment verification error:', error);
-                    toast.error('Payment verification failed. Please try again.');
-                }
-            },
-            prefill: {
-                name: orderDetails.address.name,
-                // email: orderDetails.user.email,
-                contact: orderDetails.address.phone,
-            },
-            theme: {
-                color: '#F37254',
-            },
-        };
+      const razorpayOptions = {
+        key: "rzp_test_fVyWQT9oTgFtNj", // Replace with your Razorpay key
+        amount: order.amount,
+        currency: order.currency,
+        name: "MOCCA",
+        description: "Order Payment Retry",
+        order_id: order.id,
+        handler: async function (response) {
+          try {
+            // Verify the payment
+            const paymentVerificationResponse = await axios.post(
+              "/verify-razorpay-payment",
+              {
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+              }
+            );
 
-        const razorpayInstance = new window.Razorpay(razorpayOptions);
-        razorpayInstance.open();
+            if (paymentVerificationResponse.data.success) {
+              // Update order status to "Completed"
+              await axios.post("/update-order-status", {
+                orderId: orderDetails._id,
+                paymentStatus: "Completed",
+              });
+              toast.success(
+                'Payment successful. Order status updated to "Completed".'
+              );
+            } else {
+              throw new Error("Payment verification failed.");
+            }
+          } catch (error) {
+            console.error("Payment verification error:", error);
+            toast.error("Payment verification failed. Please try again.");
+          }
+        },
+        prefill: {
+          name: orderDetails.address.name,
+          // email: orderDetails.user.email,
+          contact: orderDetails.address.phone,
+        },
+        theme: {
+          color: "#F37254",
+        },
+      };
 
-        razorpayInstance.on('payment.failed', async function (response) {
-            console.error('Payment failed:', response.error);
-            toast.error('Payment failed. Please try again.');
-        });
+      const razorpayInstance = new window.Razorpay(razorpayOptions);
+      razorpayInstance.open();
+
+      razorpayInstance.on("payment.failed", async function (response) {
+        console.error("Payment failed:", response.error);
+        toast.error("Payment failed. Please try again.");
+      });
     } catch (error) {
-        console.error('Error during retry payment:', error.response?.data?.message || error.message);
-        toast.error('Failed to initiate payment retry. Please try again later.');
+      console.error(
+        "Error during retry payment:",
+        error.response?.data?.message || error.message
+      );
+      toast.error("Failed to initiate payment retry. Please try again later.");
     }
-};
-
-  
-  
+  };
 
   if (isLoading) {
-    return <Loading/>;
+    return <Loading />;
   }
 
   if (isError) {
-    return <Error error = {error}/>;
+    return <Error error={isError} />;
   }
 
   if (!order) {
-    return <p className="text-center text-gray-500">No order details available.</p>;
+    return (
+      <p className="text-center text-gray-500">No order details available.</p>
+    );
   }
 
   return (
@@ -342,8 +362,11 @@ function OrderDetailView() {
           <p className="text-sm">
             <strong>Delivery Status:</strong>{" "}
             <span
-              className={`font-bold ${order?.orderStatus === "Delivered" ? "text-green-500" : "text-red-500"
-                }`}
+              className={`font-bold ${
+                order?.orderStatus === "Delivered"
+                  ? "text-green-500"
+                  : "text-red-500"
+              }`}
             >
               {order?.orderStatus}
             </span>
@@ -354,8 +377,11 @@ function OrderDetailView() {
           <p className="text-sm">
             <strong>Payment Status:</strong>{" "}
             <span
-              className={`font-bold ${order?.paymentStatus === "Completed" ? "text-green-500" : "text-red-500"
-                }`}
+              className={`font-bold ${
+                order?.paymentStatus === "Completed"
+                  ? "text-green-500"
+                  : "text-red-500"
+              }`}
             >
               {order?.paymentStatus}
             </span>
@@ -363,74 +389,77 @@ function OrderDetailView() {
         </div>
       </div>
 
-
-
-
-
-<div className="mb-6">
-  <h3 className="text-lg font-semibold mb-2">Ordered Products</h3>
-  <div className="space-y-4">
-    {order?.products?.map((product) => (
-      <div
-        key={product.productId._id}
-        className="flex items-center justify-between border-b pb-4"
-      >
-        <div className="flex items-center">
-          <img
-            src={product.productId.mainImage}
-            alt={product.productId.name}
-            className="w-20 h-20 object-cover rounded-md mr-4"
-            onClick={() => navigate(`/productinfo/${product.productId._id}`)}
-          />
-          <div>
-            <h4 className="font-semibold">{product.productId.productName}</h4>
-            <p className="text-sm text-gray-500">Quantity: {product.quantity}</p>
-            <p className="text-sm text-gray-500">Price: ₹{product.productId.salePrice}</p>
-          </div>
-        </div>
-        <div className="flex flex-col items-end">
-          {product.status === "Cancelled" ? (
-            <span className="text-sm text-red-500">Item Cancelled</span>
-          ) : order?.orderStatus === "Delivered" ? (
-            <div>
-              <button
-                className="text-blue-500 hover:text-blue-700 mb-2"
-                onClick={() => handleReturnClick(product.productId._id)}
-              >
-                Return Item
-              </button>
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-2">Ordered Products</h3>
+        <div className="space-y-4">
+          {order?.products?.map((product) => (
+            <div
+              key={product.productId._id}
+              className="flex items-center justify-between border-b pb-4"
+            >
+              <div className="flex items-center">
+                <img
+                  src={product.productId.mainImage}
+                  alt={product.productId.name}
+                  className="w-20 h-20 object-cover rounded-md mr-4"
+                  onClick={() =>
+                    navigate(`/productinfo/${product.productId._id}`)
+                  }
+                />
+                <div>
+                  <h4 className="font-semibold">
+                    {product.productId.productName}
+                  </h4>
+                  <p className="text-sm text-gray-500">
+                    Quantity: {product.quantity}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Price: ₹{product.productId.salePrice}
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col items-end">
+                {product.status === "Cancelled" ? (
+                  <span className="text-sm text-red-500">Item Cancelled</span>
+                ) : order?.orderStatus === "Delivered" ? (
+                  <div>
+                    <button
+                      className="text-blue-500 hover:text-blue-700 mb-2"
+                      onClick={() => handleReturnClick(product.productId._id)}
+                    >
+                      Return Item
+                    </button>
+                  </div>
+                ) : order?.paymentStatus === "Failed" ? (
+                  <button
+                    className="text-orange-500 hover:text-orange-700"
+                    onClick={() => handleRetryPayment(order._id)}
+                  >
+                    Retry Payment
+                  </button>
+                ) : (
+                  <button
+                    className="text-red-500 hover:text-red-700"
+                    onClick={() => handleCancelClick(product.productId._id)}
+                  >
+                    Cancel Item
+                  </button>
+                )}
+              </div>
             </div>
-          ) : order?.paymentStatus === "Failed" ? (
+          ))}
+
+          {/* Button to download invoice - only visible if order is Delivered */}
+          {order?.orderStatus === "Delivered" && (
             <button
-              className="text-orange-500 hover:text-orange-700"
-              onClick={() => handleRetryPayment(order._id)}
+              className="bg-black text-white px-4 py-2 rounded shadow-md hover:bg-gray-800 transition duration-300"
+              onClick={handleDownloadInvoice}
             >
-              Retry Payment
-            </button>
-          ) : (
-            <button
-              className="text-red-500 hover:text-red-700"
-              onClick={() => handleCancelClick(product.productId._id)}
-            >
-              Cancel Item
+              Download Invoice
             </button>
           )}
         </div>
       </div>
-    ))}
-
-    {/* Button to download invoice - only visible if order is Delivered */}
-    {order?.orderStatus === "Delivered" && (
-      <button
-        className="bg-black text-white px-4 py-2 rounded shadow-md hover:bg-gray-800 transition duration-300"
-        onClick={handleDownloadInvoice}
-      >
-        Download Invoice
-      </button>
-    )}
-  </div>
-</div>
-
 
       <ToastContainer />
     </div>

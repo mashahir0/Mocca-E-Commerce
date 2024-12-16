@@ -1,27 +1,27 @@
-import React, { useEffect, useState } from 'react';
-import axios from '../../services/api/adminApi';
-import { MoreVertical } from 'lucide-react';
-import Loading from '../common/Loading';
-import Error from '../common/Error';
+import React, { useEffect, useState } from "react";
+import axios from "../../services/api/adminApi";
+import { MoreVertical } from "lucide-react";
+import Loading from "../common/Loading";
+import Error from "../common/Error";
 
 export default function TopSelling() {
   const [topProducts, setTopProducts] = useState([]);
   const [topCategories, setTopCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchTopSellingData = async () => {
       try {
-        const response = await axios.get('/top-selling'); // Adjust your API endpoint here
+        const response = await axios.get("/top-selling"); // Adjust your API endpoint here
         const { topProducts, topCategories } = response.data;
 
         setTopProducts(topProducts);
         setTopCategories(topCategories);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching top selling data:', err);
-        setError('Failed to load data. Please try again.');
+        console.error("Error fetching top selling data:", err);
+        setError("Failed to load data. Please try again.");
         setLoading(false);
       }
     };
@@ -30,11 +30,11 @@ export default function TopSelling() {
   }, []);
 
   if (loading) {
-    return <Loading/>;
+    return <Loading />;
   }
 
   if (error) {
-    return <Error error={error}/>;
+    return <Error error={error} />;
   }
 
   return (

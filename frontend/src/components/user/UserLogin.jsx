@@ -1,89 +1,92 @@
-
-import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { ToastContainer, toast } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
-import axios from '../../services/api/userApi'
-import { useDispatch } from 'react-redux'
-import { setUser } from '../../redux/slice/UserSlice'
-import { GoogleLogin } from '@react-oauth/google'
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import axios from "../../services/api/userApi";
+import { useDispatch } from "react-redux";
+import { setUser } from "../../redux/slice/UserSlice";
+import { GoogleLogin } from "@react-oauth/google";
 
 export default function LoginForm() {
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  })
-  const dispatch = useDispatch()
-  const [errors, setErrors] = useState({ email: '', password: '' })
-  const navigate = useNavigate()
+    email: "",
+    password: "",
+  });
+  const dispatch = useDispatch();
+  const [errors, setErrors] = useState({ email: "", password: "" });
+  const navigate = useNavigate();
 
   const validateForm = () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    let isValid = true
-    let newErrors = { email: '', password: '' }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    let isValid = true;
+    let newErrors = { email: "", password: "" };
 
     if (!emailRegex.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address.'
-      isValid = false
+      newErrors.email = "Please enter a valid email address.";
+      isValid = false;
     }
 
-    if (formData.password.trim() === '') {
-      newErrors.password = 'Password is required.'
-      isValid = false
+    if (formData.password.trim() === "") {
+      newErrors.password = "Password is required.";
+      isValid = false;
     }
 
-    setErrors(newErrors)
-    return isValid
-  }
+    setErrors(newErrors);
+    return isValid;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (validateForm()) {
       try {
-        const response = await axios.post('/userlogin', formData)
+        const response = await axios.post("/userlogin", formData);
         if (response.status === 200) {
-          const { accessToken, refreshToken, user } = response.data
-          localStorage.setItem('accessToken', accessToken)
-          localStorage.setItem('refreshToken', refreshToken)
+          const { accessToken, refreshToken, user } = response.data;
+          localStorage.setItem("accessToken", accessToken);
+          localStorage.setItem("refreshToken", refreshToken);
 
-          dispatch(setUser({
-            user,
-            accessToken,
-            refreshToken
-          }))
-          navigate('/home')
+          dispatch(
+            setUser({
+              user,
+              accessToken,
+              refreshToken,
+            })
+          );
+          navigate("/home");
         } else {
-          alert('Login failed')
+          alert("Login failed");
         }
       } catch (error) {
-        console.error('Error details:', error)
+        console.error("Error details:", error);
         if (error.response) {
-          console.error('Response error:', error.response.data)
-          alert(`Login failed: ${error.response.data.message || 'Unknown error'}`)
+          console.error("Response error:", error.response.data);
+          alert(
+            `Login failed: ${error.response.data.message || "Unknown error"}`
+          );
         } else if (error.request) {
-          console.error('Request error:', error.request)
-          alert('No response from server')
+          console.error("Request error:", error.request);
+          alert("No response from server");
         } else {
-          console.error('Error message:', error.message)
-          alert('An unexpected error occurred')
+          console.error("Error message:", error.message);
+          alert("An unexpected error occurred");
         }
       }
     }
-  }
+  };
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prevState => ({
+    const { name, value } = e.target;
+    setFormData((prevState) => ({
       ...prevState,
-      [name]: value
-    }))
-    setErrors(prevErrors => ({
+      [name]: value,
+    }));
+    setErrors((prevErrors) => ({
       ...prevErrors,
-      [name]: ''
-    }))
-  }
+      [name]: "",
+    }));
+  };
 
   // const handleGoogleSuccess = async (response) => {
   //   const { credential } = response // credential is the ID token returned by Google
@@ -107,39 +110,39 @@ export default function LoginForm() {
   //   }
   // }
 
-
   const handleGoogleSuccess = async (response) => {
-    const { credential } = response 
+    const { credential } = response;
     try {
-     
-      const googleUser = await axios.post('/google-login', { tokenId: credential })
+      const googleUser = await axios.post("/google-login", {
+        tokenId: credential,
+      });
 
-      const { accessToken, refreshToken, user } = googleUser.data
+      const { accessToken, refreshToken, user } = googleUser.data;
 
-      
-      localStorage.setItem('accessToken', accessToken)
-      localStorage.setItem('refreshToken', refreshToken)
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
 
       // Dispatch user info and tokens to Redux store
-      dispatch(setUser({
-        user,
-        accessToken,
-        refreshToken
-      }))
+      dispatch(
+        setUser({
+          user,
+          accessToken,
+          refreshToken,
+        })
+      );
 
       // Navigate to home page after successful login
-      navigate('/home')
+      navigate("/home");
     } catch (error) {
-      console.error('Google login error:', error)
-      toast.error('Failed to login with Google.')
+      console.error("Google login error:", error);
+      toast.error("Failed to login with Google.");
     }
-}
-
+  };
 
   const handleGoogleFailure = (error) => {
-    console.error('Google login failed:', error)
-    toast.error('Google login failed. Please try again.')
-  }
+    console.error("Google login failed:", error);
+    toast.error("Google login failed. Please try again.");
+  };
 
   return (
     <div className="w-full max-w-md mx-auto p-6">
@@ -160,7 +163,9 @@ export default function LoginForm() {
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300"
           />
-          {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+          {errors.email && (
+            <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+          )}
         </div>
 
         <div className="relative">
@@ -179,11 +184,16 @@ export default function LoginForm() {
           >
             {showPassword ? "👁️" : "👁️‍🗨️"}
           </button>
-          {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+          {errors.password && (
+            <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+          )}
         </div>
 
         <div className="text-right">
-          <button type="button" className="text-sm text-gray-600 hover:underline">
+          <button
+            type="button"
+            className="text-sm text-gray-600 hover:underline"
+          >
             <Link to="/forgotpass">Forgot password?</Link>
           </button>
         </div>
@@ -224,5 +234,5 @@ export default function LoginForm() {
       </form>
       <ToastContainer />
     </div>
-  )
+  );
 }

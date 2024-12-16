@@ -1,35 +1,37 @@
-
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from '../../services/api/adminApi'; 
-import { ToastContainer, toast } from 'react-toastify'; 
-import 'react-toastify/dist/ReactToastify.css'; 
-import { useNavigate, Link } from 'react-router-dom'; 
-import Loading from '../common/Loading';
-import Error from '../common/Error';
-
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "../../services/api/adminApi";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useNavigate, Link } from "react-router-dom";
+import Loading from "../common/Loading";
+import Error from "../common/Error";
 
 export default function ProductList() {
-  const [currentPage, setCurrentPage] = useState(1); 
-  const limit = 10; 
-  const queryClient = useQueryClient(); 
+  const [currentPage, setCurrentPage] = useState(1);
+  const limit = 10;
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   // Fetch products
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['products', currentPage], 
+    queryKey: ["products", currentPage],
     queryFn: () =>
-      axios.get(`/get-products?page=${currentPage}&limit=${limit}`).then((res) => res.data), 
+      axios
+        .get(`/get-products?page=${currentPage}&limit=${limit}`)
+        .then((res) => res.data),
     keepPreviousData: true,
   });
 
   // Toggle Availability
   const toggleAvailabilityMutation = useMutation({
     mutationFn: (updatedProduct) =>
-      axios.put(`/toggle-product/${updatedProduct._id}`, updatedProduct), 
+      axios.put(`/toggle-product/${updatedProduct._id}`, updatedProduct),
     onSuccess: () => {
-      queryClient.invalidateQueries(['products']);
-      toast.success('Product availability updated successfully!', { autoClose: 2000 });
+      queryClient.invalidateQueries(["products"]);
+      toast.success("Product availability updated successfully!", {
+        autoClose: 2000,
+      });
     },
     onError: (error) => {
       toast.error(`Error: ${error.message}`, { autoClose: 2000 });
@@ -41,8 +43,8 @@ export default function ProductList() {
     mutationFn: (updatedProduct) =>
       axios.put(`/toggle-offer/${updatedProduct._id}`, updatedProduct),
     onSuccess: () => {
-      queryClient.invalidateQueries(['products']);
-      toast.success('Offer status updated successfully!', { autoClose: 2000 });
+      queryClient.invalidateQueries(["products"]);
+      toast.success("Offer status updated successfully!", { autoClose: 2000 });
     },
     onError: (error) => {
       toast.error(`Error: ${error.message}`, { autoClose: 2000 });
@@ -51,7 +53,9 @@ export default function ProductList() {
 
   // Handlers
   const handleToggleAvailability = (productId, currentStatus) => {
-    const updatedProduct = data.products.find((product) => product._id === productId);
+    const updatedProduct = data.products.find(
+      (product) => product._id === productId
+    );
     toggleAvailabilityMutation.mutate({
       ...updatedProduct,
       status: !currentStatus,
@@ -59,7 +63,9 @@ export default function ProductList() {
   };
 
   const handleToggleOfferStatus = (productId, currentOfferStatus) => {
-    const updatedProduct = data.products.find((product) => product._id === productId);
+    const updatedProduct = data.products.find(
+      (product) => product._id === productId
+    );
     toggleOfferStatusMutation.mutate({
       ...updatedProduct,
       offerStatus: !currentOfferStatus,
@@ -83,8 +89,8 @@ export default function ProductList() {
     }
   };
 
-  if (isLoading) return <Loading/>
-  if (isError) return <Error error={error.message}/>;
+  if (isLoading) return <Loading />;
+  if (isError) return <Error />;
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -104,19 +110,27 @@ export default function ProductList() {
           <table className="w-full">
             <thead>
               <tr className="border-b">
-                <th className="px-6 py-4 text-left text-gray-600">Product Id</th>
-                <th className="px-6 py-4 text-left text-gray-600">Product Name</th>
+                <th className="px-6 py-4 text-left text-gray-600">
+                  Product Id
+                </th>
+                <th className="px-6 py-4 text-left text-gray-600">
+                  Product Name
+                </th>
                 <th className="px-6 py-4 text-left text-gray-600">Stock</th>
                 <th className="px-6 py-4 text-left text-gray-600">Price</th>
                 <th className="px-6 py-4 text-left text-gray-600">Available</th>
-                <th className="px-6 py-4 text-left text-gray-600">Offer Status</th>
+                <th className="px-6 py-4 text-left text-gray-600">
+                  Offer Status
+                </th>
                 <th className="px-6 py-4 text-left text-gray-600">Update</th>
               </tr>
             </thead>
             <tbody>
               {data.products.map((product, index) => (
                 <tr key={product._id} className="border-b last:border-b-0">
-                  <td className="px-6 py-4">{index + 1 + (currentPage - 1) * limit}</td>
+                  <td className="px-6 py-4">
+                    {index + 1 + (currentPage - 1) * limit}
+                  </td>
                   <td className="px-6 py-4">{product.productName}</td>
                   <td className="px-6 py-4">{product.stockQuantity}</td>
                   <td className="px-6 py-4">{product.salePrice}</td>
@@ -125,15 +139,19 @@ export default function ProductList() {
                       <input
                         type="checkbox"
                         checked={product.status}
-                        onChange={() => handleToggleAvailability(product._id, product.status)}
+                        onChange={() =>
+                          handleToggleAvailability(product._id, product.status)
+                        }
                         className="sr-only peer"
                       />
                       <div
-                        className={`w-11 h-6 ${product.status ? 'bg-green-500' : 'bg-gray-300'} rounded-full transition-colors`}
+                        className={`w-11 h-6 ${
+                          product.status ? "bg-green-500" : "bg-gray-300"
+                        } rounded-full transition-colors`}
                       >
                         <span
                           className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 transform ${
-                            product.status ? 'translate-x-5' : ''
+                            product.status ? "translate-x-5" : ""
                           }`}
                         />
                       </div>
@@ -144,15 +162,22 @@ export default function ProductList() {
                       <input
                         type="checkbox"
                         checked={product.offerStatus}
-                        onChange={() => handleToggleOfferStatus(product._id, product.offerStatus)}
+                        onChange={() =>
+                          handleToggleOfferStatus(
+                            product._id,
+                            product.offerStatus
+                          )
+                        }
                         className="sr-only peer"
                       />
                       <div
-                        className={`w-11 h-6 ${product.offerStatus ? 'bg-blue-500' : 'bg-gray-300'} rounded-full transition-colors`}
+                        className={`w-11 h-6 ${
+                          product.offerStatus ? "bg-blue-500" : "bg-gray-300"
+                        } rounded-full transition-colors`}
                       >
                         <span
                           className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 transform ${
-                            product.offerStatus ? 'translate-x-5' : ''
+                            product.offerStatus ? "translate-x-5" : ""
                           }`}
                         />
                       </div>

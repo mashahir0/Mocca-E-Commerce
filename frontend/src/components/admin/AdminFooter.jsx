@@ -1,13 +1,13 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React from "react";
+import { Link } from "react-router-dom";
 
 export default function AdminFooter() {
   const navLinks = [
-    { href: '/about', label: 'About' },
-    { href: '/careers', label: 'Careers' },
-    { href: '/policy', label: 'Policy' },
-    { href: '/contact', label: 'Contact' }
-  ]
+    { href: "/about", label: "About" },
+    { href: "/careers", label: "Careers" },
+    { href: "/policy", label: "Policy" },
+    { href: "/contact", label: "Contact" },
+  ];
 
   return (
     <footer className="bg-gray-50 border-t">
@@ -40,5 +40,5 @@ export default function AdminFooter() {
         </div>
       </div>
     </footer>
-  )
+  );
 }

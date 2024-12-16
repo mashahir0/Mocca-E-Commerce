@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "../../services/api/userApi";
@@ -61,7 +60,7 @@ export default function UserReg() {
 
   const handleSendOTP = async () => {
     try {
-      const response = await axios.post('/send-otp', { email: formData.email });
+      const response = await axios.post("/send-otp", { email: formData.email });
       if (response.status === 200) {
         setOtpSent(true);
         setTimer(15); // Start countdown at 15 seconds
@@ -80,7 +79,10 @@ export default function UserReg() {
       return;
     }
     try {
-      const otpResponse = await axios.post('/verify-otp', { email: formData.email, otp: formData.otp });
+      const otpResponse = await axios.post("/verify-otp", {
+        email: formData.email,
+        otp: formData.otp,
+      });
       if (otpResponse.status === 200) {
         const response = await axios.post("/register", formData);
         if (response.status === 201) {
@@ -166,7 +168,9 @@ export default function UserReg() {
             disabled={timer > 0} // Disable button when timer is active
             className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-blue-600 hover:text-blue-800"
           >
-            {otpSent ? `Resend OTP ${timer > 0 ? `(${timer}s)` : ""}` : "Send OTP"}
+            {otpSent
+              ? `Resend OTP ${timer > 0 ? `(${timer}s)` : ""}`
+              : "Send OTP"}
           </button>
         </div>
         {errors.otp && <p className="text-red-500 text-sm">{errors.otp}</p>}
@@ -189,7 +193,9 @@ export default function UserReg() {
             {showPassword ? "👁️" : "👁️‍🗨️"}
           </button>
         </div>
-        {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+        {errors.password && (
+          <p className="text-red-500 text-sm">{errors.password}</p>
+        )}
 
         <div className="relative">
           <input
@@ -208,7 +214,9 @@ export default function UserReg() {
             {showConfirmPassword ? "👁️" : "👁️‍🗨️"}
           </button>
         </div>
-        {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}
+        {errors.confirmPassword && (
+          <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
+        )}
 
         {/* Submit Button */}
         <button
@@ -232,7 +240,10 @@ export default function UserReg() {
 
         <div className="text-center mt-6">
           <span className="text-gray-600">Have an account? </span>
-          <Link to="/login" className="text-black hover:underline font-semibold">
+          <Link
+            to="/login"
+            className="text-black hover:underline font-semibold"
+          >
             Sign In
           </Link>
         </div>

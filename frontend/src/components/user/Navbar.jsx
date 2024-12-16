@@ -1,18 +1,15 @@
-
-
-
-import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom'; // Import useLocation
-import { Menu, X, Heart, ShoppingCart, User, Search } from 'lucide-react';
-import { useDispatch, useSelector } from 'react-redux';
-import { removeUser } from '../../redux/slice/UserSlice';
-import axios from '../../services/api/userApi';
-import { useSearch } from '../../../utils/SearchContext';
+import React, { useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom"; // Import useLocation
+import { Menu, X, Heart, ShoppingCart, User, Search } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { removeUser } from "../../redux/slice/UserSlice";
+import axios from "../../services/api/userApi";
+import { useSearch } from "../../../utils/SearchContext";
 
 export default function Navbar() {
   const { setSearchTerm } = useSearch();
   const [isOpen, setIsOpen] = useState(false);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [timeoutId, setTimeoutId] = useState(null);
@@ -27,10 +24,10 @@ export default function Navbar() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
     dispatch(removeUser());
-    navigate('/login');
+    navigate("/login");
   };
 
   const handleInputChange = async (e) => {
@@ -46,7 +43,7 @@ export default function Navbar() {
     }, 500);
     setTimeoutId(newTimeoutId);
 
-    if (value.trim() === '') {
+    if (value.trim() === "") {
       setSuggestions([]);
       setShowDropdown(false);
       return;
@@ -57,13 +54,13 @@ export default function Navbar() {
       setSuggestions(response.data);
       setShowDropdown(true);
     } catch (error) {
-      console.error('Error fetching search suggestions:', error);
+      console.error("Error fetching search suggestions:", error);
     }
   };
 
   const handleSuggestionClick = (suggestion) => {
     navigate(`/productinfo/${suggestion._id}`);
-    setInput('');
+    setInput("");
     setShowDropdown(false);
   };
 
@@ -112,37 +109,41 @@ export default function Navbar() {
             </button>
 
             {/* Suggestions Dropdown */}
-            {showDropdown && suggestions.length > 0 && location.pathname !== '/products' && (
-              <ul className="absolute bg-white text-black rounded shadow-lg w-full mt-2 z-10">
-                {suggestions.slice(0, 4).map((suggestion) => (
-                  <li
-                    key={suggestion._id}
-                    className="p-2 hover:bg-gray-200 cursor-pointer"
-                    onClick={() => handleSuggestionClick(suggestion)}
-                  >
-                    <div className="flex items-center">
-                      <img
-                        src={suggestion.mainImage}
-                        alt={suggestion.productName}
-                        className="h-10 w-10 rounded mr-2"
-                      />
-                      <div>
-                        <p className="font-medium">{suggestion.productName}</p>
-                        {/* <p className="text-sm text-gray-500">₹{suggestion.salePrice}</p> */}
+            {showDropdown &&
+              suggestions.length > 0 &&
+              location.pathname !== "/products" && (
+                <ul className="absolute bg-white text-black rounded shadow-lg w-full mt-2 z-10">
+                  {suggestions.slice(0, 4).map((suggestion) => (
+                    <li
+                      key={suggestion._id}
+                      className="p-2 hover:bg-gray-200 cursor-pointer"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                    >
+                      <div className="flex items-center">
+                        <img
+                          src={suggestion.mainImage}
+                          alt={suggestion.productName}
+                          className="h-10 w-10 rounded mr-2"
+                        />
+                        <div>
+                          <p className="font-medium">
+                            {suggestion.productName}
+                          </p>
+                          {/* <p className="text-sm text-gray-500">₹{suggestion.salePrice}</p> */}
+                        </div>
                       </div>
-                    </div>
-                  </li>
-                ))}
-                {suggestions.length > 4 && (
-                  <li
-                    className="p-2 hover:bg-gray-200 cursor-pointer text-blue-500 font-medium"
-                    onClick={() => navigate('/products')}
-                  >
-                    See All Products
-                  </li>
-                )}
-              </ul>
-            )}
+                    </li>
+                  ))}
+                  {suggestions.length > 4 && (
+                    <li
+                      className="p-2 hover:bg-gray-200 cursor-pointer text-blue-500 font-medium"
+                      onClick={() => navigate("/products")}
+                    >
+                      See All Products
+                    </li>
+                  )}
+                </ul>
+              )}
           </div>
         </div>
 
@@ -155,7 +156,7 @@ export default function Navbar() {
 
           {isAuthenticated ? (
             <>
-              <span>Welcome, {user?.name || 'User'}</span>
+              <span>Welcome, {user?.name || "User"}</span>
               <button
                 onClick={handleLogout}
                 className="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600"

@@ -1,23 +1,20 @@
-
-
-
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import axios from '../../services/api/userApi'
-import { ToastContainer, toast } from 'react-toastify'
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import axios from "../../services/api/userApi";
+import { ToastContainer, toast } from "react-toastify";
 
 export default function AddAddress() {
   const [formData, setFormData] = useState({
-    name: '',
-    mobile: '',
-    pincode: '',
-    houseNo: '',
-    landmark: '',
-    city: '',
-    town: '',
-    street: '',
-    state: ''
+    name: "",
+    mobile: "",
+    pincode: "",
+    houseNo: "",
+    landmark: "",
+    city: "",
+    town: "",
+    street: "",
+    state: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -28,31 +25,32 @@ export default function AddAddress() {
     const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.name.trim()) newErrors.name = 'Name is required.';
+    if (!formData.name.trim()) newErrors.name = "Name is required.";
     if (!formData.mobile.trim()) {
-      newErrors.mobile = 'Mobile number is required.';
+      newErrors.mobile = "Mobile number is required.";
     } else if (!/^\d{10}$/.test(formData.mobile)) {
-      newErrors.mobile = 'Enter a valid 10-digit mobile number.';
+      newErrors.mobile = "Enter a valid 10-digit mobile number.";
     }
 
     if (!formData.pincode.trim()) {
-      newErrors.pincode = 'Pincode is required.';
+      newErrors.pincode = "Pincode is required.";
     } else if (!/^\d{6}$/.test(formData.pincode)) {
-      newErrors.pincode = 'Enter a valid 6-digit pincode.';
+      newErrors.pincode = "Enter a valid 6-digit pincode.";
     }
 
-    if (!formData.houseNo.trim()) newErrors.houseNo = 'House number is required.';
-    if (!formData.city.trim()) newErrors.city = 'City is required.';
-    if (!formData.state.trim()) newErrors.state = 'State is required.';
-    if (!formData.town.trim()) newErrors.town = 'Town is required.';
-    if (!formData.street.trim()) newErrors.street = 'Street is required.';
+    if (!formData.houseNo.trim())
+      newErrors.houseNo = "House number is required.";
+    if (!formData.city.trim()) newErrors.city = "City is required.";
+    if (!formData.state.trim()) newErrors.state = "State is required.";
+    if (!formData.town.trim()) newErrors.town = "Town is required.";
+    if (!formData.street.trim()) newErrors.street = "Street is required.";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -62,24 +60,22 @@ export default function AddAddress() {
     e.preventDefault();
     if (validateForm()) {
       try {
-        const response = await axios.post('/add-address', {
+        const response = await axios.post("/add-address", {
           ...formData,
-          userId
+          userId,
         });
-        console.log('Address saved:', response.data);
-        toast.success('Address saved successfully!');
+        console.log("Address saved:", response.data);
+        toast.success("Address saved successfully!");
       } catch (error) {
-        console.error('Error saving address:', error);
-        toast.error('Failed to save address. Please try again.');
+        console.error("Error saving address:", error);
+        toast.error("Failed to save address. Please try again.");
       }
     }
   };
 
   return (
     <>
-      <button
-        className="flex items-center ml-10 mt-9 text-white bg-black px-4 py-2 rounded-md hover:bg-black/90 transition-colors mb-6"
-      >
+      <button className="flex items-center ml-10 mt-9 text-white bg-black px-4 py-2 rounded-md hover:bg-black/90 transition-colors mb-6">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -88,7 +84,11 @@ export default function AddAddress() {
           stroke="currentColor"
           className="w-4 h-4 mr-1"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15 19l-7-7 7-7"
+          />
         </svg>
         <Link to="/address-managment">Back</Link>
       </button>
@@ -105,10 +105,12 @@ export default function AddAddress() {
                 value={formData.name}
                 onChange={handleChange}
                 className={`w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 ${
-                  errors.name ? 'border-red-500' : 'focus:ring-black'
+                  errors.name ? "border-red-500" : "focus:ring-black"
                 }`}
               />
-              {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+              {errors.name && (
+                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+              )}
             </div>
 
             <div>
@@ -119,10 +121,12 @@ export default function AddAddress() {
                 value={formData.mobile}
                 onChange={handleChange}
                 className={`w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 ${
-                  errors.mobile ? 'border-red-500' : 'focus:ring-black'
+                  errors.mobile ? "border-red-500" : "focus:ring-black"
                 }`}
               />
-              {errors.mobile && <p className="text-red-500 text-sm mt-1">{errors.mobile}</p>}
+              {errors.mobile && (
+                <p className="text-red-500 text-sm mt-1">{errors.mobile}</p>
+              )}
             </div>
 
             <div>
@@ -133,14 +137,18 @@ export default function AddAddress() {
                 value={formData.pincode}
                 onChange={handleChange}
                 className={`w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 ${
-                  errors.pincode ? 'border-red-500' : 'focus:ring-black'
+                  errors.pincode ? "border-red-500" : "focus:ring-black"
                 }`}
               />
-              {errors.pincode && <p className="text-red-500 text-sm mt-1">{errors.pincode}</p>}
+              {errors.pincode && (
+                <p className="text-red-500 text-sm mt-1">{errors.pincode}</p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Landmark (Optional)</label>
+              <label className="block text-sm font-medium mb-2">
+                Landmark (Optional)
+              </label>
               <input
                 type="text"
                 name="landmark"
@@ -158,10 +166,12 @@ export default function AddAddress() {
                 value={formData.houseNo}
                 onChange={handleChange}
                 className={`w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 ${
-                  errors.houseNo ? 'border-red-500' : 'focus:ring-black'
+                  errors.houseNo ? "border-red-500" : "focus:ring-black"
                 }`}
               />
-              {errors.houseNo && <p className="text-red-500 text-sm mt-1">{errors.houseNo}</p>}
+              {errors.houseNo && (
+                <p className="text-red-500 text-sm mt-1">{errors.houseNo}</p>
+              )}
             </div>
 
             <div>
@@ -172,10 +182,12 @@ export default function AddAddress() {
                 value={formData.city}
                 onChange={handleChange}
                 className={`w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 ${
-                  errors.city ? 'border-red-500' : 'focus:ring-black'
+                  errors.city ? "border-red-500" : "focus:ring-black"
                 }`}
               />
-              {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
+              {errors.city && (
+                <p className="text-red-500 text-sm mt-1">{errors.city}</p>
+              )}
             </div>
 
             <div>
@@ -187,7 +199,9 @@ export default function AddAddress() {
                 onChange={handleChange}
                 className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
               />
-               {errors.state && <p className="text-red-500 text-sm mt-1">{errors.state}</p>}
+              {errors.state && (
+                <p className="text-red-500 text-sm mt-1">{errors.state}</p>
+              )}
             </div>
 
             <div>
@@ -199,7 +213,9 @@ export default function AddAddress() {
                 onChange={handleChange}
                 className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-black"
               />
-               {errors.state && <p className="text-red-500 text-sm mt-1">{errors.state}</p>}
+              {errors.state && (
+                <p className="text-red-500 text-sm mt-1">{errors.state}</p>
+              )}
             </div>
 
             <div>
@@ -210,10 +226,12 @@ export default function AddAddress() {
                 value={formData.state}
                 onChange={handleChange}
                 className={`w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 ${
-                  errors.state ? 'border-red-500' : 'focus:ring-black'
+                  errors.state ? "border-red-500" : "focus:ring-black"
                 }`}
               />
-              {errors.state && <p className="text-red-500 text-sm mt-1">{errors.state}</p>}
+              {errors.state && (
+                <p className="text-red-500 text-sm mt-1">{errors.state}</p>
+              )}
             </div>
           </div>
           <button

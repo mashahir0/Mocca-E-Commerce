@@ -1,18 +1,15 @@
-
-
-
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import axios from '../../services/api/userApi'; // Import axios for API requests
-import { ToastContainer, toast } from 'react-toastify'
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import axios from "../../services/api/userApi"; // Import axios for API requests
+import { ToastContainer, toast } from "react-toastify";
 
 export default function ForgotPass() {
   const [formData, setFormData] = useState({
-    email: '',
-    otp: '',
-    password: '',
-    confirmPassword: ''
+    email: "",
+    otp: "",
+    password: "",
+    confirmPassword: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -29,11 +26,11 @@ export default function ForgotPass() {
     const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
-      [name]: value
+      [name]: value,
     }));
     setErrors((prevErrors) => ({
       ...prevErrors,
-      [name]: '' // Clear error message on change
+      [name]: "", // Clear error message on change
     }));
   };
 
@@ -42,16 +39,16 @@ export default function ForgotPass() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address.';
+      newErrors.email = "Please enter a valid email address.";
     }
     if (!formData.otp && otpSent) {
-      newErrors.otp = 'OTP is required.';
+      newErrors.otp = "OTP is required.";
     }
     if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters.';
+      newErrors.password = "Password must be at least 6 characters.";
     }
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match.';
+      newErrors.confirmPassword = "Passwords do not match.";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -59,42 +56,58 @@ export default function ForgotPass() {
 
   const handleSendOTP = async () => {
     if (!formData.email) {
-      setErrors((prev) => ({ ...prev, email: 'Enter a valid email to send OTP' }));
+      setErrors((prev) => ({
+        ...prev,
+        email: "Enter a valid email to send OTP",
+      }));
       return;
     }
 
     try {
-      await axios.post('/send-otp', { email: formData.email });
+      await axios.post("/send-otp", { email: formData.email });
       setOtpSent(true);
       setIsTimerRunning(true);
       setTimer(15);
-      toast.success('OTP sent successfully.');
+      toast.success("OTP sent successfully.");
     } catch (error) {
-      console.error('Error sending OTP:', error);
-      setErrors((prev) => ({ ...prev, email: 'Failed to send OTP. Try again.' }));
+      console.error("Error sending OTP:", error);
+      setErrors((prev) => ({
+        ...prev,
+        email: "Failed to send OTP. Try again.",
+      }));
     }
   };
 
   const handleVerifyOTP = async () => {
     if (!formData.otp) {
-      setErrors((prev) => ({ ...prev, otp: 'Enter the OTP to verify.' }));
+      setErrors((prev) => ({ ...prev, otp: "Enter the OTP to verify." }));
       return;
     }
 
-
     try {
-      const response = await axios.post('/verify-otp', { email: formData.email, otp: formData.otp });
-      if (response.status === 200 && response.data.message === 'OTP verified successfully') {
-          setOtpVerified(true);
-         toast.success('OTP verified successfully.');
+      const response = await axios.post("/verify-otp", {
+        email: formData.email,
+        otp: formData.otp,
+      });
+      if (
+        response.status === 200 &&
+        response.data.message === "OTP verified successfully"
+      ) {
+        setOtpVerified(true);
+        toast.success("OTP verified successfully.");
       } else {
-          setErrors((prev) => ({ ...prev, otp: response.data.message || 'Invalid OTP. Try again.' }));
+        setErrors((prev) => ({
+          ...prev,
+          otp: response.data.message || "Invalid OTP. Try again.",
+        }));
       }
-  } catch (error) {
-      console.error('Error verifying OTP:', error);
-      setErrors((prev) => ({ ...prev, otp: 'Failed to verify OTP. Try again.' }));
-  }
-  
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      setErrors((prev) => ({
+        ...prev,
+        otp: "Failed to verify OTP. Try again.",
+      }));
+    }
   };
 
   const handleChangePassword = async () => {
@@ -103,31 +116,29 @@ export default function ForgotPass() {
     }
 
     if (!otpVerified) {
-      setErrors((prev) => ({ ...prev, otp: 'OTP must be verified before changing the password.' }));
+      setErrors((prev) => ({
+        ...prev,
+        otp: "OTP must be verified before changing the password.",
+      }));
       return;
     }
 
     try {
-      
-      
-      const response = await axios.post('/change-newpassword', {
+      const response = await axios.post("/change-newpassword", {
         email: formData.email,
-        password: formData.password
+        password: formData.password,
       });
 
       if (response.status === 200) {
-        console.log('Password changed successfully.');
-        toast.success('Your password has been updated.')
-        
+        console.log("Password changed successfully.");
+        toast.success("Your password has been updated.");
       } else {
-        console.error('Failed to change password.');
-        toast.error('Failed to change password. Try again later.')
-        
+        console.error("Failed to change password.");
+        toast.error("Failed to change password. Try again later.");
       }
     } catch (error) {
-      console.error('Error changing password:', error);
-      toast.error('Server error. Please try again later.')
-      
+      console.error("Error changing password:", error);
+      toast.error("Server error. Please try again later.");
     }
   };
 
@@ -148,7 +159,8 @@ export default function ForgotPass() {
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold mb-2">FORGOT PASSWORD?</h1>
         <p className="text-gray-600 text-sm">
-          Enter your email or phone number, and we will send you an OTP to change your password.
+          Enter your email or phone number, and we will send you an OTP to
+          change your password.
         </p>
       </div>
 
@@ -169,7 +181,9 @@ export default function ForgotPass() {
           >
             Send OTP
           </button>
-          {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+          {errors.email && (
+            <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+          )}
         </div>
 
         {otpSent && (
@@ -189,7 +203,9 @@ export default function ForgotPass() {
             >
               Verify OTP
             </button>
-            {errors.otp && <p className="text-red-500 text-xs mt-1">{errors.otp}</p>}
+            {errors.otp && (
+              <p className="text-red-500 text-xs mt-1">{errors.otp}</p>
+            )}
           </div>
         )}
 
@@ -197,7 +213,7 @@ export default function ForgotPass() {
           <>
             <div className="relative">
               <input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 name="password"
                 placeholder="Password"
                 value={formData.password}
@@ -209,14 +225,16 @@ export default function ForgotPass() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2"
               >
-                {showPassword ? '👁️' : '👁️‍🗨️'}
+                {showPassword ? "👁️" : "👁️‍🗨️"}
               </button>
-              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+              {errors.password && (
+                <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+              )}
             </div>
 
             <div className="relative">
               <input
-                type={showConfirmPassword ? 'text' : 'password'}
+                type={showConfirmPassword ? "text" : "password"}
                 name="confirmPassword"
                 placeholder="Confirm Password"
                 value={formData.confirmPassword}
@@ -228,10 +246,12 @@ export default function ForgotPass() {
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2"
               >
-                {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
+                {showConfirmPassword ? "👁️" : "👁️‍🗨️"}
               </button>
               {errors.confirmPassword && (
-                <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.confirmPassword}
+                </p>
               )}
             </div>
 
@@ -244,15 +264,17 @@ export default function ForgotPass() {
             </button>
           </>
         )}
-         {!isAuthenticated ? <div className="text-center">
-          <span className="text-gray-600">Don't have an account? </span>
-          <button
-            type="button"
-            className="text-black hover:underline font-semibold"
-          >
-            <Link to="/register">Sign Up</Link>
-          </button>
-        </div>:null}
+        {!isAuthenticated ? (
+          <div className="text-center">
+            <span className="text-gray-600">Don't have an account? </span>
+            <button
+              type="button"
+              className="text-black hover:underline font-semibold"
+            >
+              <Link to="/register">Sign Up</Link>
+            </button>
+          </div>
+        ) : null}
       </form>
       <ToastContainer />
     </div>

@@ -34,8 +34,8 @@ const couponSchema = new mongoose.Schema({
         type: Boolean,
         default: true,  // Fixed default value to a boolean
     },
-},{
-    timestamps : true
+}, {
+    timestamps: true
 }
 
 );

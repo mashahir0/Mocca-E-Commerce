@@ -41,46 +41,7 @@ const addToWishlist = async (req, res) => {
   }
 };
 
-// const getWishListProducts = async (req, res) => {
-//     try {
-//       const userId = req.params.id;
-  
-//       const wishlist = await Wishlist.findOne({ userId }).populate({
-//         path: 'items',
-//         model: 'Product',
-//         populate: {
-//           path: 'review',
-//         },
-//       });
-  
-//       if (!wishlist) {
-//         return res.status(404).json({ message: 'Wishlist not found' });
-//       }
-  
-//       const productsWithRatings = wishlist.items.map((product) => {
-//         const { _id, productName, salePrice, offerPrice, mainImage, review } = product;
-  
-//         const averageRating =
-//           review.length > 0
-//             ? review.reduce((sum, r) => sum + (r.rating || 0), 0) / review.length
-//             : 0;
-  
-//         return {
-//           id: _id,
-//           name: productName,
-//           salePrice,
-//           offerPrice,
-//           averageRating,
-//           image: mainImage[0],
-//         };
-//       });
-  
-//       return res.status(200).json({ products: productsWithRatings });
-//     } catch (error) {
-//       console.error(error);
-//       return res.status(500).json({ error: 'Failed to fetch wishlist products' });
-//     }
-//   };
+
   
 
 const getWishListProducts = async (req, res) => {

@@ -1,28 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import { Calendar } from 'lucide-react';
-import { Line } from 'react-chartjs-2';
-import axios from '../../services/api/adminApi';
-import 'chart.js/auto';
+import React, { useEffect, useState } from "react";
+import { Calendar } from "lucide-react";
+import { Line } from "react-chartjs-2";
+import axios from "../../services/api/adminApi";
+import "chart.js/auto";
 
 export default function Dashboard() {
-  const [timeframe, setTimeframe] = useState('MONTHLY');
+  const [timeframe, setTimeframe] = useState("MONTHLY");
   const [salesData, setSalesData] = useState(null);
-  const [filter, setFilter] = useState('daily');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [filter, setFilter] = useState("daily");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const fetchSalesReport = async (filter, startDate, endDate) => {
     setLoading(true);
-    setError('');
+    setError("");
     try {
       const params = { filter, startDate, endDate };
-      const response = await axios.get('/sales-report', { params });
+      const response = await axios.get("/sales-report", { params });
       setSalesData(response.data);
     } catch (err) {
-      console.error('Error fetching sales report:', err);
-      setError('Failed to fetch sales data. Please try again later.');
+      console.error("Error fetching sales report:", err);
+      setError("Failed to fetch sales data. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -36,98 +36,58 @@ export default function Dashboard() {
     try {
       const params = { filter, startDate, endDate };
       const url = `/sales-report/download-${type}`;
-      const response = await axios.get(url, { params, responseType: 'blob' });
+      const response = await axios.get(url, { params, responseType: "blob" });
 
       const blob = new Blob([response.data]);
       const downloadUrl = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = downloadUrl;
       a.download = `sales_report.${type}`;
       a.click();
     } catch (error) {
-      console.error('Error downloading report:', error);
+      console.error("Error downloading report:", error);
     }
   };
 
-  // const chartData = {
-  //   labels: salesData?.chart?.labels || ['No Data'],
-  //   datasets: [
-  //     {
-  //       label: 'Sales Amount',
-  //       data: salesData?.chart?.data || [0],
-  //       borderColor: '#3B82F6',
-  //       backgroundColor: 'rgba(59, 130, 246, 0.2)',
-  //       tension: 0.4,
-  //       fill: true,
-  //       pointRadius: 5,
-  //       pointBackgroundColor: '#3B82F6',
-  //     },
-  //   ],
-  // };
-
-  // const chartOptions = {
-  //   responsive: true,
-  //   maintainAspectRatio: false,
-  //   plugins: {
-  //     legend: {
-  //       display: true,
-  //       position: 'top',
-  //     },
-  //   },
-  //   scales: {
-  //     x: {
-  //       grid: {
-  //         display: false,
-  //       },
-  //     },
-  //     y: {
-  //       ticks: {
-  //         beginAtZero: true,
-  //         callback: (value) => `₹${value}`, // Format Y-axis values as currency
-  //       },
-  //     },
-  //   },
-  // };
-
   const chartData = {
-    labels: salesData?.chart?.labels || ['No Data'],
+    labels: salesData?.chart?.labels || ["No Data"],
     datasets: [
-        {
-            label: 'Sales Amount',
-            data: salesData?.chart?.data || [0],
-            borderColor: '#3B82F6',
-            backgroundColor: 'rgba(59, 130, 246, 0.2)',
-            tension: 0.4,
-            fill: true,
-            pointRadius: 5,
-            pointBackgroundColor: '#3B82F6',
-        },
+      {
+        label: "Sales Amount",
+        data: salesData?.chart?.data || [0],
+        borderColor: "#3B82F6",
+        backgroundColor: "rgba(59, 130, 246, 0.2)",
+        tension: 0.4,
+        fill: true,
+        pointRadius: 5,
+        pointBackgroundColor: "#3B82F6",
+      },
     ],
-};
+  };
 
-const chartOptions = {
+  const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-        legend: {
-            display: true,
-            position: 'top',
-        },
+      legend: {
+        display: true,
+        position: "top",
+      },
     },
     scales: {
-        x: {
-            grid: {
-                display: false,
-            },
+      x: {
+        grid: {
+          display: false,
         },
-        y: {
-            ticks: {
-                beginAtZero: true,
-                callback: (value) => `₹${value}`, // Format Y-axis values as currency
-            },
+      },
+      y: {
+        ticks: {
+          beginAtZero: true,
+          callback: (value) => `₹${value}`, // Format Y-axis values as currency
         },
+      },
     },
-};
+  };
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
@@ -150,7 +110,9 @@ const chartOptions = {
         {/* Filters */}
         <div className="bg-white rounded-lg p-6 shadow-md lg:col-span-1">
           <h2 className="text-lg font-semibold mb-4 text-gray-800">Filters</h2>
-          <label className="block mb-2 text-sm font-medium text-gray-600">Timeframe</label>
+          <label className="block mb-2 text-sm font-medium text-gray-600">
+            Timeframe
+          </label>
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
@@ -162,7 +124,7 @@ const chartOptions = {
             <option value="custom">Custom</option>
           </select>
 
-          {filter === 'custom' && (
+          {filter === "custom" && (
             <div className="mt-4 grid grid-cols-2 gap-4">
               <input
                 type="date"
@@ -179,13 +141,13 @@ const chartOptions = {
 
           <div className="mt-6">
             <button
-              onClick={() => downloadReport('pdf')}
+              onClick={() => downloadReport("pdf")}
               className="w-full mb-2 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
             >
               Download PDF
             </button>
             <button
-              onClick={() => downloadReport('excel')}
+              onClick={() => downloadReport("excel")}
               className="w-full py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
             >
               Download Excel
@@ -195,7 +157,9 @@ const chartOptions = {
 
         {/* Chart */}
         <div className="lg:col-span-2 bg-white rounded-lg p-6 shadow-md">
-          <h2 className="text-lg font-semibold mb-4 text-gray-800">Sales Graph</h2>
+          <h2 className="text-lg font-semibold mb-4 text-gray-800">
+            Sales Graph
+          </h2>
           {loading ? (
             <p className="text-center text-gray-600">Loading chart...</p>
           ) : error ? (
@@ -211,19 +175,31 @@ const chartOptions = {
       {/* Sales Summary */}
       {salesData && (
         <div className="mt-8 bg-white rounded-lg p-6 shadow-md">
-          <h2 className="text-lg font-semibold mb-4 text-gray-800">Sales Summary</h2>
+          <h2 className="text-lg font-semibold mb-4 text-gray-800">
+            Sales Summary
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 bg-gray-50 rounded-lg shadow-sm">
               <h3 className="text-sm font-medium text-gray-600">Total Sales</h3>
-              <p className="text-xl font-bold text-indigo-600">{salesData.overallSalesCount}</p>
+              <p className="text-xl font-bold text-indigo-600">
+                {salesData.overallSalesCount}
+              </p>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg shadow-sm">
-              <h3 className="text-sm font-medium text-gray-600">Total Amount</h3>
-              <p className="text-xl font-bold text-green-600">₹{salesData.overallOrderAmount}</p>
+              <h3 className="text-sm font-medium text-gray-600">
+                Total Amount
+              </h3>
+              <p className="text-xl font-bold text-green-600">
+                ₹{salesData.overallOrderAmount}
+              </p>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg shadow-sm">
-              <h3 className="text-sm font-medium text-gray-600">Total Discounts</h3>
-              <p className="text-xl font-bold text-red-600">₹{salesData.overallDiscount}</p>
+              <h3 className="text-sm font-medium text-gray-600">
+                Total Discounts
+              </h3>
+              <p className="text-xl font-bold text-red-600">
+                ₹{salesData.overallDiscount}
+              </p>
             </div>
           </div>
         </div>

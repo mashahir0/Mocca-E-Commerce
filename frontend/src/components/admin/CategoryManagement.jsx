@@ -1,15 +1,13 @@
-
-
-import React, { useState } from 'react';
-import { MoreVertical, Pencil, Trash2 } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../../services/api/adminApi';
+import React, { useState } from "react";
+import { MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "../../services/api/adminApi";
 
 export default function CategoryManagement() {
   const [newCategory, setNewCategory] = useState({
-    category: '',
-    offer: '',
-    description: '',
+    category: "",
+    offer: "",
+    description: "",
     status: true,
     visibility: true,
   });
@@ -18,32 +16,33 @@ export default function CategoryManagement() {
 
   const queryClient = useQueryClient();
   const { data: categories = [], isLoading } = useQuery({
-    queryKey: ['categories'],
+    queryKey: ["categories"],
     queryFn: async () => {
-      const response = await api.get('get-category');
+      const response = await api.get("get-category");
       return response.data;
     },
   });
 
   const createCategoryMutation = useMutation({
-    mutationFn: (newCategory) => api.post('/add-category', newCategory),
+    mutationFn: (newCategory) => api.post("/add-category", newCategory),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
-      setNewCategory({ category: '', offer: '', description: '' });
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      setNewCategory({ category: "", offer: "", description: "" });
     },
   });
 
   const deleteCategoryMutation = useMutation({
     mutationFn: (categoryId) => api.delete(`/delete-categories/${categoryId}`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
     },
   });
 
   const updateCategoryMutation = useMutation({
-    mutationFn: (updatedCategory) => api.patch(`/update-categories/${updatedCategory._id}`, updatedCategory),
+    mutationFn: (updatedCategory) =>
+      api.patch(`/update-categories/${updatedCategory._id}`, updatedCategory),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
       setEditingCategory(null);
     },
   });
@@ -80,7 +79,9 @@ export default function CategoryManagement() {
   };
 
   const handleToggleField = (categoryId, field) => {
-    const updatedCategory = categories.find((category) => category._id === categoryId);
+    const updatedCategory = categories.find(
+      (category) => category._id === categoryId
+    );
     const updatedData = {
       ...updatedCategory,
       [field]: !updatedCategory[field],
@@ -103,12 +104,24 @@ export default function CategoryManagement() {
           <table className="w-full">
             <thead>
               <tr className="border-b">
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Name</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Description</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Visibility</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Offers %</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Status</th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">Actions</th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
+                  Name
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
+                  Description
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
+                  Visibility
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
+                  Offers %
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-600">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -122,14 +135,19 @@ export default function CategoryManagement() {
                         <input
                           type="checkbox"
                           checked={category.visibility}
-                          onClick={() => handleToggleField(category._id, 'visibility')}
+                          onClick={() =>
+                            handleToggleField(category._id, "visibility")
+                          }
                           className="sr-only peer"
                         />
                         <div
-                          className={`w-11 h-6 ${category.visibility ? 'bg-green-500' : 'bg-gray-300'} rounded-full transition-colors`}>
+                          className={`w-11 h-6 ${
+                            category.visibility ? "bg-green-500" : "bg-gray-300"
+                          } rounded-full transition-colors`}
+                        >
                           <span
                             className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 transform ${
-                              category.visibility ? 'translate-x-5' : ''
+                              category.visibility ? "translate-x-5" : ""
                             }`}
                           />
                         </div>
@@ -141,14 +159,19 @@ export default function CategoryManagement() {
                         <input
                           type="checkbox"
                           checked={category.status}
-                          onClick={() => handleToggleField(category._id, 'status')}
+                          onClick={() =>
+                            handleToggleField(category._id, "status")
+                          }
                           className="sr-only peer"
                         />
                         <div
-                          className={`w-11 h-6 ${category.status ? 'bg-green-500' : 'bg-gray-300'} rounded-full transition-colors`}>
+                          className={`w-11 h-6 ${
+                            category.status ? "bg-green-500" : "bg-gray-300"
+                          } rounded-full transition-colors`}
+                        >
                           <span
                             className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 transform ${
-                              category.status ? 'translate-x-5' : ''
+                              category.status ? "translate-x-5" : ""
                             }`}
                           />
                         </div>
@@ -174,7 +197,10 @@ export default function CategoryManagement() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                  <td
+                    colSpan="6"
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
                     No categories available
                   </td>
                 </tr>
@@ -186,13 +212,17 @@ export default function CategoryManagement() {
 
       {/* Add/Edit Category Form */}
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-lg font-medium mb-6 text-center">{editingCategory ? 'Edit' : 'Add'} Category</h2>
+        <h2 className="text-lg font-medium mb-6 text-center">
+          {editingCategory ? "Edit" : "Add"} Category
+        </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
             placeholder="Category"
             value={newCategory.category}
-            onChange={(e) => setNewCategory({ ...newCategory, category: e.target.value })}
+            onChange={(e) =>
+              setNewCategory({ ...newCategory, category: e.target.value })
+            }
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-black"
             required
           />
@@ -200,7 +230,9 @@ export default function CategoryManagement() {
             type="text"
             placeholder="Description"
             value={newCategory.description}
-            onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
+            onChange={(e) =>
+              setNewCategory({ ...newCategory, description: e.target.value })
+            }
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-black"
             required
           />
@@ -208,7 +240,9 @@ export default function CategoryManagement() {
             type="number"
             placeholder="Offer"
             value={newCategory.offer}
-            onChange={(e) => setNewCategory({ ...newCategory, offer: e.target.value })}
+            onChange={(e) =>
+              setNewCategory({ ...newCategory, offer: e.target.value })
+            }
             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-black"
             required
           />
@@ -216,7 +250,7 @@ export default function CategoryManagement() {
             type="submit"
             className="w-full bg-black text-white py-2 rounded-md hover:bg-black/90 transition-colors"
           >
-            {editingCategory ? 'Update' : 'Add'} Category
+            {editingCategory ? "Update" : "Add"} Category
           </button>
         </form>
       </div>

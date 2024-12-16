@@ -1,15 +1,11 @@
-
-
-
-
-import React, { useState, useEffect } from 'react';
-import axios from '../../services/api/userApi';
-import { Minus, Plus } from 'lucide-react';
-import { useSelector } from 'react-redux';
-import { toast, ToastContainer } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
-import Loading from '../common/Loading';
-import Error from '../common/Error';
+import React, { useState, useEffect } from "react";
+import axios from "../../services/api/userApi";
+import { Minus, Plus } from "lucide-react";
+import { useSelector } from "react-redux";
+import { toast, ToastContainer } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import Loading from "../common/Loading";
+import Error from "../common/Error";
 
 export default function Cart() {
   const [cartItems, setCartItems] = useState([]);
@@ -26,14 +22,14 @@ export default function Cart() {
   const fetchCartData = async () => {
     try {
       const response = await axios.get(`/get-cartdetails/${userId}`);
-      console.log(response.data);  // Log the full response to check data structure
       
+
       setCartItems(response.data.items);
       setTotalAmount(response.data.totalAmount);
       setTotalDiscount(response.data.totalDiscount);
       setLoading(false);
     } catch (err) {
-      setError('Failed to fetch cart details.');
+      setError("Failed to fetch cart details.");
       setLoading(false);
     }
   };
@@ -45,12 +41,12 @@ export default function Cart() {
   // Update quantity handler
   const editQuantity = async (productId, size, newQuantity) => {
     if (newQuantity < 1 || newQuantity > 5) {
-      toast.error('Quantity must be between 1 and 5');
+      toast.error("Quantity must be between 1 and 5");
       return;
     }
 
     try {
-      const response = await axios.put('/edit-quantity', {
+      const response = await axios.put("/edit-quantity", {
         userId,
         productId,
         size,
@@ -59,23 +55,23 @@ export default function Cart() {
 
       if (response.status === 200) {
         fetchCartData();
-        toast.success('Quantity updated successfully');
+        toast.success("Quantity updated successfully");
         setCartItems(response.data.items); // Update local state
       }
     } catch (error) {
-      console.error('Error updating quantity:', error);
-      toast.error('Failed to update quantity');
+      console.error("Error updating quantity:", error);
+      toast.error("Failed to update quantity");
     }
   };
 
   // Remove item handler
   const removeItem = async (productId, size) => {
     try {
-      const response = await axios.delete('/remove-item', {
+      const response = await axios.delete("/remove-item", {
         data: { userId, productId, size },
       });
       if (response.status === 200) {
-        toast.success('Item removed from cart');
+        toast.success("Item removed from cart");
         setCartItems((prevItems) =>
           prevItems.filter(
             (item) => item.productId._id !== productId || item.size !== size
@@ -83,13 +79,13 @@ export default function Cart() {
         );
       }
     } catch (err) {
-      console.error('Error removing item:', err);
-      setError('Failed to remove item from cart.');
+      console.error("Error removing item:", err);
+      setError("Failed to remove item from cart.");
     }
   };
 
-  if (loading) return <Loading/>;
-  if (error) return <Error error={error}/>;
+  if (loading) return <Loading />;
+  if (error) return <Error error={error} />;
 
   return (
     <div className="max-w-4xl mx-auto my-28 p-4">
@@ -117,7 +113,11 @@ export default function Cart() {
                 <span className="text-sm">Quantity:</span>
                 <button
                   onClick={() =>
-                    editQuantity(item.productId._id, item.size, item.quantity - 1)
+                    editQuantity(
+                      item.productId._id,
+                      item.size,
+                      item.quantity - 1
+                    )
                   }
                   className="p-1 hover:bg-gray-200 rounded"
                   disabled={item.quantity <= 1}
@@ -127,7 +127,11 @@ export default function Cart() {
                 <span className="w-8 text-center">{item.quantity}</span>
                 <button
                   onClick={() =>
-                    editQuantity(item.productId._id, item.size, item.quantity + 1)
+                    editQuantity(
+                      item.productId._id,
+                      item.size,
+                      item.quantity + 1
+                    )
                   }
                   className="p-1 hover:bg-gray-200 rounded"
                   disabled={item.quantity >= 5}
@@ -139,13 +143,16 @@ export default function Cart() {
 
             {/* Pricing */}
             <div className="text-lg font-semibold">
-              ₹{
+              ₹
+              {
                 item.productId.offerStatus && item.productId.offerPrice
                   ? Math.floor(item.productId.offerPrice) // Show offerPrice if offerStatus is true
-                  : Math.floor(item.discountedPrice) || Math.floor(item.productId.salePrice) // Fallback to discountedPrice or salePrice
+                  : Math.floor(item.discountedPrice) ||
+                    Math.floor(item.productId.salePrice) // Fallback to discountedPrice or salePrice
               }
               <span className="line-through text-sm text-gray-500">
-                ₹{Math.floor(item.productId.salePrice)} {/* Always show original sale price as strikethrough */}
+                ₹{Math.floor(item.productId.salePrice)}{" "}
+                {/* Always show original sale price as strikethrough */}
               </span>
             </div>
 
@@ -163,7 +170,7 @@ export default function Cart() {
         {cartItems.length === 0 && (
           <div className="mt-6 text-center">
             <button
-              onClick={() => navigate('/products')}
+              onClick={() => navigate("/products")}
               className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500"
             >
               Continue Shopping
@@ -178,10 +185,12 @@ export default function Cart() {
           <div>
             <div className="font-medium">
               Sub Total ({cartItems.length} item
-              {cartItems.length > 1 ? 's' : ''})
+              {cartItems.length > 1 ? "s" : ""})
             </div>
             {/* Display total amount */}
-            <div className="text-xl font-bold">₹{Math.floor(totalAmount).toFixed(2)}</div>
+            <div className="text-xl font-bold">
+              ₹{Math.floor(totalAmount).toFixed(2)}
+            </div>
             {totalDiscount > 0 && (
               <div className="text-sm text-green-600">
                 You saved ₹{totalDiscount.toFixed(2)} on this order!
@@ -192,7 +201,7 @@ export default function Cart() {
         <button
           className="w-full bg-black text-white py-2 rounded hover:bg-black/90 transition-colors"
           onClick={() =>
-            navigate('/place-order-cart', { state: { cartItems, totalAmount } })
+            navigate("/place-order-cart", { state: { cartItems, totalAmount } })
           }
         >
           Check Out

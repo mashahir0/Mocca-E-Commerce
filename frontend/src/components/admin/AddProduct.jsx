@@ -1,5 +1,3 @@
-
-
 import React, { useState, useRef } from "react";
 import { X, Image as ImageIcon } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -174,7 +172,8 @@ export default function AddProduct() {
 
   const validateForm = () => {
     const newErrors = {};
-    if(formData.offerPrice>formData.salePrice) newErrors.offerPrice = 'offer price must lower than sale price' 
+    if (formData.offerPrice > formData.salePrice)
+      newErrors.offerPrice = "offer price must lower than sale price";
     if (!formData.productName)
       newErrors.productName = "Product name is required";
     if (!formData.description)
@@ -213,9 +212,9 @@ export default function AddProduct() {
             }
           })
         );
-        
+
         const totalStock = calculateTotalStock();
-        
+
         const formDataToSubmit = {
           ...formData,
           mainImage: mainImageUrl,

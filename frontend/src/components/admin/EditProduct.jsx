@@ -1,6 +1,3 @@
-
-
-
 import React, { useState, useRef } from "react";
 import { X, Image as ImageIcon } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -40,17 +37,37 @@ export default function EditProduct() {
 
   const { id } = useParams();
 
-    useEffect(() => {
+  useEffect(() => {
     async function fetchProduct() {
       try {
         const response = await axios.get(`/edit-product-details/${id}`);
-        const { productName, description, category, brandName, stockQuantity, salePrice, offerPrice, size, mainImage, thumbnails } = response.data;
-        setFormData({ productName, description, category, brandName, stockQuantity, salePrice, offerPrice, size });
+        const {
+          productName,
+          description,
+          category,
+          brandName,
+          stockQuantity,
+          salePrice,
+          offerPrice,
+          size,
+          mainImage,
+          thumbnails,
+        } = response.data;
+        setFormData({
+          productName,
+          description,
+          category,
+          brandName,
+          stockQuantity,
+          salePrice,
+          offerPrice,
+          size,
+        });
         setMainImage(mainImage);
         setThumbnails(thumbnails || [null, null, null]);
       } catch (error) {
-        console.error('Failed to fetch product details:', error);
-        navigate('/admin/productlist'); 
+        console.error("Failed to fetch product details:", error);
+        navigate("/admin/productlist");
       }
     }
     fetchProduct();
@@ -196,7 +213,8 @@ export default function EditProduct() {
 
   const validateForm = () => {
     const newErrors = {};
-    if(formData.offerPrice>formData.salePrice) newErrors.offerPrice = 'offer price must lower than sale price' 
+    if (formData.offerPrice > formData.salePrice)
+      newErrors.offerPrice = "offer price must lower than sale price";
     if (!formData.productName)
       newErrors.productName = "Product name is required";
     if (!formData.description)
@@ -235,9 +253,9 @@ export default function EditProduct() {
             }
           })
         );
-        
+
         const totalStock = calculateTotalStock();
-        
+
         const formDataToSubmit = {
           ...formData,
           mainImage: mainImageUrl,
@@ -249,8 +267,8 @@ export default function EditProduct() {
         // Log final form data for debugging
         console.log("Form data to submit:", formDataToSubmit);
 
-          await axios.put(`/update-product/${id}`, formDataToSubmit);
-          navigate('/admin/productlist');
+        await axios.put(`/update-product/${id}`, formDataToSubmit);
+        navigate("/admin/productlist");
 
         // Navigate on success
         if (response.status === 200) {
@@ -279,9 +297,7 @@ export default function EditProduct() {
           <div className="space-y-6">
             <h2 className="text-xl font-semibold mb-6">Product Details</h2>
             <div>
-              <label className="block text-sm font-medium mb-2">
-               Name
-              </label>
+              <label className="block text-sm font-medium mb-2">Name</label>
               <input
                 type="text"
                 name="productName"

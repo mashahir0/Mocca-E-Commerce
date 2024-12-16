@@ -4,20 +4,19 @@ import Product from "../models/productModel.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
-import { Parser } from 'json2csv';
-import pdf from 'pdfkit';
+import { Parser } from "json2csv";
+import pdf from "pdfkit";
 dotenv.config();
 
 const key = process.env.JWT_SECRET;
 
-
-
 const refreshTokenHandler = async (req, res) => {
-  console.log('hhhhhhhhhhhhhhhh');
-  
+  console.log("hhhhhhhhhhhhhhhh");
+
   const { refreshToken } = req.body;
 
-  if (!refreshToken) return res.status(401).json({ message: "No refresh token provided" });
+  if (!refreshToken)
+    return res.status(401).json({ message: "No refresh token provided" });
 
   try {
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN);
@@ -31,7 +30,7 @@ const refreshTokenHandler = async (req, res) => {
     const newAccessToken = jwt.sign(
       { id: admin._id, email: admin.email, role: admin.role },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: '1d' }
+      { expiresIn: "1d" }
     );
 
     res.json({ adminToken: newAccessToken });
@@ -39,7 +38,6 @@ const refreshTokenHandler = async (req, res) => {
     res.status(403).json({ message: "Invalid or expired refresh token" });
   }
 };
-
 
 const adminLogin = async (req, res) => {
   try {
@@ -73,10 +71,8 @@ const adminLogin = async (req, res) => {
   }
 };
 
-
 const getUserList = async (req, res) => {
   try {
-    
     const users = await User.find({ role: "user" });
     if (users && users.length > 0) {
       res.status(200).json({ users, totalCount: users.length });
@@ -104,371 +100,249 @@ const toggleStatus = async (req, res) => {
 
     await customer.save();
 
-    res
-      .status(200)
-      .json({
-        message: `Customer ${
-          customer.status ? "unblocked" : "blocked"
-        } successfully`,
-      });
+    res.status(200).json({
+      message: `Customer ${
+        customer.status ? "unblocked" : "blocked"
+      } successfully`,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error toggling customer status" });
   }
 };
 
-
-//delete user 
+//delete user
 const deleteUser = async (req, res) => {
-    try {
-      const userId = req.params.customerId;
-      
-      if (!userId) {
-        return res.status(400).json({ message: "Customer ID is required" });
-      }
-  
-      const user = await User.findById(userId);
-      
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-  
-      await User.findByIdAndDelete(userId);
-  
-      return res.status(200).json({ message: 'User successfully deleted' });
-  
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: 'Server error', error: error.message });
-    }
-  };
-
-
-
-//   const getSalesReport = async (req, res) => {
-//     try {
-//         const { filter, startDate, endDate } = req.query;
-//         let query = {};
-//         let labels = [];
-//         let salesData = [];
-
-//         // Handle daily filter with correct date range
-//         if (filter === 'daily') {
-//             const startOfDay = new Date();
-//             startOfDay.setHours(0, 0, 0, 0); // Midnight of today
-//             const endOfDay = new Date(startOfDay);
-//             endOfDay.setHours(23, 59, 59, 999); // End of today
-
-//             query.orderDate = { $gte: startOfDay, $lt: endOfDay };
-//             labels = ['daily']; // Label for the graph
-//         } else if (filter === 'weekly') {
-//             query.orderDate = { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) };
-//             const days = Array.from({ length: 7 }, (_, i) =>
-//                 new Date(Date.now() - i * 24 * 60 * 60 * 1000).toLocaleDateString()
-//             );
-//             labels = days.reverse();
-//         } else if (filter === 'yearly') {
-//             query.orderDate = { $gte: new Date(new Date().getFullYear(), 0, 1) };
-//             labels = Array.from({ length: 12 }, (_, i) =>
-//                 new Date(new Date().getFullYear(), i).toLocaleString('default', { month: 'short' })
-//             );
-//         } else if (startDate && endDate) {
-//             query.orderDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
-//             const days = Array.from(
-//                 { length: (new Date(endDate) - new Date(startDate)) / (24 * 60 * 60 * 1000) + 1 },
-//                 (_, i) =>
-//                     new Date(new Date(startDate).getTime() + i * 24 * 60 * 60 * 1000).toLocaleDateString()
-//             );
-//             labels = days;
-//         }
-
-//         // Fetch orders based on query
-//         const orders = await Order.find(query).populate('userId', 'name email');
-
-//         // Calculate sales data for each label
-//         labels.forEach((label) => {
-//             const filteredOrders = orders.filter((order) => {
-//                 const orderDate = new Date(order.orderDate).toLocaleDateString();
-//                 return orderDate === label;
-//             });
-//             const totalSalesForLabel = filteredOrders.reduce((sum, order) => sum + order.totalAmount, 0);
-//             salesData.push(totalSalesForLabel);
-//         });
-
-//         // Return report data
-//         const overallSalesCount = orders.length;
-//         const overallOrderAmount = orders.reduce((sum, order) => sum + order.totalAmount, 0);
-//         const overallDiscount = orders.reduce((sum, order) => sum + (order.discountedAmount || 0), 0);
-
-//         const reportData = {
-//             overallSalesCount,
-//             overallOrderAmount,
-//             overallDiscount,
-//             chart: {
-//                 labels,
-//                 data: salesData,
-//             },
-//             orders,
-//         };
-
-//         res.status(200).json(reportData);
-//     } catch (error) {
-//         console.error('Error generating sales report:', error);
-//         res.status(500).json({ message: 'Failed to generate sales report.' });
-//     }
-// };
-
-const getSalesReport = async (req, res) => {
   try {
-      const { filter, startDate, endDate } = req.query;
-      let query = {};
-      let labels = [];
-      let salesData = [];
+    const userId = req.params.customerId;
 
-      if (filter === 'daily') {
-          // Set start and end of the current day (UTC)
-          const startOfDay = new Date();
-          startOfDay.setUTCHours(0, 0, 0, 0);
-          const endOfDay = new Date(startOfDay);
-          endOfDay.setUTCHours(23, 59, 59, 999);
+    if (!userId) {
+      return res.status(400).json({ message: "Customer ID is required" });
+    }
 
-          query.orderDate = { $gte: startOfDay, $lt: endOfDay };
-          labels = [new Date().toISOString().slice(0, 10)]; // Format: YYYY-MM-DD
-      } else if (filter === 'weekly') {
-          // Set range for last 7 days
-          const currentDate = new Date();
-          const weekAgo = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const user = await User.findById(userId);
 
-          query.orderDate = { $gte: weekAgo, $lte: currentDate };
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-          // Generate labels for the past 7 days
-          labels = Array.from({ length: 7 }, (_, i) => {
-              const date = new Date(currentDate.getTime() - i * 24 * 60 * 60 * 1000);
-              return date.toISOString().slice(0, 10); // Format: YYYY-MM-DD
-          }).reverse();
-      } else if (filter === 'yearly') {
-          // Set range for the current year
-          const currentYear = new Date().getFullYear();
-          const startOfYear = new Date(currentYear, 0, 1);
-          const endOfYear = new Date(currentYear, 11, 31, 23, 59, 59, 999);
+    await User.findByIdAndDelete(userId);
 
-          query.orderDate = { $gte: startOfYear, $lte: endOfYear };
-
-          // Generate labels for months (Jan, Feb, ..., Dec)
-          labels = Array.from({ length: 12 }, (_, i) => {
-              return new Date(currentYear, i).toLocaleString('default', { month: 'short' });
-          });
-      } else if (startDate && endDate) {
-          // Set custom date range
-          query.orderDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
-
-          // Generate labels for each day in the range
-          const daysDifference =
-              (new Date(endDate) - new Date(startDate)) / (24 * 60 * 60 * 1000) + 1;
-          labels = Array.from({ length: daysDifference }, (_, i) => {
-              const date = new Date(new Date(startDate).getTime() + i * 24 * 60 * 60 * 1000);
-              return date.toISOString().slice(0, 10); // Format: YYYY-MM-DD
-          });
-      }
-
-      // Fetch orders based on the query
-      const orders = await Order.find(query).populate('userId', 'name email');
-
-      if (filter === 'yearly') {
-          // Group orders by month for yearly data
-          const monthlySales = Array(12).fill(0); // Initialize sales data for 12 months
-          orders.forEach((order) => {
-              const orderMonth = new Date(order.orderDate).getMonth(); // 0 = Jan, ..., 11 = Dec
-              monthlySales[orderMonth] += order.totalAmount;
-          });
-          salesData = monthlySales;
-      } else {
-          // Group orders by date (daily, weekly, or custom range)
-          const salesMap = {};
-          orders.forEach((order) => {
-              const orderDate = new Date(order.orderDate).toISOString().slice(0, 10); // Format as YYYY-MM-DD
-              salesMap[orderDate] = (salesMap[orderDate] || 0) + order.totalAmount;
-          });
-
-          // Map labels to salesData
-          labels.forEach((label) => {
-              salesData.push(salesMap[label] || 0); // Default to 0 if no sales
-          });
-      }
-
-      // Calculate overall stats
-      const overallSalesCount = orders.length;
-      const overallOrderAmount = orders.reduce((sum, order) => sum + order.totalAmount, 0);
-      const overallDiscount = orders.reduce((sum, order) => sum + (order.discountedAmount || 0), 0);
-
-      // Prepare report data
-      const reportData = {
-          overallSalesCount,
-          overallOrderAmount,
-          overallDiscount,
-          chart: {
-              labels,
-              data: salesData,
-          },
-          orders,
-      };
-
-      // Send response
-      res.status(200).json(reportData);
+    return res.status(200).json({ message: "User successfully deleted" });
   } catch (error) {
-      console.error('Error generating sales report:', error);
-      res.status(500).json({ message: 'Failed to generate sales report.' });
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
   }
 };
 
+const getSalesReport = async (req, res) => {
+  try {
+    const { filter, startDate, endDate } = req.query;
+    let query = {};
+    let labels = [];
+    let salesData = [];
 
+    if (filter === "daily") {
+      const startOfDay = new Date();
+      startOfDay.setUTCHours(0, 0, 0, 0);
+      const endOfDay = new Date(startOfDay);
+      endOfDay.setUTCHours(23, 59, 59, 999);
 
+      query.orderDate = { $gte: startOfDay, $lt: endOfDay };
+      labels = [new Date().toISOString().slice(0, 10)];
+    } else if (filter === "weekly") {
+      const currentDate = new Date();
+      const weekAgo = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-// const downloadPDFReport = async (req, res) => {
-//   try {
-//       const { filter } = req.query;
+      query.orderDate = { $gte: weekAgo, $lte: currentDate };
 
-//       // Build query for today's orders
-//       let query = {};
-//       if (filter === 'daily') {
-//           const todayStart = new Date();
-//           todayStart.setHours(0, 0, 0, 0); // Set start of the day (midnight)
-          
-//           const todayEnd = new Date();
-//           todayEnd.setHours(23, 59, 59, 999); // Set end of the day (just before midnight)
+      labels = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date(currentDate.getTime() - i * 24 * 60 * 60 * 1000);
+        return date.toISOString().slice(0, 10);
+      }).reverse();
+    } else if (filter === "yearly") {
+      const currentYear = new Date().getFullYear();
+      const startOfYear = new Date(currentYear, 0, 1);
+      const endOfYear = new Date(currentYear, 11, 31, 23, 59, 59, 999);
 
-//           query.orderDate = { $gte: todayStart, $lte: todayEnd };
-//       }
+      query.orderDate = { $gte: startOfYear, $lte: endOfYear };
 
-//       const orders = await Order.find(query);
+      labels = Array.from({ length: 12 }, (_, i) => {
+        return new Date(currentYear, i).toLocaleString("default", {
+          month: "short",
+        });
+      });
+    } else if (startDate && endDate) {
+      query.orderDate = { $gte: new Date(startDate), $lte: new Date(endDate) };
 
-//       // If no orders found, return a message
-//       if (orders.length === 0) {
-//           res.status(200).send("No orders found for today.");
-//           return;
-//       }
+      const daysDifference =
+        (new Date(endDate) - new Date(startDate)) / (24 * 60 * 60 * 1000) + 1;
+      labels = Array.from({ length: daysDifference }, (_, i) => {
+        const date = new Date(
+          new Date(startDate).getTime() + i * 24 * 60 * 60 * 1000
+        );
+        return date.toISOString().slice(0, 10);
+      });
+    }
 
-//       // Calculate overall metrics
-//       const overallSalesCount = orders.length;
-//       const overallOrderAmount = orders.reduce((sum, order) => sum + order.totalAmount, 0);
-//       const overallDiscount = orders.reduce((sum, order) => sum + (order.discountedAmount || 0), 0);
+    const orders = await Order.find(query).populate("userId", "name email");
 
-//       // Create PDF document
-//       const doc = new pdf();
-//       res.setHeader('Content-Disposition', 'attachment; filename="daily_sales_report.pdf"');
-//       res.setHeader('Content-Type', 'application/pdf');
-//       doc.pipe(res);
+    if (filter === "yearly") {
+      const monthlySales = Array(12).fill(0);
+      orders.forEach((order) => {
+        const orderMonth = new Date(order.orderDate).getMonth();
+        monthlySales[orderMonth] += order.totalAmount;
+      });
+      salesData = monthlySales;
+    } else {
+      const salesMap = {};
+      orders.forEach((order) => {
+        const orderDate = new Date(order.orderDate).toISOString().slice(0, 10);
+        salesMap[orderDate] = (salesMap[orderDate] || 0) + order.totalAmount;
+      });
 
-//       // Add title and overall metrics
-//       doc.fontSize(18).text('Daily Sales Report', { align: 'center' });
-//       doc.text(`Overall Sales Count: ${overallSalesCount}`, { align: 'left' });
-//       doc.text(`Overall Order Amount: ₹${overallOrderAmount.toFixed(2)}`, { align: 'left' });
-//       doc.text(`Overall Discount: ₹${overallDiscount.toFixed(2)}`, { align: 'left' });
+      // Map labels to salesData
+      labels.forEach((label) => {
+        salesData.push(salesMap[label] || 0);
+      });
+    }
 
-//       // Add details for each order
-//       orders.forEach((order, idx) => {
-//           doc.fontSize(12).text(`Order #${idx + 1}: ${order._id}`);
-//           doc.text(`Total Amount: ₹${order.totalAmount}`);
-//           doc.text(`Discount: ₹${order.discountedAmount || 0}`);
-//           doc.text('---');
-//       });
+    const overallSalesCount = orders.length;
+    const overallOrderAmount = orders.reduce(
+      (sum, order) => sum + order.totalAmount,
+      0
+    );
+    const overallDiscount = orders.reduce(
+      (sum, order) => sum + (order.discountedAmount || 0),
+      0
+    );
 
-//       doc.end();
-//   } catch (error) {
-//       console.error('Error generating PDF:', error);
-//       res.status(500).json({ message: 'Failed to generate PDF.' });
-//   }
-// };
+    const reportData = {
+      overallSalesCount,
+      overallOrderAmount,
+      overallDiscount,
+      chart: {
+        labels,
+        data: salesData,
+      },
+      orders,
+    };
 
+    // Send response
+    res.status(200).json(reportData);
+  } catch (error) {
+    console.error("Error generating sales report:", error);
+    res.status(500).json({ message: "Failed to generate sales report." });
+  }
+};
 
 const downloadPDFReport = async (req, res) => {
   try {
     const { filter, startDate, endDate } = req.query;
 
-    // Build query based on filter (daily, weekly, or custom date range)
     let query = {};
     const today = new Date();
 
-    // Handling the custom date range if provided
     if (startDate && endDate) {
-      const start = new Date(startDate); // Parse startDate
-      const end = new Date(endDate); // Parse endDate
-      end.setHours(23, 59, 59, 999); // Ensure the end date is set to the end of the day
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
       query.orderDate = { $gte: start, $lte: end };
-    } else if (filter === 'daily') {
+    } else if (filter === "daily") {
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
       const endOfDay = new Date();
       endOfDay.setHours(23, 59, 59, 999);
       query.orderDate = { $gte: startOfDay, $lte: endOfDay };
-    } else if (filter === 'weekly') {
+    } else if (filter === "weekly") {
       const startOfWeek = new Date();
-      startOfWeek.setDate(today.getDate() - today.getDay()); // Sunday as the start of the week
+      startOfWeek.setDate(today.getDate() - today.getDay());
       startOfWeek.setHours(0, 0, 0, 0);
       const endOfWeek = new Date();
-      endOfWeek.setDate(today.getDate() - today.getDay() + 6); // Saturday as the end of the week
+      endOfWeek.setDate(today.getDate() - today.getDay() + 6);
       endOfWeek.setHours(23, 59, 59, 999);
       query.orderDate = { $gte: startOfWeek, $lte: endOfWeek };
     }
 
-    // Fetch orders based on the query
     const orders = await Order.find(query);
 
-    // If no orders found, return a message
     if (orders.length === 0) {
       res.status(200).send(`No orders found for the selected period.`);
       return;
     }
 
-    // Calculate overall metrics
     const overallSalesCount = orders.length;
-    const overallOrderAmount = orders.reduce((sum, order) => sum + order.totalAmount, 0);
-    const overallDiscount = orders.reduce((sum, order) => sum + (order.discountedAmount || 0), 0);
+    const overallOrderAmount = orders.reduce(
+      (sum, order) => sum + order.totalAmount,
+      0
+    );
+    const overallDiscount = orders.reduce(
+      (sum, order) => sum + (order.discountedAmount || 0),
+      0
+    );
 
-    // Create PDF document
-    const doc = new pdf({ size: 'A4', margin: 40 });
-    res.setHeader('Content-Disposition', `attachment; filename="${filter}_sales_report.pdf"`);
-    res.setHeader('Content-Type', 'application/pdf');
+    const doc = new pdf({ size: "A4", margin: 40 });
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${filter}_sales_report.pdf"`
+    );
+    res.setHeader("Content-Type", "application/pdf");
     doc.pipe(res);
 
-    // Title and Overall Metrics
-    doc.fontSize(18).text(`${filter.charAt(0).toUpperCase() + filter.slice(1)} Sales Report`, {
-      align: 'center',
-      underline: true,
-    });
+    doc
+      .fontSize(18)
+      .text(
+        `${filter.charAt(0).toUpperCase() + filter.slice(1)} Sales Report`,
+        {
+          align: "center",
+          underline: true,
+        }
+      );
     doc.moveDown(1);
     doc.fontSize(12).text(`Overall Sales Count: ${overallSalesCount}`);
     doc.text(`Overall Order Amount: ₹${overallOrderAmount.toFixed(2)}`);
     doc.text(`Overall Discount: ₹${overallDiscount.toFixed(2)}`);
     doc.moveDown(1);
 
-    // Table Headers
-    const headers = ['Order ID', 'User ID', 'Total Amount', 'Discount', 'Order Date'];
-    const columnWidths = [100, 100, 80, 80, 100]; // Optimized column widths
+    const headers = [
+      "Order ID",
+      "User ID",
+      "Total Amount",
+      "Discount",
+      "Order Date",
+    ];
+    const columnWidths = [100, 100, 80, 80, 100];
     const tableTop = doc.y;
     const rowHeight = 20;
     const margin = doc.page.margins.left;
     let y = tableTop;
 
-    // Draw Header Row
     headers.forEach((header, idx) => {
       doc
         .fontSize(10)
-        .text(header, margin + columnWidths.slice(0, idx).reduce((sum, w) => sum + w, 0), y, {
-          width: columnWidths[idx],
-          align: 'center',
-        });
+        .text(
+          header,
+          margin + columnWidths.slice(0, idx).reduce((sum, w) => sum + w, 0),
+          y,
+          {
+            width: columnWidths[idx],
+            align: "center",
+          }
+        );
     });
 
-    // Horizontal line under headers
-    doc.moveTo(margin, y + rowHeight - 10).lineTo(doc.page.width - margin, y + rowHeight - 10).stroke();
+    doc
+      .moveTo(margin, y + rowHeight - 10)
+      .lineTo(doc.page.width - margin, y + rowHeight - 10)
+      .stroke();
     y += rowHeight;
 
-    // Table Rows
     orders.forEach((order) => {
       const rowData = [
         order._id,
-        order.userId || 'N/A',
+        order.userId || "N/A",
         `₹${order.totalAmount.toFixed(2)}`,
         `₹${(order.discountedAmount || 0).toFixed(2)}`,
         new Date(order.orderDate).toLocaleDateString(),
@@ -477,242 +351,205 @@ const downloadPDFReport = async (req, res) => {
       rowData.forEach((data, idx) => {
         doc
           .fontSize(10)
-          .text(data, margin + columnWidths.slice(0, idx).reduce((sum, w) => sum + w, 0), y, {
-            width: columnWidths[idx],
-            align: 'center',
-            ellipsis: true,
-          });
+          .text(
+            data,
+            margin + columnWidths.slice(0, idx).reduce((sum, w) => sum + w, 0),
+            y,
+            {
+              width: columnWidths[idx],
+              align: "center",
+              ellipsis: true,
+            }
+          );
       });
 
-      // Draw borders for the row
-      doc.rect(margin, y, columnWidths.reduce((sum, w) => sum + w, 0), rowHeight).stroke();
+      doc
+        .rect(
+          margin,
+          y,
+          columnWidths.reduce((sum, w) => sum + w, 0),
+          rowHeight
+        )
+        .stroke();
       y += rowHeight;
 
-      // Add new page if rows exceed page height
       if (y > doc.page.height - doc.page.margins.bottom) {
         doc.addPage();
         y = doc.page.margins.top;
 
-        // Redraw headers on new page
         headers.forEach((header, idx) => {
           doc
             .fontSize(10)
-            .text(header, margin + columnWidths.slice(0, idx).reduce((sum, w) => sum + w, 0), y, {
-              width: columnWidths[idx],
-              align: 'center',
-            });
+            .text(
+              header,
+              margin +
+                columnWidths.slice(0, idx).reduce((sum, w) => sum + w, 0),
+              y,
+              {
+                width: columnWidths[idx],
+                align: "center",
+              }
+            );
         });
 
-        doc.moveTo(margin, y + rowHeight - 10).lineTo(doc.page.width - margin, y + rowHeight - 10).stroke();
+        doc
+          .moveTo(margin, y + rowHeight - 10)
+          .lineTo(doc.page.width - margin, y + rowHeight - 10)
+          .stroke();
         y += rowHeight;
       }
     });
 
-    // Finalize the document
     doc.end();
   } catch (error) {
-    console.error('Error generating PDF:', error);
-    res.status(500).json({ message: 'Failed to generate PDF.' });
+    console.error("Error generating PDF:", error);
+    res.status(500).json({ message: "Failed to generate PDF." });
   }
 };
-
-
-
-// const downloadExcelReport = async (req, res) => {
-//   try {
-//       const { filter } = req.query;
-
-//       // Build query for today's orders
-//       let query = {};
-//       if (filter === 'daily') {
-//           const todayStart = new Date();
-//           todayStart.setHours(0, 0, 0, 0); // Set start of the day (midnight)
-          
-//           const todayEnd = new Date();
-//           todayEnd.setHours(23, 59, 59, 999); // Set end of the day (just before midnight)
-
-//           query.orderDate = { $gte: todayStart, $lte: todayEnd };
-//       }
-
-//       const orders = await Order.find(query);
-
-//       // If no orders found, return a message
-//       if (orders.length === 0) {
-//           res.status(200).send("No orders found for today.");
-//           return;
-//       }
-
-//       // Calculate overall metrics
-//       const overallSalesCount = orders.length;
-//       const overallOrderAmount = orders.reduce((sum, order) => sum + order.totalAmount, 0);
-//       const overallDiscount = orders.reduce((sum, order) => sum + (order.discountedAmount || 0), 0);
-
-//       // Prepare data for CSV
-//       const fields = ['Order ID', 'User', 'Total Amount', 'Discount', 'Date'];
-//       const json2csvParser = new Parser({ fields });
-//       const csv = json2csvParser.parse(
-//           orders.map((order) => ({
-//               'Order ID': order._id,
-//               User: order.userId ? order.userId.name : 'N/A',  // Ensure userId exists
-//               'Total Amount': order.totalAmount,
-//               Discount: order.discountedAmount || 0,
-//               Date: order.orderDate.toISOString().split('T')[0],
-//           }))
-//       );
-
-//       // Add overall metrics at the top of the CSV
-//       const overallData = `Overall Sales Count: ${overallSalesCount}\nOverall Order Amount: ₹${overallOrderAmount.toFixed(2)}\nOverall Discount: ₹${overallDiscount.toFixed(2)}\n\n`;
-
-//       res.setHeader('Content-Disposition', 'attachment; filename="daily_sales_report.csv"');
-//       res.set('Content-Type', 'text/csv');
-//       res.status(200).send(overallData + csv);
-//   } catch (error) {
-//       console.error('Error generating Excel report:', error);
-//       res.status(500).json({ message: 'Failed to generate Excel report.' });
-//   }
-// };
-
 
 const downloadExcelReport = async (req, res) => {
   try {
     const { filter, startDate, endDate } = req.query;
 
-    // Build query for the orders based on the filter (daily, weekly, or custom date range)
     let query = {};
     const today = new Date();
 
-    // Handling the custom date range if provided
     if (startDate && endDate) {
-      const start = new Date(startDate); // Parse startDate
-      const end = new Date(endDate); // Parse endDate
-      end.setHours(23, 59, 59, 999); // Ensure the end date is set to the end of the day
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
       query.orderDate = { $gte: start, $lte: end };
-    } else if (filter === 'daily') {
+    } else if (filter === "daily") {
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
       const endOfDay = new Date();
       endOfDay.setHours(23, 59, 59, 999);
       query.orderDate = { $gte: startOfDay, $lte: endOfDay };
-    } else if (filter === 'weekly') {
+    } else if (filter === "weekly") {
       const startOfWeek = new Date();
-      startOfWeek.setDate(today.getDate() - today.getDay()); // Sunday as the start of the week
+      startOfWeek.setDate(today.getDate() - today.getDay());
       startOfWeek.setHours(0, 0, 0, 0);
       const endOfWeek = new Date();
-      endOfWeek.setDate(today.getDate() - today.getDay() + 6); // Saturday as the end of the week
+      endOfWeek.setDate(today.getDate() - today.getDay() + 6);
       endOfWeek.setHours(23, 59, 59, 999);
       query.orderDate = { $gte: startOfWeek, $lte: endOfWeek };
     }
 
-    // Fetch orders based on the query
     const orders = await Order.find(query);
 
-    // If no orders found, return a message
     if (orders.length === 0) {
       res.status(200).send(`No orders found for the selected period.`);
       return;
     }
 
-    // Calculate overall metrics
     const overallSalesCount = orders.length;
-    const overallOrderAmount = orders.reduce((sum, order) => sum + order.totalAmount, 0);
-    const overallDiscount = orders.reduce((sum, order) => sum + (order.discountedAmount || 0), 0);
+    const overallOrderAmount = orders.reduce(
+      (sum, order) => sum + order.totalAmount,
+      0
+    );
+    const overallDiscount = orders.reduce(
+      (sum, order) => sum + (order.discountedAmount || 0),
+      0
+    );
 
-    // Prepare the overall metrics for display at the top of the CSV
-    const overallData = `\nOverall Sales Count: ${overallSalesCount}\nOverall Order Amount: ₹${overallOrderAmount.toFixed(2)}\nOverall Discount: ₹${overallDiscount.toFixed(2)}\n`;
+    const overallData = `\nOverall Sales Count: ${overallSalesCount}\nOverall Order Amount: ₹${overallOrderAmount.toFixed(
+      2
+    )}\nOverall Discount: ₹${overallDiscount.toFixed(2)}\n`;
 
-    // Define the fields for the CSV table
-    const fields = ['Order ID', 'User', 'Total Amount', 'Discount', 'Date'];
+    const fields = ["Order ID", "User", "Total Amount", "Discount", "Date"];
     const json2csvParser = new Parser({ fields });
 
-    // Map the order data into the CSV format
     const csvData = orders.map((order) => ({
-      'Order ID': order._id,
-      User: order.userId ? order.userId.name : 'N/A',  // Ensure userId exists
-      'Total Amount': `₹${order.totalAmount.toFixed(2)}`,
+      "Order ID": order._id,
+      User: order.userId ? order.userId.name : "N/A",
+      "Total Amount": `₹${order.totalAmount.toFixed(2)}`,
       Discount: `₹${(order.discountedAmount || 0).toFixed(2)}`,
-      Date: order.orderDate.toISOString().split('T')[0],
+      Date: order.orderDate.toISOString().split("T")[0],
     }));
 
-    // Convert the order data to CSV format
     const csv = json2csvParser.parse(csvData);
 
-    // Combine overall metrics and the CSV table
     const finalCsvData = overallData + csv;
 
-    // Set the response headers for the CSV file download
-    res.setHeader('Content-Disposition', `attachment; filename="${filter}_sales_report.csv"`);
-    res.set('Content-Type', 'text/csv');
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${filter}_sales_report.csv"`
+    );
+    res.set("Content-Type", "text/csv");
     res.status(200).send(finalCsvData);
   } catch (error) {
-    console.error('Error generating Excel report:', error);
-    res.status(500).json({ message: 'Failed to generate Excel report.' });
+    console.error("Error generating Excel report:", error);
+    res.status(500).json({ message: "Failed to generate Excel report." });
   }
 };
+
 const getTopSelling = async (req, res) => {
   try {
-    // Fetch all orders and aggregate sales data
     const orders = await Order.find();
 
-    // Create maps to track product and category sales
     const productSalesMap = {};
     const categorySalesMap = {};
 
-    // Aggregate sales data using a for...of loop
     for (const order of orders) {
       for (const productItem of order.products) {
         const { productId, quantity } = productItem;
 
-        // Track sales for each product
-        productSalesMap[productId] = (productSalesMap[productId] || 0) + quantity;
+        productSalesMap[productId] =
+          (productSalesMap[productId] || 0) + quantity;
 
-        // Fetch product details to track category sales
         const product = await Product.findById(productId);
         if (product) {
           const category = product.category;
-          categorySalesMap[category] = (categorySalesMap[category] || 0) + quantity;
+          categorySalesMap[category] =
+            (categorySalesMap[category] || 0) + quantity;
         }
       }
     }
 
-    // Get top 10 best-selling products
     const topProducts = await Promise.all(
       Object.entries(productSalesMap)
-        .sort(([, salesA], [, salesB]) => salesB - salesA) // Sort by sales in descending order
-        .slice(0, 10) // Take the top 10
+        .sort(([, salesA], [, salesB]) => salesB - salesA)
+        .slice(0, 10)
         .map(async ([productId, sales]) => {
           const product = await Product.findById(productId);
           return {
-            productName: product?.productName || 'Unknown',
+            productName: product?.productName || "Unknown",
             sales,
-            category: product?.category || 'Unknown',
+            category: product?.category || "Unknown",
           };
         })
     );
 
-    // Get top 10 best-selling categories
     const topCategories = Object.entries(categorySalesMap)
-      .sort(([, salesA], [, salesB]) => salesB - salesA) // Sort by sales in descending order
+      .sort(([, salesA], [, salesB]) => salesB - salesA)
       .slice(0, 10) // Take the top 10
       .map(([categoryName, sales]) => {
         return { categoryName, sales };
       });
 
-    // Send response
     res.status(200).json({
-      message: 'Top selling products and categories fetched successfully!',
+      message: "Top selling products and categories fetched successfully!",
       topProducts,
       topCategories,
     });
   } catch (error) {
-    console.error('Error fetching top-selling products/categories:', error);
-    res.status(500).json({ message: 'Failed to fetch top-selling data. Please try again later.' });
+    console.error("Error fetching top-selling products/categories:", error);
+    res
+      .status(500)
+      .json({
+        message: "Failed to fetch top-selling data. Please try again later.",
+      });
   }
 };
 
-
-
-
-  
-export { adminLogin, getUserList, toggleStatus,deleteUser,refreshTokenHandler,
-  getSalesReport,downloadExcelReport,downloadPDFReport,getTopSelling };
-
+export {
+  adminLogin,
+  getUserList,
+  toggleStatus,
+  deleteUser,
+  refreshTokenHandler,
+  getSalesReport,
+  downloadExcelReport,
+  downloadPDFReport,
+  getTopSelling,
+};

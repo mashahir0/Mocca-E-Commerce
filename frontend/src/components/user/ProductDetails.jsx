@@ -67,7 +67,6 @@ export default function ProductDetails() {
   const navigate = useNavigate();
   const handleAddToCart = async (id) => {
     try {
-      
       if (!selectedSize) {
         toast.error("Please select a size!");
         return;
@@ -82,7 +81,6 @@ export default function ProductDetails() {
         return;
       }
 
-     
       const response = await axios.post("/add-to-cart", {
         userId,
         productId: id,
@@ -160,11 +158,11 @@ export default function ProductDetails() {
   };
 
   if (loadingReviews) {
-    return <Loading/>;
+    return <Loading />;
   }
 
   if (reviewsError) {
-    return <Error error = {reviewsError.message}/>;
+    return <Error error={reviewsError.message} />;
   }
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -199,156 +197,148 @@ export default function ProductDetails() {
 
         {/* Product Info */}
         <div className="space-y-6">
-  <div>
-    <h1 className="text-2xl font-semibold mb-2">
-      {product.productName}
-    </h1>
-    <div className="flex items-center gap-2 mb-2">
-      {renderStars(product.averageRating)} 
-      <span className="text-gray-500">
-        ({product.averageRating || 0} reviews)
-      </span>
-    </div>
+          <div>
+            <h1 className="text-2xl font-semibold mb-2">
+              {product.productName}
+            </h1>
+            <div className="flex items-center gap-2 mb-2">
+              {renderStars(product.averageRating)}
+              <span className="text-gray-500">
+                ({product.averageRating || 0} reviews)
+              </span>
+            </div>
 
-    
-    <div className="flex items-center gap-2">
-  
-  {product.offerStatus && product.offerPrice && (
-    <span className="line-through text-gray-500">
-      ₹{Math.floor(product.salePrice)}
-    </span>
-  )}
-  
-  
-  <p className="text-2xl font-bold">
-    ₹
-    {product.offerStatus && product.offerPrice
-      ? Math.floor(product.offerPrice) 
-      : product.effectivePrice
-      ? Math.floor(product.effectivePrice) 
-      : Math.floor(product.salePrice)} 
-  </p>
-  
-  
-  { product.category?.status && (
-    <span className="text-sm text-red-500 ml-4">
-      {product.category.offer}% OFF
-    </span>
-  )}
-</div>
+            <div className="flex items-center gap-2">
+              {product.offerStatus && product.offerPrice && (
+                <span className="line-through text-gray-500">
+                  ₹{Math.floor(product.salePrice)}
+                </span>
+              )}
 
-  </div>
+              <p className="text-2xl font-bold">
+                ₹
+                {product.offerStatus && product.offerPrice
+                  ? Math.floor(product.offerPrice)
+                  : product.effectivePrice
+                  ? Math.floor(product.effectivePrice)
+                  : Math.floor(product.salePrice)}
+              </p>
 
-  
-  <div className="space-y-4">
-    <h2 className="font-semibold">Product Details</h2>
-    <div className="space-y-2 text-sm">
-      <p>
-        <span className="text-gray-600">Description:</span>{" "}
-        {product.description}
-      </p>
-      <p>
-        <span className="text-gray-600">Brand:</span>{" "}
-        {product.brandName || "Not specified"}
-      </p>
-      <p>
-        <span className="text-gray-600">Category:</span>{" "}
-        {product.category?.category}
-      </p>
-      <p>
-        <span className="text-gray-600">Net Quantity:</span>{" "}
-        {product.stockQuantity}
-      </p>
-      <div className="space-y-1">
-        <p className="text-gray-600">Available Sizes:</p>
-        {product.size?.map(({ name, stock }, index) => (
-          <p key={index} className="ml-4">
-            - {name}: {stock} in stock
-          </p>
-        ))}
-      </div>
-    </div>
-  </div>
+              {product.category?.status && (
+                <span className="text-sm text-red-500 ml-4">
+                  {product.category.offer}% OFF
+                </span>
+              )}
+            </div>
+          </div>
 
-  {/* Size Selection */}
-  <div>
-    <p className="font-semibold mb-2">Select Size</p>
-    <div className="flex gap-2">
-      {product.size?.map(({ name, stock }) => (
-        <button
-          key={name}
-          onClick={() => {
-            if (stock > 0) {
-              setSelectedSize(name); 
-              setQuantity(1); 
-            }
-          }}
-          className={`w-12 h-12 rounded-full border ${
-            selectedSize === name
-              ? "border-black bg-black text-white"
-              : stock > 0
-              ? "border-gray-300 hover:border-black"
-              : "border-gray-200 text-gray-400 cursor-not-allowed"
-          }`}
-          disabled={stock <= 0} 
-        >
-          {name}
-        </button>
-      ))}
-    </div>
-  </div>
+          <div className="space-y-4">
+            <h2 className="font-semibold">Product Details</h2>
+            <div className="space-y-2 text-sm">
+              <p>
+                <span className="text-gray-600">Description:</span>{" "}
+                {product.description}
+              </p>
+              <p>
+                <span className="text-gray-600">Brand:</span>{" "}
+                {product.brandName || "Not specified"}
+              </p>
+              <p>
+                <span className="text-gray-600">Category:</span>{" "}
+                {product.category?.category}
+              </p>
+              <p>
+                <span className="text-gray-600">Net Quantity:</span>{" "}
+                {product.stockQuantity}
+              </p>
+              <div className="space-y-1">
+                <p className="text-gray-600">Available Sizes:</p>
+                {product.size?.map(({ name, stock }, index) => (
+                  <p key={index} className="ml-4">
+                    - {name}: {stock} in stock
+                  </p>
+                ))}
+              </div>
+            </div>
+          </div>
 
-  {/* Quantity Selection */}
-  <div className="flex items-center gap-4">
-    <span className="font-semibold">Quantity:</span>
-    <div className="flex items-center border rounded">
-      <button
-        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-        className="px-3 py-1 border-r hover:bg-gray-100"
-        disabled={quantity <= 1}
-      >
-        -
-      </button>
-      <span className="px-4 py-1">{quantity}</span>
-      <button
-        onClick={() => {
-          const selectedStock =
-            product.size?.find(({ name }) => name === selectedSize)
-              ?.stock || 0;
-          if (quantity < selectedStock) {
-            setQuantity(quantity + 1); 
-          }
-        }}
-        className="px-3 py-1 border-l hover:bg-gray-100"
-        disabled={
-          product.size?.find(({ name }) => name === selectedSize)
-            ?.stock <= quantity
-        }
-      >
-        +
-      </button>
-    </div>
-  </div>
+          {/* Size Selection */}
+          <div>
+            <p className="font-semibold mb-2">Select Size</p>
+            <div className="flex gap-2">
+              {product.size?.map(({ name, stock }) => (
+                <button
+                  key={name}
+                  onClick={() => {
+                    if (stock > 0) {
+                      setSelectedSize(name);
+                      setQuantity(1);
+                    }
+                  }}
+                  className={`w-12 h-12 rounded-full border ${
+                    selectedSize === name
+                      ? "border-black bg-black text-white"
+                      : stock > 0
+                      ? "border-gray-300 hover:border-black"
+                      : "border-gray-200 text-gray-400 cursor-not-allowed"
+                  }`}
+                  disabled={stock <= 0}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+          </div>
 
-  {/* Buttons for Add to Cart and Buy Now */}
-  <div className="flex gap-4">
-    <button
-      onClick={() => handleAddToCart(product._id)}
-      className="flex-1 flex items-center justify-center gap-2 px-6 py-3 border border-black rounded-md hover:bg-gray-50"
-    >
-      <ShoppingCart className="h-5 w-5" />
-      Add to Cart
-    </button>
-    <button
-      className="flex-1 px-6 py-3 bg-black text-white rounded-md hover:bg-black/90"
-      onClick={() => handleBuy(product._id)}
-    >
-      Buy Now
-    </button>
-  </div>
-</div>
+          {/* Quantity Selection */}
+          <div className="flex items-center gap-4">
+            <span className="font-semibold">Quantity:</span>
+            <div className="flex items-center border rounded">
+              <button
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="px-3 py-1 border-r hover:bg-gray-100"
+                disabled={quantity <= 1}
+              >
+                -
+              </button>
+              <span className="px-4 py-1">{quantity}</span>
+              <button
+                onClick={() => {
+                  const selectedStock =
+                    product.size?.find(({ name }) => name === selectedSize)
+                      ?.stock || 0;
+                  if (quantity < selectedStock) {
+                    setQuantity(quantity + 1);
+                  }
+                }}
+                className="px-3 py-1 border-l hover:bg-gray-100"
+                disabled={
+                  product.size?.find(({ name }) => name === selectedSize)
+                    ?.stock <= quantity
+                }
+              >
+                +
+              </button>
+            </div>
+          </div>
 
-
+          {/* Buttons for Add to Cart and Buy Now */}
+          <div className="flex gap-4">
+            <button
+              onClick={() => handleAddToCart(product._id)}
+              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 border border-black rounded-md hover:bg-gray-50"
+            >
+              <ShoppingCart className="h-5 w-5" />
+              Add to Cart
+            </button>
+            <button
+              className="flex-1 px-6 py-3 bg-black text-white rounded-md hover:bg-black/90"
+              onClick={() => handleBuy(product._id)}
+            >
+              Buy Now
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="max-w-4xl mx-auto p-6 space-y-8">

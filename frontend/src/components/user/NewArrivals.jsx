@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import axios from '../../services/api/userApi';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import axios from "../../services/api/userApi";
+import { useNavigate } from "react-router-dom";
 
 export default function NewArrivals() {
   const [products, setProducts] = useState([]);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchOfferProducts = async () => {
       try {
-        const response = await axios.get('/offer-products'); // API endpoint
+        const response = await axios.get("/offer-products"); // API endpoint
         setProducts(response.data.products); // Set the fetched products
       } catch (error) {
-        console.error('Error fetching offer products:', error);
+        console.error("Error fetching offer products:", error);
       }
     };
 
@@ -33,7 +33,7 @@ export default function NewArrivals() {
           <div
             key={product.id}
             className="bg-white rounded-lg shadow-md overflow-hidden"
-            onClick={()=>navigate(`/productinfo/${product.id}`)}
+            onClick={() => navigate(`/productinfo/${product.id}`)}
           >
             <div className="relative">
               <img
@@ -44,9 +44,7 @@ export default function NewArrivals() {
             </div>
 
             <div className="p-4">
-              <h3 className="font-medium text-gray-900 mb-2">
-                {product.name}
-              </h3>
+              <h3 className="font-medium text-gray-900 mb-2">{product.name}</h3>
               <p className="text-gray-600 text-sm mb-2">
                 {product.description}
               </p>
@@ -59,7 +57,6 @@ export default function NewArrivals() {
                     ₹{product.salePrice}
                   </span>
                 </div>
-                
               </div>
             </div>
           </div>

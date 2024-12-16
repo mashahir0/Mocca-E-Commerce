@@ -1,9 +1,9 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { useSelector } from 'react-redux';
-import axios from '../../services/api/userApi';
-import Loading from '../common/Loading';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { useSelector } from "react-redux";
+import axios from "../../services/api/userApi";
+import Loading from "../common/Loading";
 
 export default function OrdersList() {
   const { user } = useSelector((state) => state.user);
@@ -11,8 +11,12 @@ export default function OrdersList() {
   const navigate = useNavigate();
 
   // React Query: Fetch orders
-  const { data: orders = [], isLoading, isError } = useQuery({
-    queryKey: ['orders'],
+  const {
+    data: orders = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["orders"],
     queryFn: async () => {
       const response = await axios.get(`/order-details/${userId}`);
       return response.data;
@@ -20,19 +24,21 @@ export default function OrdersList() {
   });
 
   if (isLoading) {
-    return <Loading/>
+    return <Loading />;
   }
 
   if (isError) {
-    return <Error error = {error}/>;
+    return <Error error={isError} />;
   }
 
   if (!orders.length) {
     return (
       <div className="text-center mt-10">
-        <p className="text-gray-500 mb-4">No orders found. Start shopping now!</p>
+        <p className="text-gray-500 mb-4">
+          No orders found. Start shopping now!
+        </p>
         <button
-          onClick={() => navigate('/products')}
+          onClick={() => navigate("/products")}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           Continue Shopping
@@ -47,7 +53,10 @@ export default function OrdersList() {
       <div className="space-y-4">
         {orders.map((order) => {
           // Calculate total quantity for the order
-          const totalQuantity = order.products.reduce((sum, item) => sum + item.quantity, 0);
+          const totalQuantity = order.products.reduce(
+            (sum, item) => sum + item.quantity,
+            0
+          );
 
           return (
             <div
@@ -63,16 +72,20 @@ export default function OrdersList() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-gray-500">Payment: {order.paymentStatus}</p>
+                  <p className="text-sm text-gray-500">
+                    Payment: {order.paymentStatus}
+                  </p>
                 </div>
               </div>
 
               <div className="mt-4">
                 <p className="text-gray-700">
-                  <span className="font-semibold">Total Products:</span> {totalQuantity}
+                  <span className="font-semibold">Total Products:</span>{" "}
+                  {totalQuantity}
                 </p>
                 <p className="text-gray-700">
-                  <span className="font-semibold">Total Amount:</span> ₹{order.totalAmount}
+                  <span className="font-semibold">Total Amount:</span> ₹
+                  {order.totalAmount}
                 </p>
               </div>
 
@@ -81,7 +94,8 @@ export default function OrdersList() {
                 <ul className="list-disc pl-5">
                   {order.products.map((product) => (
                     <li key={product._id} className="text-sm text-gray-600">
-                      <span className="font-medium">{product.productName}</span>: {product.status}
+                      <span className="font-medium">{product.productName}</span>
+                      : {product.status}
                     </li>
                   ))}
                 </ul>

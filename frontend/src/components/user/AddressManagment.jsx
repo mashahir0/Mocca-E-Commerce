@@ -1,12 +1,11 @@
-
-import React, { useEffect, useState } from 'react';
-import axios from '../../services/api/userApi';
-import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
-import { Plus, Trash2, Star } from 'lucide-react';
-import { ToastContainer, toast } from 'react-toastify'
-import Loading from '../common/Loading';
-import Error from '../common/Error';
+import React, { useEffect, useState } from "react";
+import axios from "../../services/api/userApi";
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+import { Plus, Trash2, Star } from "lucide-react";
+import { ToastContainer, toast } from "react-toastify";
+import Loading from "../common/Loading";
+import Error from "../common/Error";
 
 export default function AddressManagment() {
   const [addresses, setAddresses] = useState([]);
@@ -23,8 +22,8 @@ export default function AddressManagment() {
         setAddresses(response.data);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching addresses:', error);
-        setError('Failed to fetch addresses.');
+        console.error("Error fetching addresses:", error);
+        setError("Failed to fetch addresses.");
         setLoading(false);
       }
     };
@@ -32,7 +31,7 @@ export default function AddressManagment() {
     if (userId) {
       fetchAddresses();
     } else {
-      setError('User is not logged in.');
+      setError("User is not logged in.");
       setLoading(false);
     }
   }, [userId]);
@@ -41,11 +40,13 @@ export default function AddressManagment() {
   const handleDelete = async (addressId) => {
     try {
       await axios.delete(`/delete-address/${addressId}`);
-      setAddresses((prev) => prev.filter((address) => address._id !== addressId));
-      toast.success('Address deleted successfully!');
+      setAddresses((prev) =>
+        prev.filter((address) => address._id !== addressId)
+      );
+      toast.success("Address deleted successfully!");
     } catch (error) {
-      console.error('Error deleting address:', error);
-      toast.error('Failed to delete address.');
+      console.error("Error deleting address:", error);
+      toast.error("Failed to delete address.");
     }
   };
 
@@ -59,19 +60,19 @@ export default function AddressManagment() {
           isDefault: address._id === addressId,
         }))
       );
-      toast.success('Address set as default!');
+      toast.success("Address set as default!");
     } catch (error) {
-      console.error('Error setting default address:', error);
-      toast.error('Failed to set address as default.');
+      console.error("Error setting default address:", error);
+      toast.error("Failed to set address as default.");
     }
   };
 
   if (loading) {
-    return <Loading/>
+    return <Loading />;
   }
 
   if (error) {
-    return <Error error={error}/>;
+    return <Error error={error} />;
   }
 
   return (
@@ -82,13 +83,18 @@ export default function AddressManagment() {
           Add a new address
         </button>
       </Link>
-      <h2 className="text-2xl font-semibold text-center mb-8">Your Addresses</h2>
+      <h2 className="text-2xl font-semibold text-center mb-8">
+        Your Addresses
+      </h2>
       {addresses.length == 0 ? (
         <p>No addresses found. Please add one!</p>
       ) : (
         <div className="space-y-6">
           {addresses.map((address) => (
-            <div key={address._id} className="p-4 border rounded-md shadow-sm relative">
+            <div
+              key={address._id}
+              className="p-4 border rounded-md shadow-sm relative"
+            >
               {address.isDefault && (
                 <span className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-md text-xs">
                   Default
@@ -99,7 +105,9 @@ export default function AddressManagment() {
                 <strong>Mobile:</strong> {address.phone}
               </p>
               <p className="text-sm">
-                <strong>Address:</strong> {address.houseNo}, {address.street}, {address.town}, {address.city}, {address.state} - {address.pincode}
+                <strong>Address:</strong> {address.houseNo}, {address.street},{" "}
+                {address.town}, {address.city}, {address.state} -{" "}
+                {address.pincode}
               </p>
               {address.landmark && (
                 <p className="text-sm">

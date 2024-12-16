@@ -1,46 +1,45 @@
-import React, { useState } from 'react'
-import { Eye, EyeOff } from 'lucide-react'
-import axios from '../../services/api/adminApi'
-import { useNavigate } from 'react-router-dom'
+import React, { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import axios from "../../services/api/adminApi";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminLogin() {
-  const [showPassword, setShowPassword] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  })
-  const navigate = useNavigate()
+    email: "",
+    password: "",
+  });
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prevState => ({
+    const { name, value } = e.target;
+    setFormData((prevState) => ({
       ...prevState,
-      [name]: value
-    }))
-  }
+      [name]: value,
+    }));
+  };
 
-  const handleSubmit = async(e) => {
-    e.preventDefault()
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      const response = await axios.post('/login',formData)
-      if(response.status === 201){
-        const { adminToken} = response.data;
-        localStorage.setItem('adminToken',adminToken)
-        navigate('/admin/dashboard')
-      }else{
-        alert(response.data.message || 'Login failed');
+      const response = await axios.post("/login", formData);
+      if (response.status === 201) {
+        const { adminToken } = response.data;
+        localStorage.setItem("adminToken", adminToken);
+        navigate("/admin/dashboard");
+      } else {
+        alert(response.data.message || "Login failed");
       }
-      
     } catch (error) {
       console.log(error);
       if (error.response && error.response.status === 401) {
-        alert(error.response.data.message || 'Invalid email or password');
-    } else {
-        alert('An error occurred during login');
+        alert(error.response.data.message || "Invalid email or password");
+      } else {
+        alert("An error occurred during login");
+      }
     }
-    }
-    console.log('Form submitted:', formData)
-  }
+    console.log("Form submitted:", formData);
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
@@ -50,7 +49,8 @@ export default function AdminLogin() {
             Hi ! Welcome
           </h1>
           <p className="text-gray-600">
-            <span className="font-semibold">MOCCA</span> is waiting for you, please enter your details
+            <span className="font-semibold">MOCCA</span> is waiting for you,
+            please enter your details
           </p>
         </div>
 
@@ -110,5 +110,5 @@ export default function AdminLogin() {
         </form>
       </div>
     </div>
-  )
+  );
 }
