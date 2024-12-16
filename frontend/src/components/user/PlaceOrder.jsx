@@ -389,7 +389,7 @@ export default function PlaceOrder() {
             ) : (
               <p className="text-gray-600">{addressErr}</p>
             )}
-            <Link to="/address-management">
+            <Link to="/address-managment">
               <button className="mt-4 w-full py-2 border rounded-md hover:bg-gray-50">
                 Change Default Address...
               </button>

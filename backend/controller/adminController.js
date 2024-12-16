@@ -11,7 +11,6 @@ dotenv.config();
 const key = process.env.JWT_SECRET;
 
 const refreshTokenHandler = async (req, res) => {
-  console.log("hhhhhhhhhhhhhhhh");
 
   const { refreshToken } = req.body;
 
@@ -483,50 +482,91 @@ const downloadExcelReport = async (req, res) => {
   }
 };
 
+
+
 const getTopSelling = async (req, res) => {
   try {
-    const orders = await Order.find();
+    // Top Selling Products
+    const topProductsPipeline = [
+      {
+        $unwind: "$products", 
+      },
+      {
+        $group: {
+          _id: "$products.productId", 
+          totalQuantity: { $sum: "$products.quantity" },
+        },
+      },
+      {
+        $sort: { totalQuantity: -1 }, 
+      },
+      {
+        $limit: 10, 
+      },
+      {
+        $lookup: {
+          from: "products", 
+          localField: "_id", 
+          foreignField: "_id",
+          as: "productDetails",
+        },
+      },
+      {
+        $unwind: "$productDetails", 
+      },
+      {
+        $project: {
+          _id: 0,
+          productId: "$_id",
+          productName: "$productDetails.productName",
+          category: "$productDetails.category",
+          sales: "$totalQuantity",
+        },
+      },
+    ];
 
-    const productSalesMap = {};
-    const categorySalesMap = {};
+    const topProducts = await Order.aggregate(topProductsPipeline);
 
-    for (const order of orders) {
-      for (const productItem of order.products) {
-        const { productId, quantity } = productItem;
+    // Top Selling Categories
+    const topCategoriesPipeline = [
+      {
+        $unwind: "$products", 
+      },
+      {
+        $lookup: {
+          from: "products", 
+          localField: "products.productId", 
+          foreignField: "_id",
+          as: "productDetails",
+        },
+      },
+      {
+        $unwind: "$productDetails", 
+      },
+      {
+        $group: {
+          _id: "$productDetails.category", 
+          totalQuantity: { $sum: "$products.quantity" }, 
+        },
+      },
+      {
+        $sort: { totalQuantity: -1 }, 
+      },
+      {
+        $limit: 10, 
+      },
+      {
+        $project: {
+          _id: 0,
+          categoryName: "$_id",
+          sales: "$totalQuantity",
+        },
+      },
+    ];
 
-        productSalesMap[productId] =
-          (productSalesMap[productId] || 0) + quantity;
+    const topCategories = await Order.aggregate(topCategoriesPipeline);
 
-        const product = await Product.findById(productId);
-        if (product) {
-          const category = product.category;
-          categorySalesMap[category] =
-            (categorySalesMap[category] || 0) + quantity;
-        }
-      }
-    }
-
-    const topProducts = await Promise.all(
-      Object.entries(productSalesMap)
-        .sort(([, salesA], [, salesB]) => salesB - salesA)
-        .slice(0, 10)
-        .map(async ([productId, sales]) => {
-          const product = await Product.findById(productId);
-          return {
-            productName: product?.productName || "Unknown",
-            sales,
-            category: product?.category || "Unknown",
-          };
-        })
-    );
-
-    const topCategories = Object.entries(categorySalesMap)
-      .sort(([, salesA], [, salesB]) => salesB - salesA)
-      .slice(0, 10) // Take the top 10
-      .map(([categoryName, sales]) => {
-        return { categoryName, sales };
-      });
-
+    // Response
     res.status(200).json({
       message: "Top selling products and categories fetched successfully!",
       topProducts,
@@ -534,13 +574,12 @@ const getTopSelling = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching top-selling products/categories:", error);
-    res
-      .status(500)
-      .json({
-        message: "Failed to fetch top-selling data. Please try again later.",
-      });
+    res.status(500).json({
+      message: "Failed to fetch top-selling data. Please try again later.",
+    });
   }
 };
+
 
 export {
   adminLogin,
