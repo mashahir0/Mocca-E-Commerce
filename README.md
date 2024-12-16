@@ -53,7 +53,7 @@ Clone the Repository:
 
 bash
 Copy code
-git clone https://github.com/your-repo/ecommerce-clothing-brand.git
+gh repo clone mashahir0/Mocca-E-Commerce
 Navigate to the Project Directory:
 
 bash
