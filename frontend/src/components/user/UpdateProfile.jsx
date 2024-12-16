@@ -9,6 +9,7 @@ import axios from '../../services/api/userApi';
 import { uploadToCloudinary } from '../../services/cloudinary/Cloudinary';
 import { Navigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify'
+import Loading from '../common/Loading';
 
 export default function UpdateProfile() {
   const { user } = useSelector((state) => state?.user);
@@ -130,9 +131,9 @@ export default function UpdateProfile() {
     return Object.keys(newErrors).length === 0; // Valid if no errors
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>oopss.....</div>;
-  if (error) return <div>somthing wrong...</div>
+  if (isLoading) return <Loading/>;
+  if (isError) return <Error error = {error}/>;
+  if (error) return <Error error = {error}/>
 
   return (
     <>

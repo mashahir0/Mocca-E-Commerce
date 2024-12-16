@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../../services/api/userApi';
 import { useSelector } from 'react-redux';
+import Loading from '../common/Loading';
 
 export default function Wallet() {
   const [wallet, setWallet] = useState(null);
@@ -23,7 +24,7 @@ export default function Wallet() {
   }, []);
 
   if (!wallet) {
-    return <div>Loading...</div>;
+    return <Loading/>
   }
 
   return (

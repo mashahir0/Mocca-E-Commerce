@@ -5,6 +5,8 @@ import axios from '../../services/api/adminApi';
 import { ToastContainer, toast } from 'react-toastify'; 
 import 'react-toastify/dist/ReactToastify.css'; 
 import { useNavigate, Link } from 'react-router-dom'; 
+import Loading from '../common/Loading';
+import Error from '../common/Error';
 
 
 export default function ProductList() {
@@ -81,8 +83,8 @@ export default function ProductList() {
     }
   };
 
-  if (isLoading) return <div>Loading products...</div>;
-  if (isError) return <div>Error loading products: {error.message}</div>;
+  if (isLoading) return <Loading/>
+  if (isError) return <Error error={error.message}/>;
 
   return (
     <div className="p-6 bg-gray-100 min-h-screen">

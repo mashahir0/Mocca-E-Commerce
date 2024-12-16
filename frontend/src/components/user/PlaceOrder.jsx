@@ -7,6 +7,7 @@ import axios from '../../services/api/userApi';
 import { useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
+import Loading from '../common/Loading';
 
 export default function PlaceOrder() {
     const { id, size, quantity } = useParams();
@@ -67,8 +68,8 @@ export default function PlaceOrder() {
         getCoupon();
     }, [id, userId]);
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error}</div>;
+    if (loading) return <Loading/>;
+    if (error) return <Error error = {error}/>;
 
     const suntotal = product && product.length > 0
   ? product[0].offerStatus && product[0].offerPrice

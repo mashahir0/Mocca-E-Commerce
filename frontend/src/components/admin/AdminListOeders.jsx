@@ -4,6 +4,8 @@ import axios from '../../services/api/adminApi';
 import { ChevronLeft, ChevronRight, TagIcon } from 'lucide-react';
 import { Pencil, Trash2 } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify'; 
+import Loading from '../common/Loading';
+import Error from '../common/Error';
 
 export default function AdminListOrders() {
   const [orders, setOrders] = useState([]);
@@ -68,8 +70,8 @@ export default function AdminListOrders() {
    
   };
 
-  if (loading) return <div className="text-center mt-10">Loading...</div>;
-  if (error) return <div className="text-center mt-10 text-red-600">{error}</div>;
+  if (loading) return <Loading/>
+  if (error) return <Error error = {error}/>;
 
   return (
     <div className="max-w-7xl mx-auto p-6">

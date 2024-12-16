@@ -8,6 +8,7 @@ import axios from '../../services/api/userApi';
 import { useSearch } from '../../../utils/SearchContext';
 import { useSelector } from 'react-redux';
 import { ToastContainer, toast } from "react-toastify";
+import Loading from '../common/Loading';
 
 const fetchProducts = async (currentPage, activeFilter, selectedPriceRanges, selectedRatings, sortOption,searchTerm) => {
   try {
@@ -135,11 +136,11 @@ const ProductsList = () => {
   };
 
   if (isLoading) {
-    return <div>Loading products...</div>;
+    return <div><Loading/></div>;
   }
 
   if (isError) {
-    return <div>Error loading products: {error?.message || 'Something went wrong'}</div>;
+    return <Error error = {error.message}/>;
   }
 
   return (

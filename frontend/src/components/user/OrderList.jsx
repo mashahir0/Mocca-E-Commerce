@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
 import axios from '../../services/api/userApi';
+import Loading from '../common/Loading';
 
 export default function OrdersList() {
   const { user } = useSelector((state) => state.user);
@@ -19,11 +20,11 @@ export default function OrdersList() {
   });
 
   if (isLoading) {
-    return <p>Loading...</p>;
+    return <Loading/>
   }
 
   if (isError) {
-    return <p>Error loading orders.</p>;
+    return <Error error = {error}/>;
   }
 
   if (!orders.length) {

@@ -76,6 +76,7 @@ const adminLogin = async (req, res) => {
 
 const getUserList = async (req, res) => {
   try {
+    
     const users = await User.find({ role: "user" });
     if (users && users.length > 0) {
       res.status(200).json({ users, totalCount: users.length });

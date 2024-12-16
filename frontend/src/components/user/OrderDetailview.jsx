@@ -9,6 +9,8 @@ import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from 'react-toastify';
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import Loading from "../common/Loading";
+import Error from "../common/Error";
 
 function OrderDetailView() {
   const { user } = useSelector((state) => state.user);
@@ -254,11 +256,11 @@ function OrderDetailView() {
   
 
   if (isLoading) {
-    return <p>Loading order details...</p>;
+    return <Loading/>;
   }
 
   if (isError) {
-    return <p className="text-red-500">Failed to load order details. Please try again later.</p>;
+    return <Error error = {error}/>;
   }
 
   if (!order) {

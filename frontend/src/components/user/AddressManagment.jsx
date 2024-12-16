@@ -5,6 +5,8 @@ import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Plus, Trash2, Star } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify'
+import Loading from '../common/Loading';
+import Error from '../common/Error';
 
 export default function AddressManagment() {
   const [addresses, setAddresses] = useState([]);
@@ -65,11 +67,11 @@ export default function AddressManagment() {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <Loading/>
   }
 
   if (error) {
-    return <div className="text-red-500">{error}</div>;
+    return <Error error={error}/>;
   }
 
   return (

@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Calendar, MoreVertical, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import axios from '../../services/api/adminApi';
 import { ToastContainer, toast } from "react-toastify";
+import Loading from '../common/Loading';
+import Error from '../common/Error';
 
 export default function UserList() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -62,8 +64,8 @@ export default function UserList() {
     toggleStatusMutation.mutate(customerId);
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error loading data</div>;
+  if (isLoading) return <Loading/>;
+  if (error) return <Error error = {error}/>;
 
   const customers = data?.users || [];
   const totalCustomers = data?.totalCount || 0;

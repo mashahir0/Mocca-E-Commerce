@@ -767,6 +767,7 @@ const cancelOrder = async (req, res) => {
 
   const getAllOrders = async (req, res) => {
     try {
+      
       const { page = 1, limit = 10 } = req.query; 
   
       const orders = await Order.find()

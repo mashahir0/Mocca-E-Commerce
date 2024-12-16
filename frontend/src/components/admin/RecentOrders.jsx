@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from '../../services/api/adminApi';
 import { MoreVertical } from 'lucide-react';
+import Loading from '../common/Loading';
+import Error from '../common/Error';
 
 export default function TopSelling() {
   const [topProducts, setTopProducts] = useState([]);
@@ -28,11 +30,11 @@ export default function TopSelling() {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <Loading/>;
   }
 
   if (error) {
-    return <div className="text-red-500">{error}</div>;
+    return <Error error={error}/>;
   }
 
   return (

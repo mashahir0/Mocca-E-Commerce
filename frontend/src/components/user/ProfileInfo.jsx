@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useQuery } from '@tanstack/react-query';
 import axios from '../../services/api/userApi';
+import Loading from '../common/Loading';
 
 export default function ProfileInfo() {
   const { user } = useSelector((state) => state.user);
@@ -20,11 +21,11 @@ export default function ProfileInfo() {
   });
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <Loading/>;
   }
 
   if (isError) {
-    return <div>Error: {error.message}</div>;
+    return <Error error = {error.message}/>;
   }
 
  

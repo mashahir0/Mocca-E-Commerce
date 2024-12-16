@@ -8,6 +8,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { addToCart } from "../../redux/slice/CartSlice";
 import { useNavigate } from "react-router-dom";
+import Loading from "../common/Loading";
 
 const postReview = async ({ productId, review }) => {
   const response = await axios.post(
@@ -159,11 +160,11 @@ export default function ProductDetails() {
   };
 
   if (loadingReviews) {
-    return <p>Loading reviews...</p>;
+    return <Loading/>;
   }
 
   if (reviewsError) {
-    return <p>Error fetching reviews: {reviewsError.message}</p>;
+    return <Error error = {reviewsError.message}/>;
   }
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">

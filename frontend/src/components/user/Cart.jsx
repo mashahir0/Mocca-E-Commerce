@@ -8,6 +8,8 @@ import { Minus, Plus } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { toast, ToastContainer } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import Loading from '../common/Loading';
+import Error from '../common/Error';
 
 export default function Cart() {
   const [cartItems, setCartItems] = useState([]);
@@ -86,8 +88,8 @@ export default function Cart() {
     }
   };
 
-  if (loading) return <div>Loading cart...</div>;
-  if (error) return <div>{error}</div>;
+  if (loading) return <Loading/>;
+  if (error) return <Error error={error}/>;
 
   return (
     <div className="max-w-4xl mx-auto my-28 p-4">
