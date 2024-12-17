@@ -29,8 +29,7 @@ export default function AboutUs() {
         <div className="bg-white p-8 rounded-lg shadow-sm space-y-4">
           <h2 className="text-3xl font-bold">MOCCA</h2>
           <p className="text-gray-600 text-sm">
-            aspjftakdfajhfabccajfhajhfakjhfkajfhajhdfkujhajhsfvkdjfhkaj
-            sfhasjhfakjhfakfhfakajhfakjhfakjdhfdhujhfafafafa
+          MOCCA is a forward-thinking fashion brand focused on providing high-quality apparel for the modern individual. We specialize in unique, contemporary designs that reflect individuality and style, catering to all your fashion needs.
           </p>
         </div>
       </section>
