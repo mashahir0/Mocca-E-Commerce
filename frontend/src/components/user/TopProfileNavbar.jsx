@@ -44,7 +44,7 @@ export default function TopProfileNavbar() {
               My Wallet
             </Link>
             <Link
-              to="#"
+              to="/about-us"
               className="flex items-center text-gray-700 hover:text-black transition-colors"
             >
               <Mail className="mr-2 h-5 w-5" />
@@ -95,22 +95,22 @@ export default function TopProfileNavbar() {
                 <Package className="mr-2 h-5 w-5" />
                 My Orders
               </Link>
-              <a
-                href="#"
+              <Link
+                to="/wallet"
                 onClick={toggleMobileMenu}
                 className="flex items-center text-gray-700 hover:text-black transition-colors"
               >
                 <CreditCard className="mr-2 h-5 w-5" />
                 My Wallet
-              </a>
-              <a
-                href="#"
+              </Link>
+              <Link
+                to="/about-us"
                 onClick={toggleMobileMenu}
                 className="flex items-center text-gray-700 hover:text-black transition-colors"
               >
                 <Mail className="mr-2 h-5 w-5" />
                 Contact Us
-              </a>
+              </Link>
             </div>
           </div>
         )}

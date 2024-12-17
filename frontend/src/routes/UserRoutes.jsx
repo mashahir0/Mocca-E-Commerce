@@ -22,6 +22,7 @@ import PlaceOrderPage from "../pages/user/PlaceOrderPage";
 import OrderSuccessPage from "../pages/user/OrderSuccessPage";
 import CartPlaceOrderPage from "../pages/user/CartPlaceOrderPage";
 import WalletPage from "../pages/user/WalletPage";
+import AboutUsPage from "../pages/user/AboutUsPage";
 
 const UserRoutes = [
   {
@@ -169,6 +170,14 @@ const UserRoutes = [
     element: (
       <RequireAuth>
         <WalletPage />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: "/about-us",
+    element: (
+      <RequireAuth>
+        <AboutUsPage/>
       </RequireAuth>
     ),
   },
