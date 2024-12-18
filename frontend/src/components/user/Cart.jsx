@@ -22,7 +22,6 @@ export default function Cart() {
   const fetchCartData = async () => {
     try {
       const response = await axios.get(`/get-cartdetails/${userId}`);
-      
 
       setCartItems(response.data.items);
       setTotalAmount(response.data.totalAmount);
@@ -84,6 +83,21 @@ export default function Cart() {
     }
   };
 
+  if (cartItems.length === 0) {
+    return (
+      <div className="text-center mt-10">
+        <p className="text-gray-500 mb-4">
+          No Products found. Start shopping now!
+        </p>
+        <button
+          onClick={() => navigate("/products")}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          Continue Shopping
+        </button>
+      </div>
+    );
+  }
   if (loading) return <Loading />;
   if (error) return <Error error={error} />;
 
