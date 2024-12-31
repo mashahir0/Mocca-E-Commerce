@@ -95,8 +95,8 @@ npm start
 
 Access the app:
 
-User Side: http://localhost:5173
-Admin Panel: http://localhost:3000/admin/login
+User Side: (Link currently not available)
+Admin Panel: (Link currently not available)
 
 Folder Structure :- 
 
